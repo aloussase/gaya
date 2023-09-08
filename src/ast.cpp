@@ -1,3 +1,4 @@
+#include <numeric>
 #include <sstream>
 #include <string>
 
@@ -5,18 +6,24 @@
 
 namespace ast {
 
+template <typename Container, typename Transform>
+std::string join(const Container& c, Transform transform)
+{
+  return std::transform_reduce(
+      c.empty() ? c.cbegin() : c.cbegin() + 1,
+      c.cend(),
+      c.empty() ? std::string() : transform(c[0]),
+      [](auto acc, auto x) { return acc + "," + x; },
+      transform
+  );
+}
+
 std::string program::to_string() const noexcept
 {
   std::stringstream ss;
   ss << "{\"type\": \"program\","
-     << "\"stmts\": [";
-  for (size_t i = 0; i < stmts.size(); i++) {
-    ss << stmts[i]->to_string();
-    if (i != stmts.size() - 1) {
-      ss << ",";
-    }
-  }
-  ss << "]}";
+     << "\"stmts\": ["
+     << join(stmts, [](auto& stmt) { return stmt->to_string(); }) << "]}";
   return ss.str();
 }
 
@@ -40,28 +47,18 @@ std::string expression_stmt::to_string() const noexcept
 std::string call_expression::to_string() const noexcept
 {
   std::stringstream ss;
-  ss << R"({"type": "call_expression", "args": [)";
-  for (size_t i = 0; i < args.size(); i++) {
-    ss << args[i]->to_string();
-    if (i != args.size() - 1) {
-      ss << ",";
-    }
-  }
-  ss << R"(], "identifier": ")" << identifier->_span.to_string() << "\"}";
+  ss << R"({"type": "call_expression", "args": [)"
+     << join(args, [](auto& arg) { return arg->to_string(); })
+     << R"(], "identifier": ")" << identifier->_span.to_string() << "\"}";
   return ss.str();
 }
 
 std::string function_expression::to_string() const noexcept
 {
   std::stringstream ss;
-  ss << R"({"type": "function_expression", "params": [)";
-  for (size_t i = 0; i < params.size(); i++) {
-    ss << params[i].to_string();
-    if (i != params.size() - 1) {
-      ss << ",";
-    }
-  }
-  ss << R"(], "body": )" << body->to_string() << "}";
+  ss << R"({"type": "function_expression", "params": [)"
+     << join(params, [](auto& param) { return param.to_string(); })
+     << R"(], "body": )" << body->to_string() << "}";
   return ss.str();
 }
 
