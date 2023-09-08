@@ -66,10 +66,19 @@ struct expression : public ast_node {
 };
 
 struct call_expression final : public expression {
-  std::string identifier;
-  std::vector<expression_ptr> params;
+  call_expression(
+      std::unique_ptr<ast::identifier> i, //
+      std::vector<expression_ptr>&& a
+  )
+      : identifier { std::move(i) }
+      , args { std::move(a) }
+  {
+  }
 
   std::string to_string() const noexcept override;
+
+  std::unique_ptr<ast::identifier> identifier;
+  std::vector<expression_ptr> args;
 };
 
 struct function_expression final : public expression {

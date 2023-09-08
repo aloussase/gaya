@@ -31,15 +31,23 @@ std::string declaration_stmt::to_string() const noexcept
 
 std::string expression_stmt::to_string() const noexcept
 {
-  // TODO
   std::stringstream ss;
+  ss << R"({"type": "expression_stmt",)"
+     << R"("expression": )" << expr->to_string() << "}";
   return ss.str();
 }
 
 std::string call_expression::to_string() const noexcept
 {
-  // TODO
   std::stringstream ss;
+  ss << R"({"type": "call_expression", "args": [)";
+  for (size_t i = 0; i < args.size(); i++) {
+    ss << args[i]->to_string();
+    if (i != args.size() - 1) {
+      ss << ",";
+    }
+  }
+  ss << R"(], "identifier": ")" << identifier->_span.to_string() << "\"}";
   return ss.str();
 }
 

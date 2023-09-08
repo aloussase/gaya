@@ -37,10 +37,11 @@ std::string diagnostic::to_string() const noexcept
   }
 
   return fmt::format(
-      "{} at line {}: {}", //
+      "{} at line {}: {}\n\n\tHere --> {}\n", //
       diagnostic_kind,
       _span.lineno(),
-      _message
+      _message,
+      _span.to_string()
   );
 }
 

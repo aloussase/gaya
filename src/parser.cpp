@@ -158,8 +158,55 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
 ast::expression_ptr parser::call_expression(token identifier)
 {
-  // TODO: Not implemented
-  assert(false && "not implemented");
+  auto lparen = _lexer.next_token();
+  if (!lparen || lparen->type() != token_type::lparen) {
+    parser_error(identifier.get_span(), "Expected a '(' after identifier");
+  }
+
+  std::vector<ast::expression_ptr> args;
+
+  for (;;) {
+    auto token = _lexer.next_token();
+    if (!token) {
+      break;
+    }
+
+    if (token->type() == token_type::rparen) {
+      // Empty args list.
+      _lexer.push_back(token.value());
+      break;
+    }
+
+    args.push_back(expression(token.value()));
+
+    auto comma = _lexer.next_token();
+    if (!comma) {
+      parser_error(token->get_span(), "Expected a ')' after arguments");
+    }
+
+    if (comma->type() != token_type::comma) {
+      _lexer.push_back(comma.value());
+      break;
+    }
+  }
+
+  auto ret = std::make_unique<ast::call_expression>(
+      std::make_unique<ast::identifier>(
+          identifier.get_span(), //
+          identifier.get_span().to_string()
+      ), //
+      std::move(args)
+  );
+
+  auto rparen = _lexer.next_token();
+  if (!rparen || rparen->type() != token_type::rparen) {
+    parser_error(
+        identifier.get_span(), //
+        "Expected ')' after argument list"
+    );
+  }
+
+  return ret;
 }
 
 ast::expression_ptr parser::primary_expression(token token)
