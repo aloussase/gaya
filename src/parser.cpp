@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 #include <memory>
 
 #include <ast.hpp>
@@ -105,7 +106,12 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
   for (;;) {
     auto identifier = _lexer.next_token();
-    if (!identifier || identifier->type() != token_type::identifier) {
+    if (!identifier) {
+      break;
+    }
+
+    if (identifier->type() != token_type::identifier) {
+      _lexer.push_back(identifier.value());
       break;
     }
 
@@ -113,24 +119,41 @@ ast::expression_ptr parser::function_expression(token lcurly)
     params.emplace_back(span, span.to_string());
 
     auto comma = _lexer.next_token();
-    if (!comma || comma->type() != token_type::comma) {
+    if (!comma) {
+      break;
+    }
+
+    if (comma->type() != token_type::comma) {
+      _lexer.push_back(comma.value());
       break;
     }
   }
 
-  if (!params.empty()) {
-    auto arrow = _lexer.next_token();
-    if (!arrow || arrow->type() != token_type::arrow) {
-      parser_error(lcurly.get_span(), "Expected '=>' after function params");
-    }
+  auto arrow = _lexer.next_token();
+  if (!arrow || arrow->type() != token_type::arrow) {
+    parser_error(lcurly.get_span(), "Expected '=>' after function params");
   }
 
-  auto expr = _lexer.next_token();
-  return std::make_unique<ast::function_expression>(
-      std::move(params),
-      expr ? expression(expr.value())
-           : std::make_unique<ast::unit>(lcurly.get_span())
+  auto token = _lexer.next_token();
+  if (!token) {
+    parser_error(lcurly.get_span(), "Expected a '}' after function body");
+  }
+
+  if (token->type() == token_type::rcurly) {
+    return std::make_unique<ast::unit>(token->get_span());
+  }
+
+  auto ret = std::make_unique<ast::function_expression>(
+      std::move(params), //
+      expression(token.value())
   );
+
+  auto rcurly = _lexer.next_token();
+  if (!rcurly || rcurly->type() != token_type::rcurly) {
+    parser_error(lcurly.get_span(), "Expected a '}' after function body");
+  }
+
+  return ret;
 }
 
 ast::expression_ptr parser::call_expression(token identifier)

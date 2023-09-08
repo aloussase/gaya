@@ -5,20 +5,23 @@
 auto main() -> int
 {
   auto program = R"(
-hello_world :: {
+hello_world :: { =>
     io.println("Hello, world!")
-    io.println(12)
 }
 
-hello_world()
+discard io.println(hello_world())
   )";
 
   parser parser(program);
   auto ast = parser.parse();
 
-  // TODO: Print parser errors.
-
-  std::cout << ast->to_string() << "\n";
+  if (parser.diagnostics().empty()) {
+    std::cout << ast->to_string() << "\n";
+  } else {
+    for (const auto& diag : parser.diagnostics()) {
+      std::cout << diag.to_string() << "\n";
+    }
+  }
 
   return 0;
 }

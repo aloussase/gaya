@@ -1,3 +1,5 @@
+#include <fmt/core.h>
+
 #include <diagnostic.hpp>
 
 namespace diagnostic {
@@ -22,6 +24,24 @@ static diagnostic warning(span s, const std::string& m) noexcept
 static diagnostic hint(span s, const std::string& m) noexcept
 {
   return diagnostic { s, m, severity::hint };
+}
+
+std::string diagnostic::to_string() const noexcept
+{
+  std::string diagnostic_kind;
+
+  switch (_severity) {
+  case severity::error: diagnostic_kind = "error"; break;
+  case severity::warning: diagnostic_kind = "warning"; break;
+  case severity::hint: diagnostic_kind = "hint"; break;
+  }
+
+  return fmt::format(
+      "{} at line {}: {}", //
+      diagnostic_kind,
+      _span.lineno(),
+      _message
+  );
 }
 
 }

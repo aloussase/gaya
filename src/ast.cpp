@@ -67,7 +67,7 @@ std::string number::to_string() const noexcept
 std::string string::to_string() const noexcept
 {
   std::stringstream ss;
-  ss << R"({"type": "string", "value":)" << '"' << value << "\"}";
+  ss << R"({"type": "string", "value":)" << value << "}";
   return ss.str();
 }
 

@@ -20,6 +20,8 @@ public:
 
   [[nodiscard]] static diagnostic hint(span s, const std::string&) noexcept;
 
+  [[nodiscard]] std::string to_string() const noexcept;
+
 private:
   span _span;
   std::string _message;

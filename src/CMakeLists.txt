@@ -8,3 +8,6 @@ add_executable(gaya main.cpp
 target_compile_options(gaya PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-Os>
     $<$<CONFIG:Debug>:-g>)
+
+target_link_libraries(gaya PRIVATE
+    fmt::fmt)

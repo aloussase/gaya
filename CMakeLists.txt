@@ -6,6 +6,8 @@ project(gaya-lang
 
 set(CMAKE_CXX_STANDARD 20)
 
+add_subdirectory(third_party/fmt)
+
 include_directories(include)
 add_subdirectory(src)
 
