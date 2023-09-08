@@ -1,0 +1,5 @@
+hello_world :: {
+    io.println("Hello, world!")
+}
+
+hello_world()

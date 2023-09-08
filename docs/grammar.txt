@@ -1,0 +1,29 @@
+program ::= stmts | e
+
+stmts ::= stmt
+        | stmt stmts
+
+stmt ::= declaration_stmt
+       | expression_stmt
+
+declaration_stmt ::= IDENTIFIER '::' expression
+
+expression_stmt ::= 'discard' expression
+
+expression ::= call_expression
+             | function_expression
+             | primary_expression
+
+call_expression ::= IDENTIFIER '(' params_list ')'
+
+params_list ::= expression
+              | expression ',' params_list
+
+function_expression ::= '{' args_list '=>' expression '}'
+            
+args_list ::= IDENTIFIER
+            | IDENTIFIER ',' args_list
+
+primary_expression ::= NUMBER
+                     | IDENTIFIER
+                     | STRING
