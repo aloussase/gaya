@@ -70,12 +70,14 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
   }
 
   auto ident = std::make_unique<ast::identifier>(
-      identifier.get_span(), identifier.get_span().to_string()
+      identifier.get_span(), //
+      identifier.get_span().to_string()
   );
 
   if (auto token = _lexer.next_token(); token) {
     return std::make_unique<ast::declaration_stmt>(
-        std::move(ident), expression(token.value())
+        std::move(ident), //
+        expression(token.value())
     );
   } else {
     parser_error(colon_colon->get_span(), "Expected an expression after '::'");
@@ -95,6 +97,7 @@ ast::expression_ptr parser::expression(token token)
 {
   switch (token.type()) {
   case token_type::lcurly: return function_expression(token);
+  case token_type::let: assert(false && "not implemented");
   case token_type::identifier: return call_expression(token);
   default: return primary_expression(token);
   }
@@ -115,8 +118,10 @@ ast::expression_ptr parser::function_expression(token lcurly)
       break;
     }
 
-    auto span = identifier->get_span();
-    params.emplace_back(span, span.to_string());
+    params.emplace_back(
+        identifier->get_span(), //
+        identifier->get_span().to_string()
+    );
 
     auto comma = _lexer.next_token();
     if (!comma) {
@@ -214,15 +219,18 @@ ast::expression_ptr parser::primary_expression(token token)
   switch (token.type()) {
   case token_type::number:
     return std::make_unique<ast::number>(
-        token.get_span(), std::stod(token.get_span().to_string())
+        token.get_span(), //
+        std::stod(token.get_span().to_string())
     );
   case token_type::string:
     return std::make_unique<ast::string>(
-        token.get_span(), token.get_span().to_string()
+        token.get_span(), //
+        token.get_span().to_string()
     );
   case token_type::identifier:
     return std::make_unique<ast::identifier>(
-        token.get_span(), token.get_span().to_string()
+        token.get_span(), //
+        token.get_span().to_string()
     );
   default:
     parser_error(token.get_span(), "Invalid start of primary expression");

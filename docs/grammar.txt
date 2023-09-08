@@ -12,9 +12,12 @@ expression_stmt ::= 'discard' expression
 
 expression ::= call_expression
              | function_expression
+             | let_expression
              | primary_expression
 
 call_expression ::= IDENTIFIER '(' params_list ')'
+
+let_expression ::= 'let' IDENTIFIER '=' expression 'in' expression
 
 params_list ::= expression
               | expression ',' params_list

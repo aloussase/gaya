@@ -31,9 +31,9 @@ std::string diagnostic::to_string() const noexcept
   std::string diagnostic_kind;
 
   switch (_severity) {
-  case severity::error: diagnostic_kind = "error"; break;
-  case severity::warning: diagnostic_kind = "warning"; break;
-  case severity::hint: diagnostic_kind = "hint"; break;
+  case severity::error: diagnostic_kind = "\x1b[31merror\x1b[m"; break;
+  case severity::warning: diagnostic_kind = "\x1b[34mwarning\x1b[m"; break;
+  case severity::hint: diagnostic_kind = "\x1b[32mhint\x1b[m"; break;
   }
 
   return fmt::format(

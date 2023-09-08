@@ -5,11 +5,12 @@
 auto main() -> int
 {
   auto program = R"(
-hello_world :: { =>
-    io.println("Hello, world!")
+hello_world :: { name =>
+    let message = concat("Hello, ", name, "!") in
+    io.println(message)
 }
 
-discard io.println(hello_world())
+discard io.println(hello_world("Gaya"))
   )";
 
   parser parser(program);

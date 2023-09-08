@@ -143,9 +143,13 @@ std::optional<token> lexer::identifier() noexcept
     }
   }
 
+  // FIXME: This could be faster if we stored keywords in a hash map.
+
   if (strncmp(_start, "discard", _current - _start) == 0) {
     return mk_token(token_type::discard);
+  } else if (strncmp(_start, "let", _current - _start) == 0) {
+    return mk_token(token_type::let);
+  } else {
+    return mk_token(token_type::identifier);
   }
-
-  return mk_token(token_type::identifier);
 }

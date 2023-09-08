@@ -13,6 +13,7 @@ enum class token_type {
   discard,
   identifier,
   lcurly,
+  let,
   lparen,
   number,
   rcurly,
