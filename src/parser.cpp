@@ -6,8 +6,7 @@
 #include <parser.hpp>
 
 parser::parser(const char* source)
-    : _source { source }
-    , _lexer { source }
+    : _lexer { source }
 {
 }
 
@@ -19,7 +18,6 @@ std::vector<diagnostic::diagnostic> parser::diagnostics() const noexcept
 void parser::parser_error(span s, const std::string& message)
 {
   _diagnostics.emplace_back(s, message, diagnostic::severity::error);
-  throw synchronize {};
 }
 
 bool parser::match(std::optional<token> t, token_type tt) const noexcept
@@ -34,37 +32,44 @@ ast::node_ptr parser::parse() noexcept
   return program;
 }
 
+ast::expression_ptr parser::parse_expression() noexcept
+{
+  auto token = _lexer.next_token();
+  if (token) {
+    return expression(token.value());
+  }
+  return nullptr;
+}
+
 std::vector<ast::stmt_ptr> parser::stmts() noexcept
 {
   std::vector<ast::stmt_ptr> _stmts;
 
   for (;;) {
-    auto token = _lexer.next_token();
-    if (!token) {
-      return _stmts;
-    }
-
-    try {
-      switch (token->type()) {
-      case token_type::identifier:
-        _stmts.push_back(declaration_stmt(token.value()));
-        break;
-      case token_type::discard:
-        _stmts.push_back(expression_stmt(token.value()));
-        break;
-      default: parser_error(token->get_span(), "Invalid top-level expression");
-      }
-    } catch (const synchronize&) {
-      for (;;) {
-        auto token = _lexer.next_token();
-        if (!token) break;
-        if (token->type() == token_type::identifier) break;
-        if (token->type() == token_type::discard) break;
-      }
+    if (auto stmt = parse_stmt(); stmt) {
+      _stmts.push_back(std::move(stmt));
+    } else {
+      break;
     }
   }
 
   return _stmts;
+}
+
+ast::stmt_ptr parser::parse_stmt() noexcept
+{
+  auto token = _lexer.next_token();
+  if (!token) {
+    return nullptr;
+  }
+
+  switch (token->type()) {
+  case token_type::identifier: return declaration_stmt(token.value());
+  case token_type::discard: return expression_stmt(token.value());
+  default:
+    parser_error(token->get_span(), "Invalid start of statement"); //
+    return nullptr;
+  }
 }
 
 ast::stmt_ptr parser::declaration_stmt(token identifier)
@@ -72,6 +77,7 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
   auto colon_colon = _lexer.next_token();
   if (!colon_colon || colon_colon->type() != token_type::colon_colon) {
     parser_error(identifier.get_span(), "Expected a '::' after identifier");
+    return nullptr;
   }
 
   auto ident = std::make_unique<ast::identifier>(
@@ -86,6 +92,7 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
     );
   } else {
     parser_error(colon_colon->get_span(), "Expected an expression after '::'");
+    return nullptr;
   }
 }
 
@@ -95,6 +102,7 @@ ast::stmt_ptr parser::expression_stmt(token discard)
     return std::make_unique<ast::expression_stmt>(expression(token.value()));
   } else {
     parser_error(discard.get_span(), "Expected an expression after discard");
+    return nullptr;
   }
 }
 
@@ -142,11 +150,13 @@ ast::expression_ptr parser::function_expression(token lcurly)
   auto arrow = _lexer.next_token();
   if (!arrow || arrow->type() != token_type::arrow) {
     parser_error(lcurly.get_span(), "Expected '=>' after function params");
+    return nullptr;
   }
 
   auto token = _lexer.next_token();
   if (!token) {
     parser_error(lcurly.get_span(), "Expected a '}' after function body");
+    return nullptr;
   }
 
   if (token->type() == token_type::rcurly) {
@@ -161,6 +171,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
   auto rcurly = _lexer.next_token();
   if (!rcurly || rcurly->type() != token_type::rcurly) {
     parser_error(lcurly.get_span(), "Expected a '}' after function body");
+    return nullptr;
   }
 
   return ret;
@@ -198,6 +209,7 @@ ast::expression_ptr parser::call_expression(token identifier)
     auto comma = _lexer.next_token();
     if (!comma) {
       parser_error(token->get_span(), "Expected a ')' after arguments");
+      return nullptr;
     }
 
     if (comma->type() != token_type::comma) {
@@ -220,6 +232,7 @@ ast::expression_ptr parser::call_expression(token identifier)
         identifier.get_span(), //
         "Expected ')' after argument list"
     );
+    return nullptr;
   }
 
   return ret;
@@ -230,6 +243,7 @@ ast::expression_ptr parser::let_expression(token let)
   auto ident = _lexer.next_token();
   if (!match(ident, token_type::identifier)) {
     parser_error(let.get_span(), "Expected an identifier after 'let'");
+    return nullptr;
   }
 
   auto equal_sign = _lexer.next_token();
@@ -238,11 +252,13 @@ ast::expression_ptr parser::let_expression(token let)
         ident->get_span(), //
         "Expected '=' after identifier in let expression"
     );
+    return nullptr;
   }
 
   auto token = _lexer.next_token();
   if (!token) {
     parser_error(equal_sign->get_span(), "Expected an expression after '='");
+    return nullptr;
   }
 
   auto binding = expression(token.value());
@@ -253,11 +269,13 @@ ast::expression_ptr parser::let_expression(token let)
         token->get_span(), //
         "Expected 'in' after expression in let expression"
     );
+    return nullptr;
   }
 
   token = _lexer.next_token();
   if (!token) {
     parser_error(in->get_span(), "Expected an expression after 'in'");
+    return nullptr;
   }
 
   auto expr = expression(token.value());
@@ -293,6 +311,7 @@ ast::expression_ptr parser::primary_expression(token token)
         token.get_span().to_string()
     );
   default:
-    parser_error(token.get_span(), "Invalid start of primary expression");
+    parser_error(token.get_span(), "Invalid start of primary expression"); //
+    return nullptr;
   }
 }

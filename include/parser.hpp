@@ -7,16 +7,17 @@
 #include <diagnostic.hpp>
 #include <lexer.hpp>
 
-class synchronize : public std::exception { };
-
 class parser {
 public:
   parser(const char* source);
 
   [[nodiscard]] ast::node_ptr parse() noexcept;
 
-  [[nodiscard]] std::vector<diagnostic::diagnostic>
-  diagnostics() const noexcept;
+  [[nodiscard]] ast::expression_ptr parse_expression() noexcept;
+
+  [[nodiscard]] ast::stmt_ptr parse_stmt() noexcept;
+
+  [[nodiscard]] std::vector<diagnostic::diagnostic> diagnostics() const noexcept;
 
 private:
   std::vector<ast::stmt_ptr> stmts() noexcept;
@@ -29,11 +30,9 @@ private:
   [[nodiscard]] ast::expression_ptr let_expression(token let);
   [[nodiscard]] ast::expression_ptr primary_expression(token);
 
-  [[noreturn]] void parser_error(span, const std::string&);
-
+  void parser_error(span, const std::string&);
   [[nodiscard]] bool match(std::optional<token>, token_type) const noexcept;
 
-  const char* _source;
   lexer _lexer;
   std::vector<diagnostic::diagnostic> _diagnostics;
 };

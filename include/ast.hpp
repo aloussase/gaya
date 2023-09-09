@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <lexer.hpp>
+#include <object.hpp>
 #include <span.hpp>
 
 namespace ast {
@@ -17,16 +18,20 @@ using node_ptr       = std::unique_ptr<ast_node>;
 using stmt_ptr       = std::unique_ptr<stmt>;
 using expression_ptr = std::unique_ptr<expression>;
 
+class ast_visitor;
+
 struct ast_node {
   virtual ~ast_node() {};
-
-  virtual std::string to_string() const noexcept = 0;
+  virtual std::string to_string() const noexcept  = 0;
+  virtual object::object_ptr accept(ast_visitor&) = 0;
 };
 
 struct program final : public ast_node {
   std::vector<stmt_ptr> stmts;
 
   std::string to_string() const noexcept override;
+
+  object::object_ptr accept(ast_visitor&) override;
 };
 
 /* Statements */
@@ -44,6 +49,8 @@ struct declaration_stmt final : public stmt {
 
   std::string to_string() const noexcept override;
 
+  object::object_ptr accept(ast_visitor&) override;
+
   std::unique_ptr<identifier> _identifier;
   expression_ptr expression;
 };
@@ -55,6 +62,8 @@ struct expression_stmt final : public stmt {
   }
 
   std::string to_string() const noexcept override;
+
+  object::object_ptr accept(ast_visitor&) override;
 
   expression_ptr expr;
 };
@@ -77,6 +86,8 @@ struct call_expression final : public expression {
 
   std::string to_string() const noexcept override;
 
+  object::object_ptr accept(ast_visitor&) override;
+
   std::unique_ptr<ast::identifier> identifier;
   std::vector<expression_ptr> args;
 };
@@ -89,6 +100,8 @@ struct function_expression final : public expression {
   }
 
   std::string to_string() const noexcept override;
+
+  object::object_ptr accept(ast_visitor&) override;
 
   std::vector<identifier> params;
   expression_ptr body;
@@ -108,6 +121,8 @@ struct let_expression final : public expression {
 
   std::string to_string() const noexcept override;
 
+  object::object_ptr accept(ast_visitor&) override;
+
   std::unique_ptr<identifier> ident;
   expression_ptr binding;
   expression_ptr expr;
@@ -116,7 +131,7 @@ struct let_expression final : public expression {
 /* Primary expressions */
 
 struct number final : public expression {
-  number(span s, int v)
+  number(span s, double v)
       : _span { s }
       , value { v }
   {
@@ -124,8 +139,10 @@ struct number final : public expression {
 
   std::string to_string() const noexcept override;
 
+  object::object_ptr accept(ast_visitor&) override;
+
   span _span;
-  int value;
+  double value;
 };
 
 struct string final : public expression {
@@ -136,6 +153,8 @@ struct string final : public expression {
   }
 
   std::string to_string() const noexcept override;
+
+  object::object_ptr accept(ast_visitor&) override;
 
   span _span;
   std::string value;
@@ -150,6 +169,8 @@ struct identifier final : public expression {
 
   std::string to_string() const noexcept override;
 
+  object::object_ptr accept(ast_visitor&) override;
+
   span _span;
   std::string value;
 };
@@ -161,6 +182,8 @@ struct unit final : public expression {
   }
 
   std::string to_string() const noexcept override;
+
+  object::object_ptr accept(ast_visitor&) override;
 
   span _span;
 };
