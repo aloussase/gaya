@@ -7,6 +7,7 @@ auto main() -> int
   auto program = R"(
 hello_world :: { name =>
     let message = concat("Hello, ", name, "!") in
+    let somevariable = 42 in
     io.println(message)
 }
 

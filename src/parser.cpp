@@ -22,6 +22,11 @@ void parser::parser_error(span s, const std::string& message)
   throw synchronize {};
 }
 
+bool parser::match(std::optional<token> t, token_type tt) const noexcept
+{
+  return t && t->type() == tt;
+}
+
 ast::node_ptr parser::parse() noexcept
 {
   auto program   = std::make_unique<ast::program>();
@@ -97,7 +102,7 @@ ast::expression_ptr parser::expression(token token)
 {
   switch (token.type()) {
   case token_type::lcurly: return function_expression(token);
-  case token_type::let: assert(false && "not implemented");
+  case token_type::let: return let_expression(token);
   case token_type::identifier: return call_expression(token);
   default: return primary_expression(token);
   }
@@ -165,7 +170,13 @@ ast::expression_ptr parser::call_expression(token identifier)
 {
   auto lparen = _lexer.next_token();
   if (!lparen || lparen->type() != token_type::lparen) {
-    parser_error(identifier.get_span(), "Expected a '(' after identifier");
+    if (lparen) {
+      _lexer.push_back(lparen.value());
+    }
+    return std::make_unique<ast::identifier>(
+        identifier.get_span(), //
+        identifier.get_span().to_string()
+    );
   }
 
   std::vector<ast::expression_ptr> args;
@@ -212,6 +223,55 @@ ast::expression_ptr parser::call_expression(token identifier)
   }
 
   return ret;
+}
+
+ast::expression_ptr parser::let_expression(token let)
+{
+  auto ident = _lexer.next_token();
+  if (!match(ident, token_type::identifier)) {
+    parser_error(let.get_span(), "Expected an identifier after 'let'");
+  }
+
+  auto equal_sign = _lexer.next_token();
+  if (!match(equal_sign, token_type::equal)) {
+    parser_error(
+        ident->get_span(), //
+        "Expected '=' after identifier in let expression"
+    );
+  }
+
+  auto token = _lexer.next_token();
+  if (!token) {
+    parser_error(equal_sign->get_span(), "Expected an expression after '='");
+  }
+
+  auto binding = expression(token.value());
+
+  auto in = _lexer.next_token();
+  if (!match(in, token_type::in)) {
+    parser_error(
+        token->get_span(), //
+        "Expected 'in' after expression in let expression"
+    );
+  }
+
+  token = _lexer.next_token();
+  if (!token) {
+    parser_error(in->get_span(), "Expected an expression after 'in'");
+  }
+
+  auto expr = expression(token.value());
+
+  auto identifier = std::make_unique<ast::identifier>(
+      ident->get_span(), //
+      ident->get_span().to_string()
+  );
+
+  return std::make_unique<ast::let_expression>(
+      std::move(identifier), //
+      std::move(binding),
+      std::move(expr)
+  );
 }
 
 ast::expression_ptr parser::primary_expression(token token)

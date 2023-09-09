@@ -94,6 +94,25 @@ struct function_expression final : public expression {
   expression_ptr body;
 };
 
+struct let_expression final : public expression {
+  let_expression(
+      std::unique_ptr<identifier> i, //
+      expression_ptr b,
+      expression_ptr e
+  )
+      : ident { std::move(i) }
+      , binding { std::move(b) }
+      , expr { std::move(e) }
+  {
+  }
+
+  std::string to_string() const noexcept override;
+
+  std::unique_ptr<identifier> ident;
+  expression_ptr binding;
+  expression_ptr expr;
+};
+
 /* Primary expressions */
 
 struct number final : public expression {

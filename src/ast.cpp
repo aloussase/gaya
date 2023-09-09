@@ -62,6 +62,15 @@ std::string function_expression::to_string() const noexcept
   return ss.str();
 }
 
+std::string let_expression::to_string() const noexcept
+{
+  std::stringstream ss;
+  ss << R"({"type": "let_expression", "identifier": )" << ident->to_string()
+     << R"(, "binding": )" << binding->to_string() << R"(, "expr": )"
+     << expr->to_string() << "}";
+  return ss.str();
+}
+
 std::string number::to_string() const noexcept
 {
   std::stringstream ss;

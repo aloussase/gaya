@@ -96,7 +96,7 @@ std::optional<token> lexer::colon_colon() noexcept
 std::optional<token> lexer::arrow() noexcept
 {
   if (auto c = peek(); !c || c.value() != '>') {
-    return std::nullopt;
+    return mk_token(token_type::equal);
   }
   advance();
   return mk_token(token_type::arrow);
@@ -149,6 +149,8 @@ std::optional<token> lexer::identifier() noexcept
     return mk_token(token_type::discard);
   } else if (strncmp(_start, "let", _current - _start) == 0) {
     return mk_token(token_type::let);
+  } else if (strncmp(_start, "in", _current - _start) == 0) {
+    return mk_token(token_type::in);
   } else {
     return mk_token(token_type::identifier);
   }
