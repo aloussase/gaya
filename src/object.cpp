@@ -47,7 +47,8 @@ object_ptr function::call(interpreter& interp, std::vector<object_ptr> args) noe
 
 std::string number::to_string() const noexcept
 {
-  return std::to_string(value);
+  // NOTE: Maybe we do want full precision here.
+  return fmt::format("{:.2f}", value);
 }
 
 bool number::is_callable() const noexcept

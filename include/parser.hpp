@@ -21,6 +21,9 @@ public:
 
   [[nodiscard]] std::vector<diagnostic::diagnostic> diagnostics() const noexcept;
 
+  /// Returning the remaining, unparsed tokens.
+  [[nodiscard]] std::vector<token> remaining_tokens() noexcept;
+
 private:
   std::vector<ast::stmt_ptr> stmts() noexcept;
 
@@ -33,6 +36,7 @@ private:
   [[nodiscard]] ast::expression_ptr primary_expression(token);
 
   void parser_error(span, const std::string&);
+  void parser_hint(span, const std::string&);
   [[nodiscard]] bool match(std::optional<token>, token_type) const noexcept;
 
   lexer _lexer;

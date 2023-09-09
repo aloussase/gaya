@@ -1,3 +1,6 @@
+#include <numeric>
+#include <sstream>
+
 #include <fmt/core.h>
 
 #include <diagnostic.hpp>
@@ -28,21 +31,30 @@ static diagnostic hint(span s, const std::string& m) noexcept
 
 std::string diagnostic::to_string() const noexcept
 {
-  std::string diagnostic_kind;
+  std::string diagnostic_kind = ([&] {
+    switch (_severity) {
+    case severity::error: return "\x1b[1m\x1b[31merror\x1b[m";
+    case severity::warning: return "\x1b[1m\x1b[33mwarning\x1b[m";
+    case severity::hint: return "\x1b[1m\x1b[34mhint\x1b[m";
+    }
+  })();
 
-  switch (_severity) {
-  case severity::error: diagnostic_kind = "\x1b[31merror\x1b[m"; break;
-  case severity::warning: diagnostic_kind = "\x1b[34mwarning\x1b[m"; break;
-  case severity::hint: diagnostic_kind = "\x1b[32mhint\x1b[m"; break;
+  std::stringstream ss;
+
+  ss << fmt::format("{} at line {}: {}\n\n", diagnostic_kind, _span.lineno(), _message);
+
+  if (_severity == severity::error) {
+    const char* newline = strchr(_span.start(), '\n');
+    auto line           = std::accumulate(
+        _span.start(), //
+        newline ? newline : strchr(_span.start(), '\0'),
+        std::string(),
+        [](auto acc, char c) { return acc + c; }
+    );
+    ss << fmt::format("    Here --> {}\n\n", line);
   }
 
-  return fmt::format(
-      "{} at line {}: {}\n\n\tHere --> {}\n", //
-      diagnostic_kind,
-      _span.lineno(),
-      _message,
-      _span.to_string()
-  );
+  return ss.str();
 }
 
 }

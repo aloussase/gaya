@@ -72,6 +72,15 @@ void interpreter::undefined_identifier(span s, const std::string& identifier) no
       fmt::format("undefined identifier: {}", identifier),
       diagnostic::severity::error
   );
+
+  _diagnostics.emplace_back(
+      s, //
+      fmt::format(
+          "Maybe you forgot to declare it? For example: {} :: \"someshit\"", //
+          identifier
+      ),
+      diagnostic::severity::hint
+  );
 }
 
 object::object_ptr interpreter::visit_program(ast::program& program)
@@ -111,6 +120,15 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexp
         "Tried to call non-callable",
         diagnostic::severity::error
     );
+
+    _diagnostics.emplace_back(
+        cexpr.identifier->_span, //
+        fmt::format(
+            "To define a function, do {} :: {{ <args> => <expr> }}", //
+            cexpr.identifier->value
+        ),
+        diagnostic::severity::hint
+    );
     return nullptr;
   }
 
@@ -118,7 +136,11 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexp
   if (callable->arity() != cexpr.args.size()) {
     _diagnostics.emplace_back(
         cexpr.identifier->_span, //
-        "Wrong number of arguments provided to callable",
+        fmt::format(
+            "Wrong number of arguments provided to callable, {} {} expected", //
+            callable->arity(),
+            callable->arity() == 1 ? "was" : "were"
+        ),
         diagnostic::severity::error
     );
     return nullptr;
