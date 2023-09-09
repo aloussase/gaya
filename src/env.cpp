@@ -1,6 +1,6 @@
 #include "env.hpp"
 
-namespace eval {
+namespace gaya::eval {
 
 env::env(parent_ptr p)
     : _parent { p }

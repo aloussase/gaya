@@ -12,7 +12,7 @@
 
 #define END_SCOPE() _current_env = __old_env__;
 
-namespace eval {
+namespace gaya::eval {
 
 interpreter::interpreter(const char* source)
     : _source { source }

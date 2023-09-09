@@ -20,7 +20,7 @@ static void eval_file(char* filename)
   }
 
   auto* contents = fr.slurp();
-  auto interp    = eval::interpreter { contents };
+  auto interp    = gaya::eval::interpreter { contents };
 
   if (auto result = interp.eval(); !result) {
     for (const auto& diag : interp.diagnostics()) {

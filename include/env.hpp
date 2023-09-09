@@ -5,7 +5,7 @@
 
 #include <object.hpp>
 
-namespace eval {
+namespace gaya::eval {
 
 class env final {
 public:

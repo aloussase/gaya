@@ -6,7 +6,7 @@
 #include <object.hpp>
 #include <span.hpp>
 
-namespace eval {
+namespace gaya::eval {
 
 class interpreter final : public ast::ast_visitor {
 public:
