@@ -5,6 +5,8 @@
 #include <ast.hpp>
 #include <parser.hpp>
 
+namespace gaya {
+
 parser::parser(const char* source)
     : _lexer { source }
 {
@@ -164,6 +166,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
   }
 
   auto ret = std::make_unique<ast::function_expression>(
+      lcurly.get_span(),
       std::move(params), //
       expression(token.value())
   );
@@ -314,4 +317,6 @@ ast::expression_ptr parser::primary_expression(token token)
     parser_error(token.get_span(), "Invalid start of primary expression"); //
     return nullptr;
   }
+}
+
 }

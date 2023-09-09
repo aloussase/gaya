@@ -7,6 +7,8 @@
 #include <diagnostic.hpp>
 #include <lexer.hpp>
 
+namespace gaya {
+
 class parser {
 public:
   parser(const char* source);
@@ -36,3 +38,5 @@ private:
   lexer _lexer;
   std::vector<diagnostic::diagnostic> _diagnostics;
 };
+
+}

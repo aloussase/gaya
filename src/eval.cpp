@@ -92,10 +92,9 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression&)
   return nullptr;
 }
 
-object::object_ptr interpreter::visit_function_expression(ast::function_expression&)
+object::object_ptr interpreter::visit_function_expression(ast::function_expression& fexpr)
 {
-  assert(false && "not implemented");
-  return nullptr;
+  return std::make_unique<object::function>(fexpr._span, fexpr.params, std::move(fexpr.body));
 }
 
 object::object_ptr interpreter::visit_let_expression(ast::let_expression& let_expression)

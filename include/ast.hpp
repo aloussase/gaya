@@ -4,10 +4,16 @@
 #include <vector>
 
 #include <lexer.hpp>
-#include <object.hpp>
 #include <span.hpp>
 
-namespace ast {
+namespace gaya::eval::object {
+
+struct object;
+using object_ptr = std::shared_ptr<object>;
+
+}
+
+namespace gaya::ast {
 
 struct ast_node;
 struct stmt;
@@ -22,8 +28,8 @@ class ast_visitor;
 
 struct ast_node {
   virtual ~ast_node() {};
-  virtual std::string to_string() const noexcept  = 0;
-  virtual object::object_ptr accept(ast_visitor&) = 0;
+  virtual std::string to_string() const noexcept              = 0;
+  virtual gaya::eval::object::object_ptr accept(ast_visitor&) = 0;
 };
 
 struct program final : public ast_node {
@@ -31,7 +37,7 @@ struct program final : public ast_node {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 };
 
 /* Statements */
@@ -49,7 +55,7 @@ struct declaration_stmt final : public stmt {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   std::unique_ptr<identifier> _identifier;
   expression_ptr expression;
@@ -63,7 +69,7 @@ struct expression_stmt final : public stmt {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   expression_ptr expr;
 };
@@ -86,23 +92,25 @@ struct call_expression final : public expression {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   std::unique_ptr<ast::identifier> identifier;
   std::vector<expression_ptr> args;
 };
 
 struct function_expression final : public expression {
-  function_expression(std::vector<identifier>&& p, expression_ptr b)
-      : params { std::move(p) }
+  function_expression(span s, std::vector<identifier>&& p, expression_ptr b)
+      : _span { s }
+      , params { std::move(p) }
       , body { std::move(b) }
   {
   }
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
+  span _span;
   std::vector<identifier> params;
   expression_ptr body;
 };
@@ -121,7 +129,7 @@ struct let_expression final : public expression {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   std::unique_ptr<identifier> ident;
   expression_ptr binding;
@@ -139,7 +147,7 @@ struct number final : public expression {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   span _span;
   double value;
@@ -154,7 +162,7 @@ struct string final : public expression {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   span _span;
   std::string value;
@@ -169,7 +177,7 @@ struct identifier final : public expression {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   span _span;
   std::string value;
@@ -183,7 +191,7 @@ struct unit final : public expression {
 
   std::string to_string() const noexcept override;
 
-  object::object_ptr accept(ast_visitor&) override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   span _span;
 };
