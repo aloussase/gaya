@@ -3,7 +3,12 @@
 #include <memory>
 #include <unordered_map>
 
-#include <object.hpp>
+namespace gaya::eval::object {
+
+struct object;
+using object_ptr = std::shared_ptr<object>;
+
+}
 
 namespace gaya::eval {
 
@@ -12,7 +17,7 @@ public:
   using parent_ptr = std::shared_ptr<env>;
   using bindings   = std::unordered_map<std::string, object::object_ptr>;
 
-  env(parent_ptr p = nullptr);
+  explicit env(parent_ptr p = nullptr);
 
   /// Set a binding in the environment.
   void set(const std::string&, object::object_ptr) noexcept;

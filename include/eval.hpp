@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stack>
+
 #include <ast_visitor.hpp>
 #include <diagnostic.hpp>
 #include <env.hpp>
@@ -25,6 +27,15 @@ public:
   /// Get the interpreter's environment.
   [[nodiscard]] const env& get_env() const noexcept;
 
+  /// Define a new symbol in the current scope.
+  void define(const std::string&, object::object_ptr) noexcept;
+
+  /// Begin a new scope.
+  void begin_scope(env new_scope) noexcept;
+
+  /// End a previous scope.
+  void end_scope() noexcept;
+
   object::object_ptr visit_program(ast::program&) override;
   object::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
   object::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
@@ -37,11 +48,13 @@ public:
   object::object_ptr visit_unit(ast::unit&) override;
 
 private:
+  [[nodiscard]] env& current_env() noexcept;
+
   void undefined_identifier(span, const std::string&) noexcept;
 
   const char* _source = nullptr;
   std::vector<diagnostic::diagnostic> _diagnostics;
-  env _current_env;
+  std::stack<env> _scopes;
 };
 
 }
