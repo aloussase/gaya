@@ -45,6 +45,16 @@ object_ptr function::call(interpreter& interp, std::vector<object_ptr> args) noe
   return ret;
 }
 
+std::string builtin_function::to_string() const noexcept
+{
+  return fmt::format("<native-function: {}>", name);
+}
+
+bool builtin_function::is_callable() const noexcept
+{
+  return true;
+}
+
 std::string number::to_string() const noexcept
 {
   // NOTE: Maybe we do want full precision here.
@@ -58,7 +68,13 @@ bool number::is_callable() const noexcept
 
 std::string string::to_string() const noexcept
 {
-  return value;
+  std::string cpy = value;
+  if (cpy.empty()) return cpy;
+
+  cpy.replace(0, 1, "");
+  cpy.replace(cpy.size() - 1, 1, "");
+
+  return cpy;
 }
 
 bool string::is_callable() const noexcept

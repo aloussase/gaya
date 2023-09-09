@@ -2,6 +2,7 @@
 
 #include <fmt/core.h>
 
+#include <builtins/io.hpp>
 #include <eval.hpp>
 #include <parser.hpp>
 #include <span.hpp>
@@ -27,6 +28,7 @@ object::object_ptr interpreter::eval() noexcept
 object::object_ptr interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
   _scopes.push(env);
+  define("io.println", std::make_shared<object::builtin::io::println>());
   return ast->accept(*this);
 }
 

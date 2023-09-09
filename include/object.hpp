@@ -6,7 +6,7 @@
 #include <env.hpp>
 #include <span.hpp>
 
-namespace ast {
+namespace gaya::ast {
 
 struct identifier;
 struct expression;
@@ -52,6 +52,20 @@ struct function final : public callable {
   size_t _arity;
   ast::expression_ptr body;
   env closed_over_env;
+};
+
+struct builtin_function : public callable {
+  builtin_function(const std::string& n)
+      : name { n }
+  {
+  }
+
+  virtual ~builtin_function() { }
+
+  std::string to_string() const noexcept override;
+  bool is_callable() const noexcept override;
+
+  std::string name;
 };
 
 struct number final : public object {
