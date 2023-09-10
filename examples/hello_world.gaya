@@ -1,5 +1,10 @@
+(* Output: 'Hello, word' *)
+
+(*
+  hello_world: Prints the classic "Hello, world!".
+*)
 hello_world :: { =>
-    io.println("Hello, world!")
+  io.println("Hello, world!")
 }
 
 discard hello_world()

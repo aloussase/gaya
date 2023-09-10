@@ -27,6 +27,13 @@ void parser::parser_hint(span s, const std::string& message)
   _diagnostics.emplace_back(s, message, diagnostic::severity::hint);
 }
 
+void parser::merge_diagnostics() noexcept
+{
+  for (const auto& diag : _lexer.diagnostics()) {
+    _diagnostics.insert(_diagnostics.begin(), diag);
+  }
+}
+
 bool parser::match(std::optional<token> t, token_type tt) const noexcept
 {
   return t && t->type() == tt;
@@ -48,6 +55,7 @@ ast::node_ptr parser::parse() noexcept
 {
   auto program   = std::make_unique<ast::program>();
   program->stmts = stmts();
+  merge_diagnostics();
   return program;
 }
 

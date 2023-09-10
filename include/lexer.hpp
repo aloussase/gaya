@@ -4,6 +4,7 @@
 #include <queue>
 #include <vector>
 
+#include <diagnostic.hpp>
 #include <span.hpp>
 
 enum class token_type {
@@ -50,7 +51,9 @@ class lexer {
 public:
   lexer(const char* source);
 
-  std::optional<token> next_token() noexcept;
+  [[nodiscard]] std::optional<token> next_token() noexcept;
+
+  [[nodiscard]] std::vector<diagnostic::diagnostic> diagnostics() const noexcept;
 
   void push_back(token) noexcept;
 
@@ -73,9 +76,14 @@ private:
 
   token mk_token(token_type) const noexcept;
 
+  void lexer_error(const std::string& msg) noexcept;
+
+  void lexer_hint(const std::string& msg) noexcept;
+
   [[nodiscard]] bool is_valid_identifier(char c) const noexcept;
 
   [[nodiscard]] std::optional<token> colon_colon() noexcept;
+  [[nodiscard]] std::optional<token> comment() noexcept;
   [[nodiscard]] std::optional<token> arrow() noexcept;
   [[nodiscard]] std::optional<token> number() noexcept;
   [[nodiscard]] std::optional<token> string() noexcept;
@@ -86,4 +94,5 @@ private:
   size_t _lineno            = 1;
   const char* _source       = nullptr;
   std::queue<token> _buffer = {};
+  std::vector<diagnostic::diagnostic> _diagnostics;
 };

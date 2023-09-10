@@ -24,6 +24,9 @@ public:
   /// Returning the remaining, unparsed tokens.
   [[nodiscard]] std::vector<token> remaining_tokens() noexcept;
 
+  /// Merge the lexer and parser diagnostics.
+  void merge_diagnostics() noexcept;
+
 private:
   std::vector<ast::stmt_ptr> stmts() noexcept;
 

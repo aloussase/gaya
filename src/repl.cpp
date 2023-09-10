@@ -36,6 +36,8 @@ ast::node_ptr parse_line(const char* line)
     ast     = parser_.parse_expression();
   }
 
+  parser_.merge_diagnostics();
+
   for (const auto& diag : parser_.diagnostics()) {
     fmt::print("{}", diag.to_string());
   }
@@ -48,8 +50,6 @@ void run() noexcept
   char* line;
   eval::env repl_env;
   eval::interpreter interp { nullptr };
-
-  // TODO: Check if there are any left over tokens.
 
   while ((line = readline("> ")) != nullptr) {
     if (strcmp(line, ".quit") == 0) {
