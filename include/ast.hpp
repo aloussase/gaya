@@ -81,11 +81,9 @@ struct expression : public ast_node {
 };
 
 struct call_expression final : public expression {
-  call_expression(
-      std::unique_ptr<ast::identifier> i, //
-      std::vector<expression_ptr>&& a
-  )
-      : identifier { std::move(i) }
+  call_expression(span s, expression_ptr t, std::vector<expression_ptr>&& a)
+      : span_ { s }
+      , target { std::move(t) }
       , args { std::move(a) }
   {
   }
@@ -94,7 +92,8 @@ struct call_expression final : public expression {
 
   gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
-  std::unique_ptr<ast::identifier> identifier;
+  span span_;
+  expression_ptr target;
   std::vector<expression_ptr> args;
 };
 

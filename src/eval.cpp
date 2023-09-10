@@ -105,22 +105,19 @@ object::object_ptr interpreter::visit_expression_stmt(ast::expression_stmt& expr
 
 object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
-  auto o = cexpr.identifier->accept(*this);
+  auto o = cexpr.target->accept(*this);
   if (!o) return nullptr;
 
   if (!o->is_callable()) {
     _diagnostics.emplace_back(
-        cexpr.identifier->_span, //
+        cexpr.span_, //
         "Tried to call non-callable",
         diagnostic::severity::error
     );
 
     _diagnostics.emplace_back(
-        cexpr.identifier->_span, //
-        fmt::format(
-            "To define a function, do {} :: {{ <args> => <expr> }}", //
-            cexpr.identifier->value
-        ),
+        cexpr.span_, //
+        "To define a function, do f :: {{ <args> => <expr> }}",
         diagnostic::severity::hint
     );
     return nullptr;
@@ -129,7 +126,7 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexp
   auto callable = std::static_pointer_cast<object::callable>(o);
   if (callable->arity() != cexpr.args.size()) {
     _diagnostics.emplace_back(
-        cexpr.identifier->_span, //
+        cexpr.span_, //
         fmt::format(
             "Wrong number of arguments provided to callable, {} {} expected", //
             callable->arity(),

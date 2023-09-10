@@ -144,8 +144,7 @@ ast::expression_ptr parser::expression(token token)
   switch (token.type()) {
   case token_type::lcurly: return function_expression(token);
   case token_type::let: return let_expression(token);
-  case token_type::identifier: return call_expression(token);
-  default: return primary_expression(token);
+  default: return call_expression(token);
   }
 }
 
@@ -214,65 +213,56 @@ ast::expression_ptr parser::function_expression(token lcurly)
   return ret;
 }
 
-ast::expression_ptr parser::call_expression(token identifier)
+ast::expression_ptr parser::call_expression(token tk)
 {
-  auto lparen = _lexer.next_token();
-  if (!lparen || lparen->type() != token_type::lparen) {
-    if (lparen) {
-      _lexer.push_back(lparen.value());
-    }
-    return std::make_unique<ast::identifier>(
-        identifier.get_span(), //
-        identifier.get_span().to_string()
-    );
-  }
-
-  std::vector<ast::expression_ptr> args;
+  auto token = tk;
+  auto expr  = primary_expression(token);
+  if (!expr) return nullptr;
 
   for (;;) {
     auto token = _lexer.next_token();
-    if (!token) {
-      break;
-    }
+    if (!token) break;
 
-    if (token->type() == token_type::rparen) {
-      // Empty args list.
+    if (!match(token, token_type::lparen)) {
+      // Not a function call.
       _lexer.push_back(token.value());
       break;
     }
 
-    auto expr = expression(token.value());
-    if (!expr) return nullptr;
+    std::vector<ast::expression_ptr> args;
 
-    args.push_back(std::move(expr));
+    for (;;) {
+      token = _lexer.next_token();
+      if (!token) {
+        parser_error(tk.get_span(), "Expected a ')' after opening '('");
+        return nullptr;
+      }
 
-    auto comma = _lexer.next_token();
-    if (!comma) {
-      parser_error(token->get_span(), "Expected a ')' after arguments");
+      if (match(token, token_type::rparen)) {
+        _lexer.push_back(token.value());
+        break;
+      }
+
+      auto arg = expression(token.value());
+      if (!arg) return nullptr;
+
+      args.push_back(std::move(arg));
+
+      if (token = _lexer.next_token(); !match(token, token_type::comma)) {
+        _lexer.push_back(token.value());
+        break;
+      }
+    }
+
+    if (token = _lexer.next_token(); !match(token, token_type::rparen)) {
+      parser_error(tk.get_span(), "Missing ')' after function call");
       return nullptr;
     }
 
-    if (comma->type() != token_type::comma) {
-      _lexer.push_back(comma.value());
-      break;
-    }
+    expr = std::make_unique<ast::call_expression>(tk.get_span(), std::move(expr), std::move(args));
   }
 
-  auto ret = std::make_unique<ast::call_expression>(
-      std::make_unique<ast::identifier>(
-          identifier.get_span(), //
-          identifier.get_span().to_string()
-      ), //
-      std::move(args)
-  );
-
-  auto rparen = _lexer.next_token();
-  if (!rparen || rparen->type() != token_type::rparen) {
-    parser_error(identifier.get_span(), "Expected ')' after argument list");
-    return nullptr;
-  }
-
-  return ret;
+  return expr;
 }
 
 ast::expression_ptr parser::let_expression(token let)

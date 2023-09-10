@@ -1,4 +1,6 @@
-(* Output: '42' *)
+(* Output: '42\n69' *)
+
+x :: 69
 
 f :: { =>
   let x = 42 in
@@ -8,3 +10,5 @@ f :: { =>
 g :: f()
 
 discard g()
+
+discard io.println(x)

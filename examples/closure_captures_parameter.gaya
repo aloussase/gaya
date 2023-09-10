@@ -1,0 +1,9 @@
+(* Output: 'Gaya' *)
+
+f :: { name => 
+  { => io.println(name) }
+}
+
+x :: f("Gaya")()
+
+discard x

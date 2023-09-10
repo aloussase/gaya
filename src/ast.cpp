@@ -63,7 +63,7 @@ std::string call_expression::to_string() const noexcept
   std::stringstream ss;
   ss << R"({"type": "call_expression", "args": [)"
      << join(args, [](auto& arg) { return arg->to_string(); }) << R"(], "identifier": ")"
-     << identifier->_span.to_string() << "\"}";
+     << target->to_string() << "\"}";
   return ss.str();
 }
 

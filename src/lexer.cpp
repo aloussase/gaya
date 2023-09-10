@@ -132,6 +132,7 @@ std::optional<token> lexer::comment() noexcept
 
     advance();
 
+    if (c == '\n') _lineno++;
     if (c.value() == '*') {
       if (c = peek(); c && c.value() == ')') {
         advance();
