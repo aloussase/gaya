@@ -2,6 +2,7 @@
 
 #include <fmt/core.h>
 
+#include <builtins/core.hpp>
 #include <builtins/io.hpp>
 #include <builtins/math.hpp>
 #include <eval.hpp>
@@ -36,6 +37,7 @@ object::object_ptr interpreter::eval(env env, ast::node_ptr ast) noexcept
     define("math.sub", std::make_shared<object::builtin::math::sub>());
     define("math.mult", std::make_shared<object::builtin::math::mult>());
     define("math.div", std::make_shared<object::builtin::math::div>());
+    define("typeof", std::make_shared<object::builtin::core::typeof_>());
     return ast->accept(*this);
 }
 

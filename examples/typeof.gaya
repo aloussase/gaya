@@ -1,0 +1,7 @@
+(* Output: 'number\nstring\nunit' *)
+
+discard io.println(typeof(42))
+
+discard io.println(typeof("Hello"))
+
+discard io.println(typeof(unit))

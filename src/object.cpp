@@ -10,6 +10,11 @@
 namespace gaya::eval::object
 {
 
+std::string callable::typeof_() const noexcept
+{
+    return "callable";
+}
+
 function::function(
     span s,
     std::vector<ast::identifier> p,
@@ -77,20 +82,24 @@ bool number::is_callable() const noexcept
     return false;
 }
 
+std::string number::typeof_() const noexcept
+{
+    return "number";
+}
+
 std::string string::to_string() const noexcept
 {
-    std::string cpy = value;
-    if (cpy.empty()) return cpy;
-
-    cpy.replace(0, 1, "");
-    cpy.replace(cpy.size() - 1, 1, "");
-
-    return cpy;
+    return value;
 }
 
 bool string::is_callable() const noexcept
 {
     return false;
+}
+
+std::string string::typeof_() const noexcept
+{
+    return "string";
 }
 
 std::string unit::to_string() const noexcept
@@ -101,6 +110,11 @@ std::string unit::to_string() const noexcept
 bool unit::is_callable() const noexcept
 {
     return false;
+}
+
+std::string unit::typeof_() const noexcept
+{
+    return "unit";
 }
 
 }

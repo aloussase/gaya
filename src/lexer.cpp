@@ -114,7 +114,15 @@ std::optional<token> lexer::next_token() noexcept
     case '\n': _lineno += 1; return next_token();
     case ' ': return next_token();
     default:
-        return is_valid_identifier(c.value()) ? identifier() : std::nullopt;
+        if (is_valid_identifier(c.value()))
+        {
+            return identifier();
+        }
+        else
+        {
+            lexer_error("Invalid token");
+            return std::nullopt;
+        }
     }
 }
 
@@ -122,6 +130,7 @@ std::optional<token> lexer::colon_colon() noexcept
 {
     if (auto c = peek(); !c || c.value() != ':')
     {
+        lexer_error("Expected ':' after first ':'");
         return std::nullopt;
     }
     advance();
@@ -177,6 +186,8 @@ std::optional<token> lexer::number() noexcept
 {
     auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
 
+    // TODO: Lex floating point literals.
+
     for (;;)
     {
         if (auto c = peek(); c && is_digit(c.value()))
@@ -207,11 +218,15 @@ std::optional<token> lexer::string() noexcept
         }
         else
         {
+            lexer_error("Unterminated string literal");
             return std::nullopt;
         }
     }
 
-    return mk_token(token_type::string);
+    return token {
+        token_type::string,
+        span { _lineno, _start + 1, _current - 1 },
+    };
 }
 
 std::optional<token> lexer::identifier() noexcept
