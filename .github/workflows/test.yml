@@ -1,0 +1,17 @@
+name: Run tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latests
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Gaya
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build
+
+      - name: Test examples
+        run: ./scripts/test_examples.sh
