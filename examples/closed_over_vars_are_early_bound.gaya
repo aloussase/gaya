@@ -1,0 +1,11 @@
+(* Output: '42\n42' *)
+
+x :: 42
+
+f :: { => x }
+
+discard io.println(f())
+
+x :: 69
+
+discard io.println(f())

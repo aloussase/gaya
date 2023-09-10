@@ -1,0 +1,15 @@
+(* Output: 'a' *)
+
+f :: { =>
+  let a = "a" in
+  { =>
+    let b = "b" in
+    { =>
+      let c = "c" in
+      (* TODO: Print all 3 when we support do blocks *)
+      io.println(a)
+    }
+  }
+}
+
+discard f()()()

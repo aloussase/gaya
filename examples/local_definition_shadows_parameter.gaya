@@ -1,0 +1,8 @@
+(* Output: '42' *)
+
+f :: { x => 
+  let x = 42 in
+  io.println(x)
+}
+
+discard f(69)

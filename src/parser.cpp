@@ -105,6 +105,7 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
   auto colon_colon = _lexer.next_token();
   if (!colon_colon || colon_colon->type() != token_type::colon_colon) {
     parser_error(identifier.get_span(), "Expected a '::' after identifier");
+    parser_hint(identifier.get_span(), "Maybe you meant to use discard?");
     return nullptr;
   }
 

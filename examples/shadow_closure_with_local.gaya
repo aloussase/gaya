@@ -1,0 +1,12 @@
+(* Output: 'shadow\nclosure' *)
+
+foo :: "closure"
+
+f :: { =>
+  let foo = "shadow" in
+  io.println(foo)
+}
+
+discard f()
+
+discard io.println(foo)
