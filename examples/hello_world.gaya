@@ -1,4 +1,4 @@
-(* Output: 'Hello, word' *)
+(* Output: 'Hello, world!' *)
 
 (*
   hello_world: Prints the classic "Hello, world!".
