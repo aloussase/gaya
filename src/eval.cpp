@@ -7,7 +7,8 @@
 #include <parser.hpp>
 #include <span.hpp>
 
-namespace gaya::eval {
+namespace gaya::eval
+{
 
 interpreter::interpreter(const char* source)
     : _source { source }
@@ -16,192 +17,214 @@ interpreter::interpreter(const char* source)
 
 object::object_ptr interpreter::eval() noexcept
 {
-  auto p   = parser(_source);
-  auto ast = p.parse();
-  if (!p.diagnostics().empty()) {
-    _diagnostics = p.diagnostics();
-    return nullptr;
-  }
-  return eval(env {}, std::move(ast));
+    auto p   = parser(_source);
+    auto ast = p.parse();
+    if (!p.diagnostics().empty())
+    {
+        _diagnostics = p.diagnostics();
+        return nullptr;
+    }
+    return eval(env {}, std::move(ast));
 }
 
 object::object_ptr interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
-  _scopes.push(env);
-  define("io.println", std::make_shared<object::builtin::io::println>());
-  return ast->accept(*this);
+    _scopes.push(env);
+    define("io.println", std::make_shared<object::builtin::io::println>());
+    return ast->accept(*this);
 }
 
 std::vector<diagnostic::diagnostic> interpreter::diagnostics() const noexcept
 {
-  return _diagnostics;
+    return _diagnostics;
 }
 
 void interpreter::clear_diagnostics() noexcept
 {
-  _diagnostics.clear();
+    _diagnostics.clear();
 }
 
 void interpreter::interp_error(span s, const std::string& msg)
 {
-  _diagnostics.emplace_back(s, msg, diagnostic::severity::error);
+    _diagnostics.emplace_back(s, msg, diagnostic::severity::error);
 }
 
 void interpreter::interp_hint(span s, const std::string& hint)
 {
-  _diagnostics.emplace_back(s, hint, diagnostic::severity::hint);
+    _diagnostics.emplace_back(s, hint, diagnostic::severity::hint);
 }
 
 const env& interpreter::get_env() const noexcept
 {
-  return _scopes.top();
+    return _scopes.top();
 }
 
 env& interpreter::current_env() noexcept
 {
-  return _scopes.top();
+    return _scopes.top();
 }
 
 void interpreter::define(const std::string& k, object::object_ptr v) noexcept
 {
-  current_env().set(k, v);
+    current_env().set(k, v);
 }
 
 void interpreter::begin_scope(env new_scope) noexcept
 {
-  _scopes.push(new_scope);
+    _scopes.push(new_scope);
 }
 
 void interpreter::end_scope() noexcept
 {
-  _scopes.pop();
+    _scopes.pop();
 }
 
 object::object_ptr interpreter::visit_program(ast::program& program)
 {
-  for (const auto& stmt : program.stmts) {
-    stmt->accept(*this);
-  }
-  return nullptr;
+    for (const auto& stmt : program.stmts)
+    {
+        stmt->accept(*this);
+    }
+    return nullptr;
 }
 
-object::object_ptr interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
+object::object_ptr
+interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
 {
-  auto ident = declaration_stmt._identifier->value;
-  auto value = declaration_stmt.expression->accept(*this);
+    auto ident = declaration_stmt._identifier->value;
+    auto value = declaration_stmt.expression->accept(*this);
 
-  if (value) {
-    define(ident, std::shared_ptr { std::move(value) });
-  }
+    if (value)
+    {
+        define(ident, std::shared_ptr { std::move(value) });
+    }
 
-  return nullptr;
+    return nullptr;
 }
 
-object::object_ptr interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
+object::object_ptr
+interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
 {
-  expression_stmt.expr->accept(*this);
-  return nullptr;
+    expression_stmt.expr->accept(*this);
+    return nullptr;
 }
 
 object::object_ptr interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
-  return nullptr;
-}
-
-object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexpr)
-{
-  auto o = cexpr.target->accept(*this);
-  if (!o) return nullptr;
-
-  if (!o->is_callable()) {
-    interp_error(cexpr.span_, "Tried to call non-callable");
-    interp_hint(cexpr.span_, "To define a function, do f :: {{ <args> => <expr> }}");
-    return nullptr;
-  }
-
-  auto callable = std::static_pointer_cast<object::callable>(o);
-  if (callable->arity() != cexpr.args.size()) {
-    interp_error(
-        cexpr.span_,
-        fmt::format(
-            "Wrong number of arguments provided to callable, {} {} expected", //
-            callable->arity(),
-            callable->arity() == 1 ? "was" : "were"
-        )
-    );
-    return nullptr;
-  }
-
-  std::vector<object::object_ptr> args(cexpr.args.size());
-  std::transform(
-      cexpr.args.begin(), //
-      cexpr.args.end(),
-      args.begin(),
-      [&](auto& expr) { return expr->accept(*this); }
-  );
-
-  for (const auto& expr : args) {
-    if (!expr) {
-      return nullptr;
+    begin_scope(env { std::make_shared<env>(current_env()) });
+    for (size_t i = 0; i < do_expr.body.size() - 1; i++)
+    {
+        do_expr.body[i]->accept(*this);
     }
-  }
-
-  return callable->call(*this, cexpr.span_, args);
+    auto result = do_expr.body.back()->accept(*this);
+    end_scope();
+    return result;
 }
 
-object::object_ptr interpreter::visit_function_expression(ast::function_expression& fexpr)
+object::object_ptr
+interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
-  return std::make_unique<object::function>(
-      fexpr._span, //
-      fexpr.params,
-      std::move(fexpr.body),
-      env { std::make_shared<env>(current_env()) }
-  );
+    auto o = cexpr.target->accept(*this);
+    if (!o) return nullptr;
+
+    if (!o->is_callable())
+    {
+        interp_error(cexpr.span_, "Tried to call non-callable");
+        interp_hint(
+            cexpr.span_,
+            "To define a function, do f :: {{ <args> => <expr> }}");
+        return nullptr;
+    }
+
+    auto callable = std::static_pointer_cast<object::callable>(o);
+    if (callable->arity() != cexpr.args.size())
+    {
+        interp_error(
+            cexpr.span_,
+            fmt::format(
+                "Wrong number of arguments provided to callable, {} {} "
+                "expected", //
+                callable->arity(),
+                callable->arity() == 1 ? "was" : "were"));
+        return nullptr;
+    }
+
+    std::vector<object::object_ptr> args(cexpr.args.size());
+    std::transform(
+        cexpr.args.begin(), //
+        cexpr.args.end(),
+        args.begin(),
+        [&](auto& expr) { return expr->accept(*this); });
+
+    for (const auto& expr : args)
+    {
+        if (!expr)
+        {
+            return nullptr;
+        }
+    }
+
+    return callable->call(*this, cexpr.span_, args);
 }
 
-object::object_ptr interpreter::visit_let_expression(ast::let_expression& let_expression)
+object::object_ptr
+interpreter::visit_function_expression(ast::function_expression& fexpr)
 {
-  auto ident   = let_expression.ident->value;
-  auto binding = let_expression.binding->accept(*this);
-  if (!binding) return nullptr;
+    return std::make_unique<object::function>(
+        fexpr._span, //
+        fexpr.params,
+        std::move(fexpr.body),
+        env { std::make_shared<env>(current_env()) });
+}
 
-  begin_scope(env { std::make_shared<env>(current_env()) });
-  define(ident, binding);
-  auto result = let_expression.expr->accept(*this);
-  end_scope();
+object::object_ptr
+interpreter::visit_let_expression(ast::let_expression& let_expression)
+{
+    auto ident   = let_expression.ident->value;
+    auto binding = let_expression.binding->accept(*this);
+    if (!binding) return nullptr;
 
-  return result;
+    begin_scope(env { std::make_shared<env>(current_env()) });
+    define(ident, binding);
+    auto result = let_expression.expr->accept(*this);
+    end_scope();
+
+    return result;
 }
 
 object::object_ptr interpreter::visit_number(ast::number& n)
 {
-  return std::make_shared<object::number>(n._span, n.value);
+    return std::make_shared<object::number>(n._span, n.value);
 }
 
 object::object_ptr interpreter::visit_string(ast::string& s)
 {
-  return std::make_shared<object::string>(s._span, s.value);
+    return std::make_shared<object::string>(s._span, s.value);
 }
 
 object::object_ptr interpreter::visit_identifier(ast::identifier& identifier)
 {
-  auto ident = identifier.value;
-  if (auto value = current_env().get(ident); value) {
-    return value;
-  }
+    auto ident = identifier.value;
+    if (auto value = current_env().get(ident); value)
+    {
+        return value;
+    }
 
-  interp_error(identifier._span, fmt::format("undefined identifier: {}", ident));
-  interp_hint(
-      identifier._span,
-      fmt::format("Maybe you forgot to declare it? For example: {} :: \"someshit\"", ident)
-  );
+    interp_error(
+        identifier._span,
+        fmt::format("undefined identifier: {}", ident));
+    interp_hint(
+        identifier._span,
+        fmt::format(
+            "Maybe you forgot to declare it? For example: {} :: \"someshit\"",
+            ident));
 
-  return nullptr;
+    return nullptr;
 }
 
 object::object_ptr interpreter::visit_unit(ast::unit& u)
 {
-  return std::make_shared<object::unit>(u._span);
+    return std::make_shared<object::unit>(u._span);
 }
 
 }

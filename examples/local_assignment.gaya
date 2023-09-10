@@ -1,13 +1,9 @@
 (* Output: 'before\nafter' *)
 
-(* TODO: Test after implementing compound expression. *)
-
-discard 
-  let a = "before" in
-  io.println(a)
-
-discard
-  let a = "after" in
-  io.println(a)
+discard do
+  discard let a = "before" in io.println(a)
+  (* TODO: Use unit here *)
+  let a = "after"  in io.println(a)
+done
     
 

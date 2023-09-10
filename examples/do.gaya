@@ -1,13 +1,18 @@
-(* Output: 'Hello, \nWorld!' *)
+(* Output: 'Hello, \nglobal\nWorld!\nglobal' *)
+
+x :: "global"
 
 f :: { =>
   do
     discard io.println("Hello, ")
     do 
-      io.println("World!")
+      discard io.println(x)
+      let x = "World!" in io.println(x)
     done
   done
 }
 
 discard f()
+
+discard io.println(x)
 
