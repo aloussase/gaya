@@ -103,6 +103,11 @@ object::object_ptr interpreter::visit_expression_stmt(ast::expression_stmt& expr
   return nullptr;
 }
 
+object::object_ptr interpreter::visit_do_expression(ast::do_expression& do_expr)
+{
+  return nullptr;
+}
+
 object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
   auto o = cexpr.target->accept(*this);

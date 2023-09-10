@@ -145,6 +145,7 @@ ast::expression_ptr parser::expression(token token)
   switch (token.type()) {
   case token_type::lcurly: return function_expression(token);
   case token_type::let: return let_expression(token);
+  case token_type::do_: return do_expression(token);
   default: return call_expression(token);
   }
 }
@@ -314,6 +315,52 @@ ast::expression_ptr parser::let_expression(token let)
       std::move(binding),
       std::move(expr)
   );
+}
+
+ast::expression_ptr parser::do_expression(token token)
+{
+  std::vector<ast::node_ptr> body;
+  bool parsed_final_expression = false;
+
+  for (;;) {
+    auto tk = _lexer.next_token();
+    if (!tk) {
+      parser_error(token.get_span(), "Expected 'done' after last expression in do block");
+      return nullptr;
+    }
+
+    if (match(tk, token_type::done)) {
+      _lexer.push_back(tk.value());
+      break;
+    }
+
+    // In do blocks, we expect either a discard statement or the last expression.
+    if (match(tk, token_type::discard)) {
+      auto e = expression_stmt(tk.value());
+      if (!e) return nullptr;
+      body.push_back(std::move(e));
+    } else {
+      auto e = expression(tk.value());
+      if (!e) return nullptr;
+      body.push_back(std::move(e));
+      parsed_final_expression = true;
+      break;
+    }
+  }
+
+  if (!parsed_final_expression) {
+    parser_error(token.get_span(), "do blocks must end with an expression");
+    parser_hint(token.get_span(), "Maybe remove a discard?");
+    return nullptr;
+  }
+
+  auto tk = _lexer.next_token();
+  if (!match(tk, token_type::done)) {
+    parser_error(token.get_span(), "Expected 'done' after last expression in do block");
+    return nullptr;
+  }
+
+  return std::make_unique<ast::do_expression>(token.get_span(), std::move(body));
 }
 
 ast::expression_ptr parser::primary_expression(token token)

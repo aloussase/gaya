@@ -42,6 +42,7 @@ public:
   object::object_ptr visit_program(ast::program&) override;
   object::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
   object::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
+  object::object_ptr visit_do_expression(ast::do_expression&) override;
   object::object_ptr visit_call_expression(ast::call_expression&) override;
   object::object_ptr visit_function_expression(ast::function_expression&) override;
   object::object_ptr visit_let_expression(ast::let_expression&) override;

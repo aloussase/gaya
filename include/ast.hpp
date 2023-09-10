@@ -80,6 +80,22 @@ struct expression : public ast_node {
   virtual ~expression() { }
 };
 
+struct do_expression final : public expression {
+  do_expression(span s, std::vector<node_ptr>&& b)
+      : span_ { s }
+      , body { std::move(b) }
+  {
+  }
+
+  std::string to_string() const noexcept override;
+  gaya::eval::object::object_ptr accept(ast_visitor&) override;
+
+  // All but the last node in a do block body must be stmts.
+  // The value of a do block is the value of its last expression.
+  span span_;
+  std::vector<node_ptr> body;
+};
+
 struct call_expression final : public expression {
   call_expression(span s, expression_ptr t, std::vector<expression_ptr>&& a)
       : span_ { s }
@@ -89,7 +105,6 @@ struct call_expression final : public expression {
   }
 
   std::string to_string() const noexcept override;
-
   gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
   span span_;

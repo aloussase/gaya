@@ -1,0 +1,13 @@
+(* Output: 'Hello, \nWorld!' *)
+
+f :: { =>
+  do
+    discard io.println("Hello, ")
+    do 
+      io.println("World!")
+    done
+  done
+}
+
+discard f()
+

@@ -58,6 +58,19 @@ gaya::eval::object::object_ptr expression_stmt::accept(ast_visitor& v)
   return v.visit_expression_stmt(*this);
 }
 
+std::string do_expression::to_string() const noexcept
+{
+  std::stringstream ss;
+  ss << R"("{type": "do_expression", "body": [)"
+     << join(body, [](auto& node) { return node->to_string(); }) << R"("]}")";
+  return ss.str();
+}
+
+gaya::eval::object::object_ptr do_expression::accept(ast_visitor& v)
+{
+  return v.visit_do_expression(*this);
+}
+
 std::string call_expression::to_string() const noexcept
 {
   std::stringstream ss;

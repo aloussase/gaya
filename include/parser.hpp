@@ -36,6 +36,7 @@ private:
   [[nodiscard]] ast::expression_ptr function_expression(token lcurly);
   [[nodiscard]] ast::expression_ptr let_expression(token let);
   [[nodiscard]] ast::expression_ptr call_expression(token token);
+  [[nodiscard]] ast::expression_ptr do_expression(token token);
   [[nodiscard]] ast::expression_ptr primary_expression(token);
 
   void parser_error(span, const std::string&);
