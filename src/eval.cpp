@@ -67,22 +67,14 @@ void interpreter::end_scope() noexcept
   _scopes.pop();
 }
 
-void interpreter::undefined_identifier(span s, const std::string& identifier) noexcept
+span interpreter::synthetize_span() const noexcept
 {
-  _diagnostics.emplace_back(
-      s, //
-      fmt::format("undefined identifier: {}", identifier),
-      diagnostic::severity::error
-  );
-
-  _diagnostics.emplace_back(
-      s, //
-      fmt::format(
-          "Maybe you forgot to declare it? For example: {} :: \"someshit\"", //
-          identifier
-      ),
-      diagnostic::severity::hint
-  );
+  static const char* synthetic_expression = "<synthetic_expression>";
+  return span {
+    0,
+    synthetic_expression,
+    synthetic_expression + strlen(synthetic_expression),
+  };
 }
 
 object::object_ptr interpreter::visit_program(ast::program& program)
@@ -201,7 +193,22 @@ object::object_ptr interpreter::visit_identifier(ast::identifier& identifier)
   if (auto value = current_env().get(ident); value) {
     return value;
   }
-  undefined_identifier(identifier._span, identifier.value);
+
+  _diagnostics.emplace_back(
+      identifier._span, //
+      fmt::format("undefined identifier: {}", ident),
+      diagnostic::severity::error
+  );
+
+  _diagnostics.emplace_back(
+      identifier._span, //
+      fmt::format(
+          "Maybe you forgot to declare it? For example: {} :: \"someshit\"", //
+          ident
+      ),
+      diagnostic::severity::hint
+  );
+
   return nullptr;
 }
 
