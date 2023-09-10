@@ -148,6 +148,12 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexp
       [&](auto& expr) { return expr->accept(*this); }
   );
 
+  for (const auto& expr : args) {
+    if (!expr) {
+      return nullptr;
+    }
+  }
+
   return callable->call(*this, args);
 }
 
@@ -157,7 +163,7 @@ object::object_ptr interpreter::visit_function_expression(ast::function_expressi
       fexpr._span, //
       fexpr.params,
       std::move(fexpr.body),
-      env { std::make_unique<env>(current_env()) }
+      env { std::make_shared<env>(current_env()) }
   );
 }
 

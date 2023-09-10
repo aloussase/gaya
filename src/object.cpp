@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 
 #include <fmt/core.h>
@@ -57,8 +58,10 @@ bool builtin_function::is_callable() const noexcept
 
 std::string number::to_string() const noexcept
 {
-  // NOTE: Maybe we do want full precision here.
-  return fmt::format("{:.2f}", value);
+  // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
+  double intval;
+  auto has_decimals = std::modf(value, &intval) != 0.0;
+  return has_decimals ? fmt::format("{:.2f}", value) : fmt::format("{:.0f}", value);
 }
 
 bool number::is_callable() const noexcept

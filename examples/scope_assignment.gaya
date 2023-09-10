@@ -1,0 +1,10 @@
+(* Output: 'global\nlocal\nglobal' *)
+
+a :: "global"
+discard io.println(a)
+
+discard
+  let a = "local" in
+  io.println(a)
+
+discard io.println(a)

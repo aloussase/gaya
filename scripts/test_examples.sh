@@ -19,6 +19,7 @@ echo -e 'Running tests\n'
 
 for example in examples/*; do
     expected_output=`cat "$example" | perl -n -e "/Output: '(.*)'/ && print \\$1"`
+    expected_output=`echo -e $expected_output` # Interpret line breaks.
     actual_output=`${GAYA_EXE} "$example"`
 
     if [ "$expected_output" = "$actual_output" ]; then
@@ -26,7 +27,9 @@ for example in examples/*; do
         echo -e "✅ \x1b[1m\x1b[32m$example : All good\x1b[m"
     else
         failures=$((failures + 1))
-        echo "❌ \x1b[1m\x1b[31m$example : $expected_output != $actual_output\x1b[m"
+        echo -e -n "❌ \x1b[1m\x1b[31m$example : "
+        echo -n "$expected_output != $actual_output"
+        echo -e "\x1b[m"
     fi
 done
 

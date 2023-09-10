@@ -1,0 +1,7 @@
+(* Output: 'f' *)
+
+f :: { => io.println("f") }
+
+g :: f
+
+discard g()
