@@ -6,6 +6,11 @@ lexer::lexer(const char* source)
     : _current { const_cast<char*>(source) }
     , _source { source }
 {
+  _keywords.insert({ "discard", token_type::discard });
+  _keywords.insert({ "let", token_type::let });
+  _keywords.insert({ "in", token_type::in });
+  _keywords.insert({ "do", token_type::do_ });
+  _keywords.insert({ "done", token_type::done });
 }
 
 std::optional<char> lexer::advance() noexcept
@@ -196,15 +201,12 @@ std::optional<token> lexer::identifier() noexcept
     }
   }
 
-  // FIXME: This could be faster if we stored keywords in a hash map.
-
-  if (strncmp(_start, "discard", _current - _start) == 0) {
-    return mk_token(token_type::discard);
-  } else if (strncmp(_start, "let", _current - _start) == 0) {
-    return mk_token(token_type::let);
-  } else if (strncmp(_start, "in", _current - _start) == 0) {
-    return mk_token(token_type::in);
+  if (auto* lexeme = strndup(_start, _current - _start); _keywords.contains(lexeme)) {
+    auto tt = _keywords[lexeme];
+    free(lexeme);
+    return mk_token(tt);
   } else {
+    free(lexeme);
     return mk_token(token_type::identifier);
   }
 }

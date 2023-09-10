@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <queue>
+#include <unordered_map>
 #include <vector>
 
 #include <diagnostic.hpp>
@@ -12,6 +13,8 @@ enum class token_type {
   colon_colon,
   comma,
   discard,
+  do_,
+  done,
   equal,
   identifier,
   in,
@@ -95,4 +98,5 @@ private:
   const char* _source       = nullptr;
   std::queue<token> _buffer = {};
   std::vector<diagnostic::diagnostic> _diagnostics;
+  std::unordered_map<std::string, token_type> _keywords;
 };
