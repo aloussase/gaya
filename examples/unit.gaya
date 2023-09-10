@@ -1,0 +1,3 @@
+(* Output: 'unit' *)
+
+discard io.println(unit)

@@ -6,7 +6,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 " Keywords
-syntax keyword gayaKeyword let discard in do done
+syntax keyword gayaKeyword let discard in do done unit
 highlight link gayaKeyword Keyword
 
 " Operators
@@ -24,7 +24,7 @@ highlight link gayaIdentifier Identifier
 syntax match gayaFunctionTarget /\v(.*)\(/ contained containedin=gayaFunction
 highlight link gayaFunctionTarget Function
 
-syntax region gayaFunction start=/\v[a-zA-Z0-9_.]+\(/ end=/)/ contains=ALL
+syntax region gayaFunction start=/\v[a-zA-Z0-9_.]+\(/ end=/)/ contains=ALL contains=gayaFunction
 highlight link gayaFunction Function
 
 syntax match gayaNumber /\v[0-9]+/
