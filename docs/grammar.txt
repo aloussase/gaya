@@ -10,23 +10,30 @@ declaration_stmt ::= IDENTIFIER '::' expression
 
 expression_stmt ::= 'discard' expression
 
-expression ::= call_expression
+expression ::= let_expression
              | function_expression
-             | let_expression
-             | primary_expression
-
-call_expression ::= IDENTIFIER '(' params_list ')'
+             | do_expression
+             | call_expression
 
 let_expression ::= 'let' IDENTIFIER '=' expression 'in' expression
 
-params_list ::= expression
-              | expression ',' params_list
-
-function_expression ::= '{' args_list '=>' expression '}'
+function_expression ::= '{' params_list '=>' expression '}'
             
-args_list ::= IDENTIFIER
-            | IDENTIFIER ',' args_list
+params_list ::= IDENTIFIER
+              | IDENTIFIER ',' params_list
+
+do_expression ::= 'do' discards_and_expression 'done'
+
+discards_and_expression ::= expression
+                          | expression_stmt discards_and_expression
+
+call_expression ::= primary_expression '(' params_list ')'
+                  | primary_expression
+
+args_list ::= expression
+            | expression ',' args_list
 
 primary_expression ::= NUMBER
                      | IDENTIFIER
                      | STRING
+                     | UNIT
