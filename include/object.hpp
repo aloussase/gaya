@@ -35,8 +35,8 @@ struct object {
 
 struct callable : public object {
   virtual ~callable() { }
-  virtual size_t arity() const noexcept                                        = 0;
-  virtual object_ptr call(interpreter&, std::vector<object_ptr> args) noexcept = 0;
+  virtual size_t arity() const noexcept                                              = 0;
+  virtual object_ptr call(interpreter&, span, std::vector<object_ptr> args) noexcept = 0;
 };
 
 struct function final : public callable {
@@ -45,7 +45,7 @@ struct function final : public callable {
   std::string to_string() const noexcept override;
   bool is_callable() const noexcept override;
   size_t arity() const noexcept override;
-  object_ptr call(interpreter&, std::vector<object_ptr> args) noexcept override;
+  object_ptr call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
 
   span _span;
   std::vector<ast::identifier> params;

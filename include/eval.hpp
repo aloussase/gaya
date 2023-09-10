@@ -36,9 +36,6 @@ public:
   /// End a previous scope.
   void end_scope() noexcept;
 
-  /// Make a span for synthetized values.
-  [[nodiscard]] span synthetize_span() const noexcept;
-
   object::object_ptr visit_program(ast::program&) override;
   object::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
   object::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
@@ -53,6 +50,9 @@ public:
 
 private:
   [[nodiscard]] env& current_env() noexcept;
+
+  void interp_error(span, const std::string& msg);
+  void interp_hint(span, const std::string& hint);
 
   const char* _source = nullptr;
   std::vector<diagnostic::diagnostic> _diagnostics;

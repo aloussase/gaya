@@ -42,6 +42,16 @@ void interpreter::clear_diagnostics() noexcept
   _diagnostics.clear();
 }
 
+void interpreter::interp_error(span s, const std::string& msg)
+{
+  _diagnostics.emplace_back(s, msg, diagnostic::severity::error);
+}
+
+void interpreter::interp_hint(span s, const std::string& hint)
+{
+  _diagnostics.emplace_back(s, hint, diagnostic::severity::hint);
+}
+
 const env& interpreter::get_env() const noexcept
 {
   return _scopes.top();
@@ -65,16 +75,6 @@ void interpreter::begin_scope(env new_scope) noexcept
 void interpreter::end_scope() noexcept
 {
   _scopes.pop();
-}
-
-span interpreter::synthetize_span() const noexcept
-{
-  static const char* synthetic_expression = "<synthetic_expression>";
-  return span {
-    0,
-    synthetic_expression,
-    synthetic_expression + strlen(synthetic_expression),
-  };
 }
 
 object::object_ptr interpreter::visit_program(ast::program& program)
@@ -114,30 +114,20 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexp
   if (!o) return nullptr;
 
   if (!o->is_callable()) {
-    _diagnostics.emplace_back(
-        cexpr.span_, //
-        "Tried to call non-callable",
-        diagnostic::severity::error
-    );
-
-    _diagnostics.emplace_back(
-        cexpr.span_, //
-        "To define a function, do f :: {{ <args> => <expr> }}",
-        diagnostic::severity::hint
-    );
+    interp_error(cexpr.span_, "Tried to call non-callable");
+    interp_hint(cexpr.span_, "To define a function, do f :: {{ <args> => <expr> }}");
     return nullptr;
   }
 
   auto callable = std::static_pointer_cast<object::callable>(o);
   if (callable->arity() != cexpr.args.size()) {
-    _diagnostics.emplace_back(
-        cexpr.span_, //
+    interp_error(
+        cexpr.span_,
         fmt::format(
             "Wrong number of arguments provided to callable, {} {} expected", //
             callable->arity(),
             callable->arity() == 1 ? "was" : "were"
-        ),
-        diagnostic::severity::error
+        )
     );
     return nullptr;
   }
@@ -156,7 +146,7 @@ object::object_ptr interpreter::visit_call_expression(ast::call_expression& cexp
     }
   }
 
-  return callable->call(*this, args);
+  return callable->call(*this, cexpr.span_, args);
 }
 
 object::object_ptr interpreter::visit_function_expression(ast::function_expression& fexpr)
@@ -177,9 +167,7 @@ object::object_ptr interpreter::visit_let_expression(ast::let_expression& let_ex
 
   begin_scope(env { std::make_shared<env>(current_env()) });
   define(ident, binding);
-
   auto result = let_expression.expr->accept(*this);
-
   end_scope();
 
   return result;
@@ -202,19 +190,10 @@ object::object_ptr interpreter::visit_identifier(ast::identifier& identifier)
     return value;
   }
 
-  _diagnostics.emplace_back(
-      identifier._span, //
-      fmt::format("undefined identifier: {}", ident),
-      diagnostic::severity::error
-  );
-
-  _diagnostics.emplace_back(
-      identifier._span, //
-      fmt::format(
-          "Maybe you forgot to declare it? For example: {} :: \"someshit\"", //
-          ident
-      ),
-      diagnostic::severity::hint
+  interp_error(identifier._span, fmt::format("undefined identifier: {}", ident));
+  interp_hint(
+      identifier._span,
+      fmt::format("Maybe you forgot to declare it? For example: {} :: \"someshit\"", ident)
   );
 
   return nullptr;

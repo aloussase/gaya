@@ -11,7 +11,7 @@ struct println final : public builtin_function {
   }
 
   size_t arity() const noexcept override;
-  object_ptr call(interpreter&, std::vector<object_ptr> args) noexcept override;
+  object_ptr call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
 };
 
 }

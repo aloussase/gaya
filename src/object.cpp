@@ -33,7 +33,7 @@ size_t function::arity() const noexcept
   return _arity;
 }
 
-object_ptr function::call(interpreter& interp, std::vector<object_ptr> args) noexcept
+object_ptr function::call(interpreter& interp, span, std::vector<object_ptr> args) noexcept
 {
   interp.begin_scope(closed_over_env);
   for (size_t i = 0; i < args.size(); i++) {
