@@ -211,27 +211,32 @@ ast::expression_ptr parser::function_expression(token lcurly)
         return nullptr;
     }
 
-    if (match(token, token_type::rcurly))
-    {
-        return std::make_unique<ast::unit>(token->get_span());
-    }
+    auto expr = ([&]() -> ast::expression_ptr {
+        if (match(token, token_type::rcurly))
+        {
+            return std::make_unique<ast::unit>(token->get_span());
+        }
+        else
+        {
+            auto expr = expression(token.value());
+            if (auto rcurly = _lexer.next_token();
+                !match(rcurly, token_type::rcurly))
+            {
+                parser_error(
+                    lcurly.get_span(),
+                    "Expected a '}' after function body");
+                return nullptr;
+            }
+            return expr;
+        }
+    })();
 
-    auto expr = expression(token.value());
     if (!expr) return nullptr;
 
-    auto ret = std::make_unique<ast::function_expression>(
+    return std::make_unique<ast::function_expression>(
         lcurly.get_span(),
         std::move(params),
         std::move(expr));
-
-    auto rcurly = _lexer.next_token();
-    if (!match(rcurly, token_type::rcurly))
-    {
-        parser_error(lcurly.get_span(), "Expected a '}' after function body");
-        return nullptr;
-    }
-
-    return ret;
 }
 
 ast::expression_ptr parser::call_expression(token tk)
@@ -423,6 +428,7 @@ ast::expression_ptr parser::primary_expression(token token)
         return std::make_unique<ast::identifier>(
             token.get_span(),
             token.get_span().to_string());
+    case token_type::unit: return std::make_unique<ast::unit>(token.get_span());
     default:
         parser_error(token.get_span(), "Invalid start of primary expression");
         return nullptr;
