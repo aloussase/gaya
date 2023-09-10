@@ -4,19 +4,19 @@
 #include <eval.hpp>
 #include <object.hpp>
 
-namespace gaya::eval::object::builtin::io {
+namespace gaya::eval::object::builtin::io
+{
 
 size_t println::arity() const noexcept
 {
-  return 1;
+    return 1;
 }
 
-object_ptr println::call(interpreter&, span span, std::vector<object_ptr> args) noexcept
+object_ptr
+println::call(interpreter&, span span, std::vector<object_ptr> args) noexcept
 {
-  for (const auto& arg : args) {
-    fmt::println("{}", arg->to_string());
-  }
-  return std::make_shared<unit>(span);
+    fmt::println("{}", args.front()->to_string());
+    return std::make_shared<unit>(span);
 }
 
 }

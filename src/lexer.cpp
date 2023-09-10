@@ -100,6 +100,7 @@ std::optional<token> lexer::next_token() noexcept
     case ',': return mk_token(token_type::comma);
     case ':': return colon_colon();
     case '=': return arrow();
+    case '0':
     case '1':
     case '2':
     case '3':
