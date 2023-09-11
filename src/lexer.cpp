@@ -180,10 +180,19 @@ std::optional<token> lexer::comment() noexcept
 
 std::optional<token> lexer::less_than() noexcept
 {
-    if (auto c = peek(); c && c.value() == '=')
+    if (auto c = peek(); c)
     {
-        advance();
-        return mk_token(token_type::less_than_eq);
+        if (c.value() == '=')
+        {
+            advance();
+            return mk_token(token_type::less_than_eq);
+        }
+
+        if (c.value() == '-')
+        {
+            advance();
+            return mk_token(token_type::back_arrow);
+        }
     }
 
     return mk_token(token_type::less_than);

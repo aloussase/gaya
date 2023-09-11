@@ -65,7 +65,6 @@ struct declaration_stmt final : public stmt
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
     std::unique_ptr<identifier> _identifier;
@@ -80,9 +79,23 @@ struct expression_stmt final : public stmt
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
+    expression_ptr expr;
+};
+
+struct assignment_stmt final : public stmt
+{
+    assignment_stmt(std::unique_ptr<identifier> i, expression_ptr e)
+        : ident { std::move(i) }
+        , expr { std::move(e) }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+
+    std::unique_ptr<identifier> ident;
     expression_ptr expr;
 };
 

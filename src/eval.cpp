@@ -116,6 +116,24 @@ interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
     return nullptr;
 }
 
+object::object_ptr
+interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
+{
+    auto new_val = assignment.expr->accept(*this);
+    if (!new_val) return nullptr;
+
+    auto ident = assignment.ident->value;
+
+    if (!current_env().update_at(ident, new_val))
+    {
+        interp_error(
+            assignment.ident->_span,
+            fmt::format("{} was not previously declared", ident));
+    }
+
+    return nullptr;
+}
+
 object::object_ptr interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
     begin_scope(env { std::make_shared<env>(current_env()) });

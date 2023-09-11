@@ -1,10 +1,10 @@
 program ::= stmts | e
 
-stmts ::= stmt
-        | stmt stmts
+stmts ::= toplevel_stmt
+        | toplevel_stmt stmts
 
-stmt ::= declaration_stmt
-       | expression_stmt
+toplevel_stmt ::= declaration_stmt 
+                | expression_stmt
 
 declaration_stmt ::= IDENTIFIER '::' expression
 
@@ -24,10 +24,15 @@ function_expression ::= '{' params_list '=>' expression '}'
 params_list ::= IDENTIFIER
               | IDENTIFIER ',' params_list
 
-do_expression ::= 'do' discards_and_expression 'done'
+do_expression ::= 'do' local_stmts 'done'
 
-discards_and_expression ::= expression
-                          | expression_stmt discards_and_expression
+local_stmts ::= expression
+              | local_stmt local_stmts
+
+local_stmt ::= expression_stmt 
+             | assignment_stmt
+
+assignment_stmt ::= IDENTIFIER '<-' expression
 
 case_expression ::= 'case' case_branches 'end'
                   | 'case' case_branches case_otherwise 'end'

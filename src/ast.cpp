@@ -65,6 +65,19 @@ gaya::eval::object::object_ptr expression_stmt::accept(ast_visitor& v)
     return v.visit_expression_stmt(*this);
 }
 
+std::string assignment_stmt::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "assignment_stmt", "identifier":)" << ident->to_string()
+       << R"(, "expression": )" << expr->to_string() << "}";
+    return ss.str();
+}
+
+gaya::eval::object::object_ptr assignment_stmt::accept(ast_visitor& v)
+{
+    return v.visit_assignment_stmt(*this);
+}
+
 std::string do_expression::to_string() const noexcept
 {
     std::stringstream ss;

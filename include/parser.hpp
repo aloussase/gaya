@@ -33,6 +33,12 @@ class parser
   private:
     std::vector<ast::stmt_ptr> stmts() noexcept;
 
+    [[nodiscard]] ast::stmt_ptr toplevel_stmt() noexcept;
+
+    [[nodiscard]] ast::stmt_ptr local_stmt(token token) noexcept;
+
+    [[nodiscard]] ast::stmt_ptr assignment_stmt(token identifier) noexcept;
+
     [[nodiscard]] ast::stmt_ptr declaration_stmt(token identifier);
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
     [[nodiscard]] ast::expression_ptr expression(token);

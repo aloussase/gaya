@@ -74,13 +74,18 @@ ast::expression_ptr parser::parse_expression() noexcept
     return nullptr;
 }
 
+ast::stmt_ptr parser::parse_stmt() noexcept
+{
+    return toplevel_stmt();
+}
+
 std::vector<ast::stmt_ptr> parser::stmts() noexcept
 {
     std::vector<ast::stmt_ptr> _stmts;
 
     for (;;)
     {
-        if (auto stmt = parse_stmt(); stmt)
+        if (auto stmt = toplevel_stmt(); stmt)
         {
             _stmts.push_back(std::move(stmt));
         }
@@ -93,7 +98,7 @@ std::vector<ast::stmt_ptr> parser::stmts() noexcept
     return _stmts;
 }
 
-ast::stmt_ptr parser::parse_stmt() noexcept
+ast::stmt_ptr parser::toplevel_stmt() noexcept
 {
     auto token = _lexer.next_token();
     if (!token) return nullptr;
@@ -103,12 +108,56 @@ ast::stmt_ptr parser::parse_stmt() noexcept
     case token_type::identifier: return declaration_stmt(token.value());
     case token_type::discard: return expression_stmt(token.value());
     default:
-        parser_error(token->get_span(), "Invalid start of statement");
+        parser_error(token->get_span(), "Invalid start of top-level statement");
         parser_hint(
             token->get_span(),
             "Only definitions and discard are valid top-level statements");
         return nullptr;
     }
+}
+
+ast::stmt_ptr parser::local_stmt(token token) noexcept
+{
+    switch (token.type())
+    {
+    case token_type::discard: return expression_stmt(token);
+    case token_type::identifier: return assignment_stmt(token);
+    default:
+        parser_error(token.get_span(), "Invalid start of local stmt");
+        return nullptr;
+    }
+}
+
+ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
+{
+    if (auto back_arrow = _lexer.next_token();
+        !match(back_arrow, token_type::back_arrow))
+    {
+        parser_error(
+            identifier.get_span(),
+            "Expected '<-' after identifier in assignment");
+        return nullptr;
+    }
+
+    auto token = _lexer.next_token();
+    if (!token)
+    {
+        parser_error(
+            identifier.get_span(),
+            "Expected expression after '<-' in assignment");
+        return nullptr;
+    }
+
+    auto expr = expression(token.value());
+    if (!expr) return nullptr;
+
+    auto ident = std::make_unique<ast::identifier>(
+        identifier.get_span(),
+        identifier.get_span().to_string());
+
+    return std::make_unique<ast::assignment_stmt>(
+        std::move(ident),
+        std::move(expr));
 }
 
 ast::stmt_ptr parser::declaration_stmt(token identifier)
@@ -509,6 +558,22 @@ ast::expression_ptr parser::do_expression(token token)
     std::vector<ast::node_ptr> body;
     bool parsed_final_expression = false;
 
+    auto is_local_stmt = ([&](auto token) {
+        if (token.type() == token_type::discard) return true;
+        if (token.type() != token_type::identifier) return false;
+
+        auto lookahead = _lexer.next_token();
+        auto ret       = false;
+
+        if (match(lookahead, token_type::back_arrow))
+        {
+            ret = true;
+        }
+
+        _lexer.push_back(lookahead.value());
+        return ret;
+    });
+
     for (;;)
     {
         auto tk = _lexer.next_token();
@@ -520,21 +585,19 @@ ast::expression_ptr parser::do_expression(token token)
             break;
         }
 
-        // In do blocks, we expect either a discard statement or the last
-        // expression.
-        if (match(tk, token_type::discard))
+        if (is_local_stmt(tk.value()))
         {
-            auto e = expression_stmt(tk.value());
-            if (!e) return nullptr;
+            auto stmt = local_stmt(tk.value());
+            if (!stmt) return nullptr;
 
-            body.push_back(std::move(e));
+            body.push_back(std::move(stmt));
         }
         else
         {
-            auto e = expression(tk.value());
-            if (!e) return nullptr;
+            auto expr = expression(tk.value());
+            if (!expr) return nullptr;
 
-            body.push_back(std::move(e));
+            body.push_back(std::move(expr));
             parsed_final_expression = true;
             break;
         }

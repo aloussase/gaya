@@ -11,6 +11,8 @@
 namespace gaya::eval
 {
 
+namespace o = object;
+
 class interpreter final : public ast::ast_visitor
 {
   public:
@@ -45,21 +47,20 @@ class interpreter final : public ast::ast_visitor
     /// Add an interpreter hint.
     void interp_hint(span, const std::string& hint);
 
-    object::object_ptr visit_program(ast::program&) override;
-    object::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
-    object::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
-    object::object_ptr visit_do_expression(ast::do_expression&) override;
-    object::object_ptr visit_case_expression(ast::case_expression&) override;
-    object::object_ptr
-    visit_binary_expression(ast::binary_expression&) override;
-    object::object_ptr visit_call_expression(ast::call_expression&) override;
-    object::object_ptr
-    visit_function_expression(ast::function_expression&) override;
-    object::object_ptr visit_let_expression(ast::let_expression&) override;
-    object::object_ptr visit_number(ast::number&) override;
-    object::object_ptr visit_string(ast::string&) override;
-    object::object_ptr visit_identifier(ast::identifier&) override;
-    object::object_ptr visit_unit(ast::unit&) override;
+    o::object_ptr visit_program(ast::program&) override;
+    o::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
+    o::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
+    o::object_ptr visit_assignment_stmt(ast::assignment_stmt&) override;
+    o::object_ptr visit_do_expression(ast::do_expression&) override;
+    o::object_ptr visit_case_expression(ast::case_expression&) override;
+    o::object_ptr visit_binary_expression(ast::binary_expression&) override;
+    o::object_ptr visit_call_expression(ast::call_expression&) override;
+    o::object_ptr visit_function_expression(ast::function_expression&) override;
+    o::object_ptr visit_let_expression(ast::let_expression&) override;
+    o::object_ptr visit_number(ast::number&) override;
+    o::object_ptr visit_string(ast::string&) override;
+    o::object_ptr visit_identifier(ast::identifier&) override;
+    o::object_ptr visit_unit(ast::unit&) override;
 
   private:
     [[nodiscard]] env& current_env() noexcept;

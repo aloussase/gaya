@@ -1,0 +1,20 @@
+(* Output: '0\n1' *)
+
+(* mkCounter
+  @return A function that, when called, returns increasing
+          numbers, starting from 0
+*)
+mkCounter :: { =>
+  let count = 0 in { => 
+    let previous = count in do
+      count <- math.add(count, 1)
+      previous
+    done
+  }
+}
+
+counter :: mkCounter()
+
+discard io.println(counter())
+
+discard io.println(counter())

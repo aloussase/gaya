@@ -1,0 +1,10 @@
+(* Expect error *)
+
+test :: { x =>
+  do
+    x <- 42
+    io.println(x)
+  done
+}
+
+discard test(69)
