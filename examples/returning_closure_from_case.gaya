@@ -1,0 +1,13 @@
+(* Output: '<function-0>\n69' *)
+
+f :: { x =>
+  cases
+    otherwise =>
+      let y = 42 in
+      { => math.add(x, y) }
+  end
+}
+
+discard io.println(f(""))
+
+discard io.println(f(27)())

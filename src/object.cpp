@@ -15,15 +15,20 @@ std::string callable::typeof_() const noexcept
     return "callable";
 }
 
+bool callable::is_truthy() const noexcept
+{
+    return true;
+}
+
 function::function(
     span s,
     std::vector<ast::identifier> p,
-    ast::expression_ptr b,
+    std::shared_ptr<ast::expression> b,
     eval::env e)
     : _span { s }
     , params { std::move(p) }
     , _arity { params.size() }
-    , body { std::move(b) }
+    , body { b }
     , closed_over_env { std::move(e) }
 {
 }
@@ -46,7 +51,7 @@ size_t function::arity() const noexcept
 object_ptr
 function::call(interpreter& interp, span, std::vector<object_ptr> args) noexcept
 {
-    interp.begin_scope(closed_over_env);
+    interp.begin_scope(env { std::make_shared<env>(closed_over_env) });
     for (size_t i = 0; i < args.size(); i++)
     {
         auto param_name = params[i];
@@ -87,6 +92,11 @@ std::string number::typeof_() const noexcept
     return "number";
 }
 
+bool number::is_truthy() const noexcept
+{
+    return value != 0.0;
+}
+
 std::string string::to_string() const noexcept
 {
     return value;
@@ -102,6 +112,11 @@ std::string string::typeof_() const noexcept
     return "string";
 }
 
+bool string::is_truthy() const noexcept
+{
+    return !value.empty();
+}
+
 std::string unit::to_string() const noexcept
 {
     return "unit";
@@ -115,6 +130,11 @@ bool unit::is_callable() const noexcept
 std::string unit::typeof_() const noexcept
 {
     return "unit";
+}
+
+bool unit::is_truthy() const noexcept
+{
+    return false;
 }
 
 }

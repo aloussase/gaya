@@ -31,6 +31,7 @@ struct object
     virtual std::string to_string() const noexcept = 0;
     virtual bool is_callable() const noexcept      = 0;
     virtual std::string typeof_() const noexcept   = 0;
+    virtual bool is_truthy() const noexcept        = 0;
 };
 
 struct callable : public object
@@ -42,6 +43,7 @@ struct callable : public object
         = 0;
 
     std::string typeof_() const noexcept override;
+    bool is_truthy() const noexcept override;
 };
 
 struct function final : public callable
@@ -49,7 +51,7 @@ struct function final : public callable
     function(
         span s,
         std::vector<ast::identifier> p,
-        ast::expression_ptr b,
+        std::shared_ptr<ast::expression> b,
         env);
 
     std::string to_string() const noexcept override;
@@ -61,7 +63,7 @@ struct function final : public callable
     span _span;
     std::vector<ast::identifier> params;
     size_t _arity;
-    ast::expression_ptr body;
+    std::shared_ptr<ast::expression> body;
     env closed_over_env;
 };
 
@@ -91,6 +93,7 @@ struct number final : public object
     std::string to_string() const noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
+    bool is_truthy() const noexcept override;
 
     span _span;
     double value;
@@ -107,6 +110,7 @@ struct string final : public object
     std::string to_string() const noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
+    bool is_truthy() const noexcept override;
 
     span _span;
     std::string value;
@@ -122,6 +126,7 @@ struct unit final : public object
     std::string to_string() const noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
+    bool is_truthy() const noexcept override;
 
     span _span;
 };

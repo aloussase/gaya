@@ -164,6 +164,7 @@ ast::expression_ptr parser::expression(token token)
     case token_type::lcurly: return function_expression(token);
     case token_type::let: return let_expression(token);
     case token_type::do_: return do_expression(token);
+    case token_type::cases: return case_expression(token);
     default: return call_expression(token);
     }
 }
@@ -354,6 +355,97 @@ ast::expression_ptr parser::let_expression(token let)
         std::move(identifier),
         std::move(binding),
         std::move(expr));
+}
+
+ast::expression_ptr parser::case_expression(token cases)
+{
+    std::vector<ast::case_branch> branches;
+
+    for (;;)
+    {
+        auto token = _lexer.next_token();
+        if (!token) break;
+
+        if (!match(token, token_type::given))
+        {
+            _lexer.push_back(token.value());
+            break;
+        }
+
+        token = _lexer.next_token();
+        if (!token) return nullptr;
+
+        auto condition = expression(token.value());
+        if (!condition) return nullptr;
+
+        token = _lexer.next_token();
+        if (!match(token, token_type::arrow))
+        {
+            parser_error(
+                cases.get_span(),
+                "Expected a '=>' after condition in case");
+            return nullptr;
+        }
+
+        token = _lexer.next_token();
+        if (!token)
+        {
+            parser_error(
+                cases.get_span(),
+                "Expected an expression after condition in case");
+            return nullptr;
+        }
+
+        auto body = expression(token.value());
+
+        branches.push_back(ast::case_branch {
+            std::move(condition),
+            std::move(body),
+        });
+    }
+
+    auto token = _lexer.next_token();
+    if (!token) return nullptr;
+
+    ast::expression_ptr otherwise = nullptr;
+
+    if (match(token, token_type::otherwise))
+    {
+        token = _lexer.next_token();
+        if (!match(token, token_type::arrow))
+        {
+            parser_error(cases.get_span(), "Expected '=>' after otherwise");
+            return nullptr;
+        }
+
+        token = _lexer.next_token();
+        if (!token)
+        {
+            parser_error(
+                cases.get_span(),
+                "Expected and expression after otherwise");
+            return nullptr;
+        }
+
+        otherwise = expression(token.value());
+        if (!otherwise) return nullptr;
+    }
+    else
+    {
+        _lexer.push_back(token.value());
+    }
+
+    token = _lexer.next_token();
+    if (!match(token, token_type::end))
+    {
+        parser_error(cases.get_span(), "Expected 'end' after case");
+        return nullptr;
+    }
+
+    return std::make_unique<ast::case_expression>(
+        cases.get_span(),
+        std::move(branches),
+        std::move(otherwise));
 }
 
 ast::expression_ptr parser::do_expression(token token)

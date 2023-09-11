@@ -129,6 +129,34 @@ object::object_ptr interpreter::visit_do_expression(ast::do_expression& do_expr)
 }
 
 object::object_ptr
+interpreter::visit_case_expression(ast::case_expression& cases)
+{
+    for (const auto& branch : cases.branches)
+    {
+        auto condition = branch.condition->accept(*this);
+        if (!condition) return nullptr;
+
+        if (condition->is_truthy())
+        {
+            auto result = branch.body->accept(*this);
+            if (!result) return nullptr;
+
+            return result;
+        }
+    }
+
+    if (cases.otherwise)
+    {
+        auto result = cases.otherwise->accept(*this);
+        if (!result) return nullptr;
+
+        return result;
+    }
+
+    return std::make_shared<object::unit>(cases.span_);
+}
+
+object::object_ptr
 interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
     auto o = cexpr.target->accept(*this);
@@ -150,25 +178,19 @@ interpreter::visit_call_expression(ast::call_expression& cexpr)
             cexpr.span_,
             fmt::format(
                 "Wrong number of arguments provided to callable, {} {} "
-                "expected", //
+                "expected",
                 callable->arity(),
                 callable->arity() == 1 ? "was" : "were"));
         return nullptr;
     }
 
-    std::vector<object::object_ptr> args(cexpr.args.size());
-    std::transform(
-        cexpr.args.begin(), //
-        cexpr.args.end(),
-        args.begin(),
-        [&](auto& expr) { return expr->accept(*this); });
-
-    for (const auto& expr : args)
+    std::vector<object::object_ptr> args;
+    for (auto& arg : cexpr.args)
     {
-        if (!expr)
-        {
-            return nullptr;
-        }
+        auto result = arg->accept(*this);
+        if (!result) return nullptr;
+
+        args.push_back(std::move(result));
     }
 
     return callable->call(*this, cexpr.span_, args);
@@ -177,10 +199,10 @@ interpreter::visit_call_expression(ast::call_expression& cexpr)
 object::object_ptr
 interpreter::visit_function_expression(ast::function_expression& fexpr)
 {
-    return std::make_unique<object::function>(
-        fexpr._span, //
+    return std::make_shared<object::function>(
+        fexpr._span,
         fexpr.params,
-        std::move(fexpr.body),
+        fexpr.body,
         env { std::make_shared<env>(current_env()) });
 }
 

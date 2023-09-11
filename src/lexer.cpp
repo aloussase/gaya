@@ -12,6 +12,10 @@ lexer::lexer(const char* source)
     _keywords.insert({ "do", token_type::do_ });
     _keywords.insert({ "done", token_type::done });
     _keywords.insert({ "unit", token_type::unit });
+    _keywords.insert({ "cases", token_type::cases });
+    _keywords.insert({ "given", token_type::given });
+    _keywords.insert({ "otherwise", token_type::otherwise });
+    _keywords.insert({ "end", token_type::end });
 }
 
 std::optional<char> lexer::advance() noexcept

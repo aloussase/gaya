@@ -1,0 +1,20 @@
+(* Output: 'Truthy\n42\nFalsey\n' *)
+
+f :: { x =>
+  cases
+    given x =>
+      do
+        discard io.println("Truthy")
+        io.println(x)
+      done
+    otherwise =>
+      do
+        discard io.println("Falsey")
+        io.println(x)
+      done
+    end
+}
+
+discard f(42)
+
+discard f("")

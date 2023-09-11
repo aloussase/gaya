@@ -1,0 +1,12 @@
+(* Output: '42\nThat was false' *)
+
+f :: { arg =>
+  cases
+    given arg => io.println(arg)
+    otherwise => io.println("That was false")
+  end
+}
+
+discard f(42)
+
+discard f(unit)

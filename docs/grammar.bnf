@@ -13,6 +13,7 @@ expression_stmt ::= 'discard' expression
 expression ::= let_expression
              | function_expression
              | do_expression
+             | case_expression
              | call_expression
 
 let_expression ::= 'let' IDENTIFIER '=' expression 'in' expression
@@ -26,6 +27,16 @@ do_expression ::= 'do' discards_and_expression 'done'
 
 discards_and_expression ::= expression
                           | expression_stmt discards_and_expression
+
+case_expression ::= 'case' case_branches 'end'
+                  | 'case' case_branches case_otherwise 'end'
+
+case_branches ::= case_branch
+                | case_branch case_branches
+
+case_branch ::= 'given' expression '=>' expression
+
+case_otherwise ::= 'otherwise' '=>' expression 
 
 call_expression ::= primary_expression '(' params_list ')'
                   | primary_expression

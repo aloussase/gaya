@@ -1,0 +1,10 @@
+(* Output: 'Ahooy!\nAhooy!' *)
+
+f :: { =>
+  do
+    io.println("Ahooy!")
+  done
+}
+
+discard f()
+discard f()

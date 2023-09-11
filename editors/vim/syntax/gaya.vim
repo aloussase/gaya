@@ -6,7 +6,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 " Keywords
-syntax keyword gayaKeyword let discard in do done unit
+syntax keyword gayaKeyword let discard in do done unit cases end given otherwise
 highlight link gayaKeyword Keyword
 
 " Operators

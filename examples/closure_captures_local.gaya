@@ -1,4 +1,4 @@
-(* Output: '42\n69' *)
+(* Output: '42\n42\n69' *)
 
 x :: 69
 
@@ -8,7 +8,10 @@ f :: { =>
 }
 
 g :: f()
+h :: f()
 
 discard g()
+
+discard h()
 
 discard io.println(x)

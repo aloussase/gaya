@@ -1,0 +1,21 @@
+(* Output: '69\n42\n69\nunit' *)
+
+x :: 69
+
+f :: { x =>
+  cases
+    given x =>
+      let x = 42 in
+      io.println(x)
+    otherwise => 
+      io.println(x)
+  end
+}
+
+discard io.println(x)
+
+discard f(1)
+
+discard io.println(x)
+
+discard f(unit)
