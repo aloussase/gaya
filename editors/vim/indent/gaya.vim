@@ -11,6 +11,7 @@ endif
 setlocal autoindent
 setlocal smartindent
 
+setlocal indentkeys=0{,0},0],!^F,o,O,=end,=done
 setlocal indentexpr=GayaIndent(v:lnum)
 
 function! GayaIndent(lnum)
@@ -28,7 +29,7 @@ function! GayaIndent(lnum)
         return indent(previous_linum) + 2
     endif
 
-    if current_line =~ "end" || previous_line =~ '^\s*otherwise'
+    if current_line =~ "end\s*$" || current_line =~ "done\s*$" || previous_line =~ '^\s*otherwise'
         return indent(previous_linum) - 2
     endif
 
