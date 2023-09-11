@@ -10,12 +10,27 @@
 namespace gaya::eval::object
 {
 
+bool callable::is_callable() const noexcept
+{
+    return true;
+}
+
+bool callable::is_comparable() const noexcept
+{
+    return false;
+}
+
 std::string callable::typeof_() const noexcept
 {
     return "callable";
 }
 
 bool callable::is_truthy() const noexcept
+{
+    return true;
+}
+
+bool comparable::is_comparable() const noexcept
 {
     return true;
 }
@@ -36,11 +51,6 @@ function::function(
 std::string function::to_string() const noexcept
 {
     return fmt::format("<function-{}>", _arity);
-}
-
-bool function::is_callable() const noexcept
-{
-    return true;
 }
 
 size_t function::arity() const noexcept
@@ -68,11 +78,6 @@ std::string builtin_function::to_string() const noexcept
     return fmt::format("<builtin-function: {}>", name);
 }
 
-bool builtin_function::is_callable() const noexcept
-{
-    return true;
-}
-
 std::string number::to_string() const noexcept
 {
     // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
@@ -97,6 +102,13 @@ bool number::is_truthy() const noexcept
     return value != 0.0;
 }
 
+std::optional<int> number::cmp(object_ptr other) const noexcept
+{
+    if (other->typeof_() != typeof_()) return std::nullopt;
+    auto other_value = std::static_pointer_cast<number>(other)->value;
+    return (value < other_value) ? -1 : ((value == other_value) ? 0 : 1);
+}
+
 std::string string::to_string() const noexcept
 {
     return value;
@@ -117,6 +129,13 @@ bool string::is_truthy() const noexcept
     return !value.empty();
 }
 
+std::optional<int> string::cmp(object_ptr other) const noexcept
+{
+    if (other->typeof_() != typeof_()) return std::nullopt;
+    auto cmp = value <=> std::static_pointer_cast<string>(other)->value;
+    return (cmp < 0) ? -1 : ((cmp == 0) ? 0 : 1);
+}
+
 std::string unit::to_string() const noexcept
 {
     return "unit";
@@ -135,6 +154,12 @@ std::string unit::typeof_() const noexcept
 bool unit::is_truthy() const noexcept
 {
     return false;
+}
+
+std::optional<int> unit::cmp(object_ptr other) const noexcept
+{
+    if (other->typeof_() != typeof_()) return std::nullopt;
+    return 0;
 }
 
 }

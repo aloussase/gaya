@@ -1,0 +1,6 @@
+max :: { x, y =>
+  cases
+    given x > y => x
+    otherwise   => y
+  end
+}

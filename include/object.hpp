@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <env.hpp>
@@ -22,8 +23,9 @@ namespace gaya::eval::object
 {
 
 struct object;
-
 using object_ptr = std::shared_ptr<object>;
+
+/* Interfaces */
 
 struct object
 {
@@ -32,6 +34,7 @@ struct object
     virtual bool is_callable() const noexcept      = 0;
     virtual std::string typeof_() const noexcept   = 0;
     virtual bool is_truthy() const noexcept        = 0;
+    virtual bool is_comparable() const noexcept    = 0;
 };
 
 struct callable : public object
@@ -42,9 +45,19 @@ struct callable : public object
     call(interpreter&, span, std::vector<object_ptr>) noexcept
         = 0;
 
+    bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
+    bool is_comparable() const noexcept override;
 };
+
+struct comparable : public object
+{
+    virtual std::optional<int> cmp(object_ptr other) const noexcept = 0;
+    bool is_comparable() const noexcept override;
+};
+
+/* Gaya objects */
 
 struct function final : public callable
 {
@@ -55,7 +68,6 @@ struct function final : public callable
         env);
 
     std::string to_string() const noexcept override;
-    bool is_callable() const noexcept override;
     size_t arity() const noexcept override;
     object_ptr
     call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
@@ -77,12 +89,11 @@ struct builtin_function : public callable
     virtual ~builtin_function() { }
 
     std::string to_string() const noexcept override;
-    bool is_callable() const noexcept override;
 
     std::string name;
 };
 
-struct number final : public object
+struct number final : public comparable
 {
     number(span s, double v)
         : _span { s }
@@ -94,12 +105,13 @@ struct number final : public object
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
+    std::optional<int> cmp(object_ptr other) const noexcept override;
 
     span _span;
     double value;
 };
 
-struct string final : public object
+struct string final : public comparable
 {
     string(span s, const std::string& v)
         : _span { s }
@@ -111,12 +123,13 @@ struct string final : public object
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
+    std::optional<int> cmp(object_ptr other) const noexcept override;
 
     span _span;
     std::string value;
 };
 
-struct unit final : public object
+struct unit final : public comparable
 {
     unit(span s)
         : _span { s }
@@ -127,6 +140,7 @@ struct unit final : public object
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
+    std::optional<int> cmp(object_ptr other) const noexcept override;
 
     span _span;
 };
