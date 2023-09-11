@@ -44,7 +44,7 @@ class parser
     [[nodiscard]] ast::expression_ptr expression(token);
     [[nodiscard]] ast::expression_ptr function_expression(token lcurly);
     [[nodiscard]] ast::expression_ptr let_expression(token let);
-    [[nodiscard]] ast::expression_ptr case_expression(token case_);
+    [[nodiscard]] ast::expression_ptr case_expression(token cases);
     [[nodiscard]] ast::expression_ptr
     comparison_expression(token token) noexcept;
     [[nodiscard]] ast::expression_ptr call_expression(token token);

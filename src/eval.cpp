@@ -61,6 +61,11 @@ void interpreter::interp_hint(span s, const std::string& hint)
     _diagnostics.emplace_back(s, hint, diagnostic::severity::hint);
 }
 
+bool interpreter::had_error() const noexcept
+{
+    return !_diagnostics.empty();
+}
+
 const env& interpreter::get_env() const noexcept
 {
     return _scopes.top();
@@ -71,7 +76,7 @@ env& interpreter::current_env() noexcept
     return _scopes.top();
 }
 
-void interpreter::define(const std::string& k, object::object_ptr v) noexcept
+void interpreter::define(const key& k, object::object_ptr v) noexcept
 {
     current_env().set(k, v);
 }
@@ -91,6 +96,7 @@ object::object_ptr interpreter::visit_program(ast::program& program)
     for (const auto& stmt : program.stmts)
     {
         stmt->accept(*this);
+        if (had_error()) return nullptr;
     }
     return nullptr;
 }
@@ -98,12 +104,12 @@ object::object_ptr interpreter::visit_program(ast::program& program)
 object::object_ptr
 interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
 {
-    auto ident = declaration_stmt._identifier->value;
-    auto value = declaration_stmt.expression->accept(*this);
+    auto ident = declaration_stmt.ident->value;
+    auto value = declaration_stmt.expr->accept(*this);
 
     if (value)
     {
-        define(ident, std::shared_ptr { std::move(value) });
+        define(key::global(ident), std::shared_ptr { std::move(value) });
     }
 
     return nullptr;
@@ -124,6 +130,17 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 
     auto ident = assignment.ident->value;
 
+    if (!current_env().can_assign_to(ident))
+    {
+        interp_error(
+            assignment.ident->_span,
+            "Can only assign to local variables");
+        interp_hint(
+            assignment.ident->_span,
+            fmt::format("for example: let {} = ...", ident));
+        return nullptr;
+    }
+
     if (!current_env().update_at(ident, new_val))
     {
         interp_error(
@@ -140,6 +157,7 @@ object::object_ptr interpreter::visit_do_expression(ast::do_expression& do_expr)
     for (size_t i = 0; i < do_expr.body.size() - 1; i++)
     {
         do_expr.body[i]->accept(*this);
+        if (had_error()) return nullptr;
     }
     auto result = do_expr.body.back()->accept(*this);
     end_scope();
@@ -223,9 +241,16 @@ interpreter::visit_call_expression(ast::call_expression& cexpr)
 object::object_ptr
 interpreter::visit_function_expression(ast::function_expression& fexpr)
 {
+    std::vector<key> params;
+    std::transform(
+        fexpr.params.begin(),
+        fexpr.params.end(),
+        std::back_inserter(params),
+        [](auto& param) { return key::param(param.value); });
+
     return std::make_shared<object::function>(
         fexpr._span,
-        fexpr.params,
+        std::move(params),
         fexpr.body,
         env { std::make_shared<env>(current_env()) });
 }
@@ -238,7 +263,7 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
     if (!binding) return nullptr;
 
     begin_scope(env { std::make_shared<env>(current_env()) });
-    define(ident, binding);
+    define(key::local(ident), binding);
     auto result = let_expression.expr->accept(*this);
     end_scope();
 

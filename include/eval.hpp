@@ -33,7 +33,7 @@ class interpreter final : public ast::ast_visitor
     [[nodiscard]] const env& get_env() const noexcept;
 
     /// Define a new symbol in the current scope.
-    void define(const std::string&, object::object_ptr) noexcept;
+    void define(const key&, object::object_ptr) noexcept;
 
     /// Begin a new scope.
     void begin_scope(env new_scope) noexcept;
@@ -64,6 +64,8 @@ class interpreter final : public ast::ast_visitor
 
   private:
     [[nodiscard]] env& current_env() noexcept;
+
+    [[nodiscard]] bool had_error() const noexcept;
 
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;

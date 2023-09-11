@@ -41,9 +41,8 @@ gaya::eval::object::object_ptr program::accept(ast_visitor& v)
 std::string declaration_stmt::to_string() const noexcept
 {
     std::stringstream ss;
-    ss << R"({"type": "declaration_stmt", "identifier":)"
-       << _identifier->to_string() << R"(, "expression": )"
-       << expression->to_string() << "}";
+    ss << R"({"type": "declaration_stmt", "identifier":)" << ident->to_string()
+       << R"(, "expression": )" << expr->to_string() << "}";
     return ss.str();
 }
 

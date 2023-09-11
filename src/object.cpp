@@ -37,7 +37,7 @@ bool comparable::is_comparable() const noexcept
 
 function::function(
     span s,
-    std::vector<ast::identifier> p,
+    std::vector<key> p,
     std::shared_ptr<ast::expression> b,
     eval::env e)
     : _span { s }
@@ -64,9 +64,9 @@ function::call(interpreter& interp, span, std::vector<object_ptr> args) noexcept
     interp.begin_scope(env { std::make_shared<env>(closed_over_env) });
     for (size_t i = 0; i < args.size(); i++)
     {
-        auto param_name = params[i];
-        auto arg        = args[i];
-        interp.define(param_name.value, arg);
+        auto ident = params[i];
+        auto arg   = args[i];
+        interp.define(ident, arg);
     }
     auto ret = body->accept(interp);
     interp.end_scope();

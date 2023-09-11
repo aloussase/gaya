@@ -9,7 +9,6 @@
 
 namespace gaya::ast
 {
-struct identifier;
 struct expression;
 using expression_ptr = std::unique_ptr<expression>;
 }
@@ -63,7 +62,7 @@ struct function final : public callable
 {
     function(
         span s,
-        std::vector<ast::identifier> p,
+        std::vector<key> p,
         std::shared_ptr<ast::expression> b,
         env);
 
@@ -73,7 +72,7 @@ struct function final : public callable
     call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
 
     span _span;
-    std::vector<ast::identifier> params;
+    std::vector<key> params;
     size_t _arity;
     std::shared_ptr<ast::expression> body;
     env closed_over_env;

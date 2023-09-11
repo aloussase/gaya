@@ -59,16 +59,16 @@ struct stmt : public ast_node
 struct declaration_stmt final : public stmt
 {
     declaration_stmt(std::unique_ptr<identifier> i, expression_ptr e)
-        : _identifier { std::move(i) }
-        , expression { std::move(e) }
+        : ident { std::move(i) }
+        , expr { std::move(e) }
     {
     }
 
     std::string to_string() const noexcept override;
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
-    std::unique_ptr<identifier> _identifier;
-    expression_ptr expression;
+    std::unique_ptr<identifier> ident;
+    expression_ptr expr;
 };
 
 struct expression_stmt final : public stmt

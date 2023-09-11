@@ -1,0 +1,11 @@
+(* Expect error *)
+
+x :: 42
+
+test :: { => 
+  do 
+    x <- 69
+  done
+}
+
+discard test()
