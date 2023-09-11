@@ -14,6 +14,7 @@ expression ::= let_expression
              | function_expression
              | do_expression
              | case_expression
+             | comparison_expression
              | call_expression
 
 let_expression ::= 'let' IDENTIFIER '=' expression 'in' expression
@@ -37,6 +38,13 @@ case_branches ::= case_branch
 case_branch ::= 'given' expression '=>' expression
 
 case_otherwise ::= 'otherwise' '=>' expression 
+
+comparison_expression ::= call_expression '<' call_expression
+                        | call_expression '>' call_expression
+                        | call_expression '<=' call_expression
+                        | call_expression '>=' call_expression
+                        | call_expression '==' call_expression
+                        | call_expression
 
 call_expression ::= primary_expression '(' params_list ')'
                   | primary_expression

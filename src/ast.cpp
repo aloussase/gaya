@@ -1,9 +1,14 @@
+#include <cassert>
 #include <numeric>
 #include <sstream>
 #include <string>
 
+#include <fmt/core.h>
+
 #include <ast.hpp>
 #include <ast_visitor.hpp>
+#include <eval.hpp>
+#include <object.hpp>
 
 namespace gaya::ast
 {
@@ -140,6 +145,63 @@ std::string let_expression::to_string() const noexcept
 gaya::eval::object::object_ptr let_expression::accept(ast_visitor& v)
 {
     return v.visit_let_expression(*this);
+}
+
+gaya::eval::object::object_ptr binary_expression::accept(ast_visitor& v)
+{
+    return v.visit_binary_expression(*this);
+}
+
+gaya::eval::object::object_ptr
+cmp_expression::execute(eval::interpreter& interp)
+{
+    auto l = lhs->accept(interp);
+    auto r = rhs->accept(interp);
+
+    if (!l->is_comparable() || !r->is_comparable())
+    {
+        interp.interp_error(
+            op.get_span(),
+            fmt::format(
+                "{} and {} are not both comparable",
+                l->typeof_(),
+                r->typeof_()));
+        return nullptr;
+    }
+
+    auto cmp    = std::static_pointer_cast<eval::object::comparable>(l);
+    auto result = cmp->cmp(r);
+
+    if (!result)
+    {
+        interp.interp_error(
+            op.get_span(),
+            fmt::format("can't compare {} and {}", l->typeof_(), r->typeof_()));
+        return nullptr;
+    }
+
+    int ret = 0;
+
+    switch (op.type())
+    {
+    case token_type::less_than: ret = result < 0; break;
+    case token_type::less_than_eq: ret = result <= 0; break;
+    case token_type::greater_than: ret = result > 0; break;
+    case token_type::greater_than_eq: ret = result >= 0; break;
+    case token_type::equal_equal: ret = result == 0; break;
+    default: assert(false && "should not happen");
+    }
+
+    return std::make_shared<eval::object::number>(op.get_span(), ret);
+}
+
+std::string cmp_expression::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "comparison_expression", "op": ")"
+       << op.get_span().to_string() << R"(", "lhs": )" << lhs->to_string()
+       << R"(, "rhs": )" << rhs->to_string() << "}";
+    return ss.str();
 }
 
 std::string number::to_string() const noexcept

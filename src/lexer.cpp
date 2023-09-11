@@ -104,6 +104,8 @@ std::optional<token> lexer::next_token() noexcept
     case ',': return mk_token(token_type::comma);
     case ':': return colon_colon();
     case '=': return arrow();
+    case '>': return greater_than();
+    case '<': return less_than();
     case '0':
     case '1':
     case '2':
@@ -176,14 +178,41 @@ std::optional<token> lexer::comment() noexcept
     return next_token();
 }
 
+std::optional<token> lexer::less_than() noexcept
+{
+    if (auto c = peek(); c && c.value() == '=')
+    {
+        advance();
+        return mk_token(token_type::less_than_eq);
+    }
+
+    return mk_token(token_type::less_than);
+}
+
+std::optional<token> lexer::greater_than() noexcept
+{
+    if (auto c = peek(); c && c.value() == '=')
+    {
+        advance();
+        return mk_token(token_type::greater_than_eq);
+    }
+
+    return mk_token(token_type::greater_than);
+}
+
 std::optional<token> lexer::arrow() noexcept
 {
-    if (auto c = peek(); !c || c.value() != '>')
+    auto c = peek();
+
+    if (c && (c.value() != '>' || c.value() != '='))
     {
-        return mk_token(token_type::equal);
+        advance();
     }
-    advance();
-    return mk_token(token_type::arrow);
+
+    if (c && c.value() == '>') return mk_token(token_type::arrow);
+    if (c && c.value() == '=') return mk_token(token_type::equal_equal);
+
+    return mk_token(token_type::equal);
 }
 
 std::optional<token> lexer::number() noexcept

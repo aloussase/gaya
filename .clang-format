@@ -25,6 +25,7 @@ BraceWrapping:
   AfterControlStatement: Always
   AfterFunction: true
   AfterNamespace: true
+  AfterCaseLabel: true
   AfterStruct: true
   AfterClass: true
   BeforeElse: true

@@ -157,6 +157,12 @@ interpreter::visit_case_expression(ast::case_expression& cases)
 }
 
 object::object_ptr
+interpreter::visit_binary_expression(ast::binary_expression& binop)
+{
+    return binop.execute(*this);
+}
+
+object::object_ptr
 interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
     auto o = cexpr.target->accept(*this);

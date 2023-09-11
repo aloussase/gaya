@@ -6,6 +6,11 @@
 #include <lexer.hpp>
 #include <span.hpp>
 
+namespace gaya::eval
+{
+class interpreter;
+}
+
 namespace gaya::eval::object
 {
 
@@ -193,6 +198,33 @@ struct let_expression final : public expression
     std::unique_ptr<identifier> ident;
     expression_ptr binding;
     expression_ptr expr;
+};
+
+/* Binary expressions */
+
+struct binary_expression : public expression
+{
+    virtual ~binary_expression() { }
+    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
+
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+};
+
+struct cmp_expression final : public binary_expression
+{
+    cmp_expression(expression_ptr l, token o, expression_ptr r)
+        : lhs { std::move(l) }
+        , op { o }
+        , rhs { std::move(r) }
+    {
+    }
+
+    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    std::string to_string() const noexcept override;
+
+    expression_ptr lhs;
+    token op;
+    expression_ptr rhs;
 };
 
 /* Primary expressions */

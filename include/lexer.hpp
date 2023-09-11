@@ -18,10 +18,15 @@ enum class token_type {
     done,
     end,
     equal,
+    equal_equal,
     given,
+    greater_than,
+    greater_than_eq,
     identifier,
     in,
     lcurly,
+    less_than,
+    less_than_eq,
     let,
     lparen,
     number,
@@ -96,6 +101,8 @@ class lexer
 
     [[nodiscard]] std::optional<token> colon_colon() noexcept;
     [[nodiscard]] std::optional<token> comment() noexcept;
+    [[nodiscard]] std::optional<token> less_than() noexcept;
+    [[nodiscard]] std::optional<token> greater_than() noexcept;
     [[nodiscard]] std::optional<token> arrow() noexcept;
     [[nodiscard]] std::optional<token> number() noexcept;
     [[nodiscard]] std::optional<token> string() noexcept;

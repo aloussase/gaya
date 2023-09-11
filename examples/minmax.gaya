@@ -1,0 +1,19 @@
+(* Output: '69\n42' *)
+
+max :: { x, y =>
+  cases
+    given x > y => x
+    otherwise   => y
+  end
+}
+
+min :: { x, y =>
+  cases
+    given x < y => x
+    otherwise   => y
+  end
+}
+
+discard io.println(max(42, 69))
+
+discard io.println(min(42, 69))

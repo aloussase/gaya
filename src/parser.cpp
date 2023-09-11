@@ -2,6 +2,8 @@
 #include <iostream>
 #include <memory>
 
+#include <fmt/core.h>
+
 #include <ast.hpp>
 #include <parser.hpp>
 
@@ -165,7 +167,7 @@ ast::expression_ptr parser::expression(token token)
     case token_type::let: return let_expression(token);
     case token_type::do_: return do_expression(token);
     case token_type::cases: return case_expression(token);
-    default: return call_expression(token);
+    default: return comparison_expression(token);
     }
 }
 
@@ -238,6 +240,60 @@ ast::expression_ptr parser::function_expression(token lcurly)
         lcurly.get_span(),
         std::move(params),
         std::move(expr));
+}
+
+ast::expression_ptr parser::comparison_expression(token token) noexcept
+{
+    auto lhs = call_expression(token);
+    if (!lhs) return nullptr;
+
+    auto done = false;
+    while (!done)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        switch (t->type())
+        {
+        case token_type::less_than:
+        case token_type::less_than_eq:
+        case token_type::greater_than:
+        case token_type::greater_than_eq:
+        case token_type::equal_equal:
+        {
+            auto op = t.value();
+
+            t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    op.get_span(),
+                    fmt::format(
+                        "Expected an expression after {}",
+                        op.get_span().to_string()));
+                return nullptr;
+            }
+
+            auto rhs = call_expression(t.value());
+            if (!rhs) return nullptr;
+
+            // NOTE: Check that this works as intended.
+            lhs = std::make_unique<ast::cmp_expression>(
+                std::move(lhs),
+                op,
+                std::move(rhs));
+            break;
+        }
+        default:
+        {
+            _lexer.push_back(t.value());
+            done = true;
+            break;
+        }
+        }
+    }
+
+    return lhs;
 }
 
 ast::expression_ptr parser::call_expression(token tk)
