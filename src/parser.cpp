@@ -853,6 +853,80 @@ ast::expression_ptr parser::do_expression(token token)
  */
 ast::expression_ptr parser::primary_expression(token token)
 {
+    auto is_hex_digit = [](char c) {
+        return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+            || (c >= '0' && c <= '9');
+    };
+
+    auto to_hex_value = [](char c) -> int {
+        if (c >= '0' && c <= '9') return c - '0';
+        switch (c)
+        {
+        case 'a':
+        case 'A': return 10;
+        case 'b':
+        case 'B': return 11;
+        case 'c':
+        case 'C': return 12;
+        case 'd':
+        case 'D': return 13;
+        case 'e':
+        case 'E': return 14;
+        case 'f':
+        case 'F': return 15;
+        default: assert(false && "not a hex digit");
+        }
+    };
+
+    auto unescape = [&](const std::string& s) {
+        std::string result;
+
+        for (size_t i = 0; i < s.size(); i++)
+        {
+            if (auto c = s[i]; c != '\\')
+            {
+                result.push_back(s[i]);
+                continue;
+            }
+
+            switch (auto escape_character = s[++i]; escape_character)
+            {
+            case 'n': result.push_back('\n'); break;
+            case '\\': result.push_back('\\'); break;
+            case 'b': result.push_back('\b'); break;
+            case 't': result.push_back('\t'); break;
+            case '"': result.push_back('\"'); break;
+            case 'x':
+            {
+                char hex_value    = 0;
+                size_t num_digits = 0;
+
+                for (;;)
+                {
+                    char hex_digit = s[i + 1];
+                    if (!hex_digit || !is_hex_digit(hex_digit)) break;
+                    num_digits += 1;
+                    i += 1;
+                }
+
+                for (size_t x = num_digits; x > 0; x--)
+                {
+                    hex_value |= to_hex_value(s[i - x + 1]) << (4 * (x - 1));
+                }
+
+                result.push_back(hex_value);
+                break;
+            }
+            default:
+            {
+                parser_error(token.get_span(), "Invalid escape character");
+            }
+            }
+        }
+
+        return result;
+    };
+
     switch (token.type())
     {
     case token_type::number:
@@ -862,7 +936,7 @@ ast::expression_ptr parser::primary_expression(token token)
     case token_type::string:
         return std::make_unique<ast::string>(
             token.get_span(),
-            token.get_span().to_string());
+            unescape(token.get_span().to_string()));
     case token_type::identifier:
         return std::make_unique<ast::identifier>(
             token.get_span(),

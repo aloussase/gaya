@@ -10,7 +10,7 @@ syntax keyword gayaKeyword let discard in do done unit cases end given otherwise
 highlight link gayaKeyword Keyword
 
 " Literals
-syntax region gayaString start=/"/ end=/"/
+syntax region gayaString start=/"/ end=/"/ skip=/\\"/
 highlight link gayaString String
 
 syntax match gayaIdentifier /\v[a-zA-Z0-9_.]+/

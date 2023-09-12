@@ -1,0 +1,7 @@
+(* Output: 'Hello, world!\n\n"A string"\n\x1b[31mRed\x1b[m' *)
+
+discard io.println("Hello, world!\n")
+
+discard io.println("\"A string\"")
+
+discard io.println("\x1b[31mRed\x1b[m")

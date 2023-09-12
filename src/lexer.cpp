@@ -290,10 +290,14 @@ std::optional<token> lexer::number() noexcept
 
 std::optional<token> lexer::string() noexcept
 {
+    char previous;
+
     for (;;)
     {
-        if (auto c = peek(); c && c.value() != '"')
+        if (auto c = peek();
+            c && (c.value() != '"' || (c.value() == '"' && previous == '\\')))
         {
+            previous = c.value();
             advance();
         }
         else if (c && c.value() == '"')
