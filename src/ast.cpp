@@ -192,12 +192,22 @@ cmp_expression::execute(eval::interpreter& interp)
         return nullptr;
     }
 
-    if (l->typeof_() != r->typeof_())
+    if (l->typeof_() != r->typeof_() && op.type() == token_type::equal_equal)
     {
         return std::make_shared<eval::object::number>(op.get_span(), 0);
     }
 
     auto result = std::static_pointer_cast<eval::object::comparable>(l)->cmp(r);
+    if (!result)
+    {
+        interp.interp_error(
+            op.get_span(),
+            fmt::format(
+                "Cannot compare {} and {}",
+                l->typeof_(),
+                r->typeof_()));
+        return nullptr;
+    }
 
     int ret = 0;
 

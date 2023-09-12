@@ -1,0 +1,15 @@
+(* Output: 't\nt\nf\nf\nf' *)
+
+test :: { x =>
+  cases
+    given x   => io.println("t")
+    otherwise => io.println("f")
+  end
+}
+
+discard test(42)    (* Truthy *)
+discard test("42")  (* Truthy *)
+discard test(unit)  (* Falsey *)
+discard test("")    (* Falsey *)
+discard test(0)     (* Falsey *)
+

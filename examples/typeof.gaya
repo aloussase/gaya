@@ -1,7 +1,14 @@
-(* Output: 'number\nstring\nunit' *)
+(* Output: 'number\nstring\nunit\nOops' *)
 
 discard io.println(typeof(42))
 
 discard io.println(typeof("Hello"))
 
 discard io.println(typeof(unit))
+
+discard
+  let result = 69 / 0 in
+  cases
+    given typeof(result) == "unit" => io.println("Oops")
+    otherwise                      => io.println(result)
+  end

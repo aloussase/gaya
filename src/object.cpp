@@ -83,7 +83,7 @@ std::string number::to_string() const noexcept
     // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
     double intval;
     auto has_decimals = std::modf(value, &intval) != 0.0;
-    return has_decimals ? fmt::format("{:.2f}", value)
+    return has_decimals ? fmt::format("{}", value)
                         : fmt::format("{:.0f}", value);
 }
 

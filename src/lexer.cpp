@@ -52,6 +52,11 @@ bool lexer::is_valid_identifier(char c) const noexcept
         || (c >= 'A' && c <= 'Z') || c == '.' || c == '_';
 }
 
+bool lexer::is_digit(char c) const noexcept
+{
+    return c >= '0' && c <= '9';
+}
+
 void lexer::push_back(token token) noexcept
 {
     _buffer.push(token);
@@ -108,7 +113,7 @@ std::optional<token> lexer::next_token() noexcept
     case '<': return less_than();
     case '+': return mk_token(token_type::plus);
     case '*': return mk_token(token_type::star);
-    case '-': return mk_token(token_type::dash);
+    case '-': return dash();
     case '/': return mk_token(token_type::slash);
     case '0':
     case '1':
@@ -228,12 +233,18 @@ std::optional<token> lexer::arrow() noexcept
     return mk_token(token_type::equal);
 }
 
+std::optional<token> lexer::dash() noexcept
+{
+    if (auto c = peek(); c && is_digit(c.value()))
+    {
+        advance();
+        return number();
+    }
+    return mk_token(token_type::dash);
+}
+
 std::optional<token> lexer::number() noexcept
 {
-    auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
-
-    // TODO: Lex floating point literals.
-
     for (;;)
     {
         if (auto c = peek(); c && is_digit(c.value()))
@@ -243,6 +254,32 @@ std::optional<token> lexer::number() noexcept
         else
         {
             break;
+        }
+    }
+
+    if (auto c = peek(); c && c == '.')
+    {
+        // Parse floating point literal.
+        auto lex_at_least_one_decimal = false;
+        advance();
+        for (;;)
+        {
+            if (auto c = peek(); c && is_digit(c.value()))
+            {
+                lex_at_least_one_decimal = true;
+                advance();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (!lex_at_least_one_decimal)
+        {
+            lexer_error("Expected at least one decimal point after '.' in "
+                        "numeric literal");
+            return std::nullopt;
         }
     }
 

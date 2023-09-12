@@ -104,8 +104,11 @@ class lexer
 
     [[nodiscard]] bool is_valid_identifier(char c) const noexcept;
 
+    [[nodiscard]] bool is_digit(char c) const noexcept;
+
     [[nodiscard]] std::optional<token> colon_colon() noexcept;
     [[nodiscard]] std::optional<token> comment() noexcept;
+    [[nodiscard]] std::optional<token> dash() noexcept;
     [[nodiscard]] std::optional<token> less_than() noexcept;
     [[nodiscard]] std::optional<token> greater_than() noexcept;
     [[nodiscard]] std::optional<token> arrow() noexcept;

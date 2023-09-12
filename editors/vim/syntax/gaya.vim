@@ -24,13 +24,10 @@ highlight link gayaString String
 syntax match gayaIdentifier /\v[a-zA-Z0-9_.]+/
 highlight link gayaIdentifier Identifier
 
-syntax match gayaFunctionTarget /\v(.*)\(/ contained containedin=gayaFunction
-highlight link gayaFunctionTarget Function
-
-syntax region gayaFunction start=/\v[a-zA-Z0-9_.]+\(/ end=/)/ contains=ALL contains=gayaFunction
+syntax region gayaFunction start=/\v[a-zA-Z0-9_.]+\(/ end=/)/ contains=ALL
 highlight link gayaFunction Function
 
-syntax match gayaNumber /\v[0-9]+/
+syntax match gayaNumber /\v[0-9]+(\.[0-9])*/
 highlight link gayaNumber Number
 
 " Blocks
@@ -38,7 +35,7 @@ syntax region gayaFunctionBody start=/{/ end=/}/ transparent fold
 
 " Comments
 syntax keyword gayaTodo TODO contained
-syntax region gayaComment start=/(\*/ end=/\*)/ contains=gayaTodo
+syntax region gayaComment start=/\v.*\zs\(\*\ze/ end=/\*)/ contains=gayaTodo
 highlight link gayaComment Comment
 
 let b:current_syntax = "gaya"
