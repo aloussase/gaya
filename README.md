@@ -10,9 +10,14 @@ way I can give pleasure to you too.
 #### Features
 
 <p align="center">
-  <img src="./assets/demo/nice_errors.png" alt="nice errors" />
+  <img src="./assets/demo/nice_errors.png" alt="nice errors" height="150" />
 </p>
 <p align="center">Nice error messages</p>
+
+<p align="center">
+  <img src="./assets/demo/escape_sequences.png" alt="escape sequences" height="150" />
+</p>
+<p align="center">Escape sequences in strings</p>
 
 #### Documentation
 

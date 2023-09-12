@@ -1,0 +1,3 @@
+(* Output: '\x1b[31mHello\x1b[32m, \x1b[33mworld\x1b[34m!\x1b[m' *)
+
+discard io.println("\x1b[31mHello\x1b[32m, \x1b[33mworld\x1b[34m!\x1b[m")
