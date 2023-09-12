@@ -39,6 +39,8 @@ class parser
 
     [[nodiscard]] ast::stmt_ptr assignment_stmt(token identifier) noexcept;
 
+    [[nodiscard]] ast::stmt_ptr while_stmt(token while_) noexcept;
+
     [[nodiscard]] ast::stmt_ptr declaration_stmt(token identifier);
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
     [[nodiscard]] ast::expression_ptr expression(token);
@@ -55,6 +57,7 @@ class parser
     void parser_error(span, const std::string&);
     void parser_hint(span, const std::string&);
     [[nodiscard]] bool match(std::optional<token>, token_type) const noexcept;
+    [[nodiscard]] bool is_local_stmt(token);
 
     lexer _lexer;
     std::vector<diagnostic::diagnostic> _diagnostics;

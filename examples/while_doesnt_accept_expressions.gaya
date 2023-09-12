@@ -1,0 +1,15 @@
+(* Expect error *)
+
+discard do
+  let i = 0 in do
+    while i < 10 do
+      i <- i + 1
+      (* This line here causes an error.
+         The correct way would be to discard the result.
+      *)
+      io.println(i) 
+    done
+
+    unit
+  done
+done

@@ -40,6 +40,7 @@ enum class token_type {
     star,
     string,
     unit,
+    while_,
 };
 
 class token

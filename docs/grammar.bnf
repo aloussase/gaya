@@ -30,8 +30,11 @@ local_stmts ::= expression
 
 local_stmt ::= expression_stmt 
              | assignment_stmt
+             | while_stmt
 
 assignment_stmt ::= IDENTIFIER '<-' expression
+
+while_stmt ::= 'while' expression 'do' local_stmts 'done'
 
 case_expression ::= 'case' case_branches 'end'
                   | 'case' case_branches case_otherwise 'end'

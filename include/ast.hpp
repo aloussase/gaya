@@ -99,6 +99,23 @@ struct assignment_stmt final : public stmt
     expression_ptr expr;
 };
 
+struct WhileStmt final : public stmt
+{
+    WhileStmt(span s, expression_ptr e, std::vector<stmt_ptr>&& b)
+        : span_ { s }
+        , condition { std::move(e) }
+        , body { std::move(b) }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+
+    span span_;
+    expression_ptr condition;
+    std::vector<stmt_ptr> body;
+};
+
 /* Expressions */
 
 struct expression : public ast_node

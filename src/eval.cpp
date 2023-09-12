@@ -151,6 +151,26 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     return nullptr;
 }
 
+object::object_ptr interpreter::visit_while_stmt(ast::WhileStmt& while_stmt)
+{
+    for (;;)
+    {
+        auto test = while_stmt.condition->accept(*this);
+        if (!test) return nullptr;
+        if (!test->is_truthy()) break;
+
+        begin_scope(env { std::make_shared<env>(current_env()) });
+        for (auto& stmt : while_stmt.body)
+        {
+            stmt->accept(*this);
+            if (had_error()) return nullptr;
+        }
+        end_scope();
+    }
+
+    return nullptr;
+}
+
 object::object_ptr interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
     begin_scope(env { std::make_shared<env>(current_env()) });

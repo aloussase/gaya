@@ -43,6 +43,24 @@ bool parser::match(std::optional<token> t, token_type tt) const noexcept
     return t && t->type() == tt;
 }
 
+bool parser::is_local_stmt(token token)
+{
+    if (token.type() == token_type::discard) return true;
+    if (token.type() == token_type::while_) return true;
+    if (token.type() != token_type::identifier) return false;
+
+    auto lookahead = _lexer.next_token();
+    auto ret       = false;
+
+    if (match(lookahead, token_type::back_arrow))
+    {
+        ret = true;
+    }
+
+    _lexer.push_back(lookahead.value());
+    return ret;
+}
+
 std::vector<token> parser::remaining_tokens() noexcept
 {
     std::vector<token> tokens;
@@ -122,6 +140,7 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
     {
     case token_type::discard: return expression_stmt(token);
     case token_type::identifier: return assignment_stmt(token);
+    case token_type::while_: return while_stmt(token);
     default:
         parser_error(token.get_span(), "Invalid start of local stmt");
         return nullptr;
@@ -158,6 +177,58 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
     return std::make_unique<ast::assignment_stmt>(
         std::move(ident),
         std::move(expr));
+}
+
+ast::stmt_ptr parser::while_stmt(token while_) noexcept
+{
+    auto span  = while_.get_span();
+    auto token = _lexer.next_token();
+    if (!token)
+    {
+        parser_error(span, "Expected a condition after 'while'");
+        return nullptr;
+    }
+
+    auto condition = expression(token.value());
+
+    if (auto do_ = _lexer.next_token(); !match(do_, token_type::do_))
+    {
+        parser_error(span, "Expected 'do' after condition in while statement");
+        return nullptr;
+    }
+
+    std::vector<ast::stmt_ptr> body;
+
+    for (;;)
+    {
+        auto token = _lexer.next_token();
+        if (!token) break;
+
+        if (is_local_stmt(token.value()))
+        {
+            auto stmt = local_stmt(token.value());
+            if (!stmt) return nullptr;
+
+            body.push_back(std::move(stmt));
+        }
+        else
+        {
+            _lexer.push_back(token.value());
+            break;
+        }
+    }
+
+    if (auto done = _lexer.next_token(); !match(done, token_type::done))
+    {
+        parser_error(span, "Expected 'done' after while body");
+        parser_hint(span, "You can only use local statements in while body");
+        return nullptr;
+    }
+
+    return std::make_unique<ast::WhileStmt>(
+        span,
+        std::move(condition),
+        std::move(body));
 }
 
 ast::stmt_ptr parser::declaration_stmt(token identifier)
@@ -674,22 +745,6 @@ ast::expression_ptr parser::do_expression(token token)
 {
     std::vector<ast::node_ptr> body;
     bool parsed_final_expression = false;
-
-    auto is_local_stmt = ([&](auto token) {
-        if (token.type() == token_type::discard) return true;
-        if (token.type() != token_type::identifier) return false;
-
-        auto lookahead = _lexer.next_token();
-        auto ret       = false;
-
-        if (match(lookahead, token_type::back_arrow))
-        {
-            ret = true;
-        }
-
-        _lexer.push_back(lookahead.value());
-        return ret;
-    });
 
     for (;;)
     {

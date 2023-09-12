@@ -1,0 +1,15 @@
+(* Output: '45' *)
+
+sumFirstN :: { n =>
+  let sum = 0 in
+  let i = 0 in do
+    while i < n do
+      sum <- sum + i
+      i <- i + 1
+    done
+
+    sum
+  done
+}
+
+discard io.println(sumFirstN(10))

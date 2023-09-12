@@ -1,0 +1,14 @@
+(* Output: '25' *)
+
+discard 
+  let i = 0 in 
+  let j = 0 in do 
+    while i < 5 do
+      while j < 5 do
+        j <- j + 1
+      done
+      i <- i + 1
+    done
+    
+    io.println(i * j)
+  done

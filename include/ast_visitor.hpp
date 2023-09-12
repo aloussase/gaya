@@ -16,6 +16,7 @@ class ast_visitor
     virtual o::object_ptr visit_declaration_stmt(declaration_stmt&)       = 0;
     virtual o::object_ptr visit_expression_stmt(expression_stmt&)         = 0;
     virtual o::object_ptr visit_assignment_stmt(assignment_stmt&)         = 0;
+    virtual o::object_ptr visit_while_stmt(WhileStmt&)                    = 0;
     virtual o::object_ptr visit_do_expression(do_expression&)             = 0;
     virtual o::object_ptr visit_case_expression(case_expression&)         = 0;
     virtual o::object_ptr visit_call_expression(call_expression&)         = 0;
