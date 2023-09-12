@@ -12,6 +12,9 @@ highlight link gayaKeyword Keyword
 " Operators
 syntax match gayaOperator /::/
 syntax match gayaOperator /=>/
+syntax match gayaOperator /\v\s+\<-\s+/
+syntax match gayaOperator /\s\+\(==\|>=\|<=\)\s\+/
+syntax match gayaOperator /\v\s+[+-=/*><]\s+/
 highlight link gayaOperator Operator
 
 " Literals
