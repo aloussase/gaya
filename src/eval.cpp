@@ -219,6 +219,12 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
 }
 
 object::object_ptr
+interpreter::visit_unary_expression(ast::unary_expression& unary_op)
+{
+    return unary_op.execute(*this);
+}
+
+object::object_ptr
 interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
     auto o = cexpr.target->accept(*this);

@@ -2,13 +2,13 @@
 
 test :: { =>
   let f = unit in
-  let run = 1 in do
-    while run do
+  let finished = 0 in do
+    while not finished do
       discard let i = "i" in do (* TODO: Replace with ignore *)
         f <- { => io.println(i) }
         unit
       done
-      run <- 0
+      finished <- 1
     done
 
     f

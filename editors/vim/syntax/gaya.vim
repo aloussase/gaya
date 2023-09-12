@@ -9,14 +9,6 @@ set cpo&vim
 syntax keyword gayaKeyword let discard in do done unit cases end given otherwise while
 highlight link gayaKeyword Keyword
 
-" Operators
-syntax match gayaOperator /::/
-syntax match gayaOperator /=>/
-syntax match gayaOperator /\v\s+\<-\s+/
-syntax match gayaOperator /\s\+\(==\|>=\|<=\)\s\+/
-syntax match gayaOperator /\v\s+[+-=/*><]\s+/
-highlight link gayaOperator Operator
-
 " Literals
 syntax region gayaString start=/"/ end=/"/
 highlight link gayaString String
@@ -24,6 +16,16 @@ highlight link gayaString String
 syntax match gayaIdentifier /\v[a-zA-Z0-9_.]+/
 highlight link gayaIdentifier Identifier
 
+" Operators
+syntax match gayaOperator /::/
+syntax match gayaOperator /=>/
+syntax match gayaOperator /\v\s+\<-\s+/
+syntax match gayaOperator /\s\+\(==\|>=\|<=\)\s\+/
+syntax match gayaOperator /\v\s+[+-=/*><]\s+/
+syntax match gayaOperator /not/
+highlight link gayaOperator Operator
+
+" Functions
 syntax region gayaFunction start=/\v[a-zA-Z0-9_.]+\(/ end=/)/ contains=ALL
 highlight link gayaFunction Function
 

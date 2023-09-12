@@ -477,14 +477,14 @@ ast::expression_ptr parser::term_expression(token token) noexcept
 }
 
 /**
- * factor_expression ::= call_expression '*' call_expression
- *                     | call_expression '/' call_expression
- *                     | call_expression
+ * factor_expression ::= unary_expression '*' unary_expression
+ *                     | unary_expression '/' unary_expression
+ *                     | unary_expression
  */
 ast::expression_ptr parser::factor_expression(token token) noexcept
 {
 
-    auto lhs = call_expression(token);
+    auto lhs = unary_expression(token);
     if (!lhs) return nullptr;
 
     auto done = false;
@@ -511,7 +511,7 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
                 return nullptr;
             }
 
-            auto rhs = call_expression(t.value());
+            auto rhs = unary_expression(t.value());
             if (!rhs) return nullptr;
 
             lhs = std::make_unique<ast::arithmetic_expression>(
@@ -533,6 +533,56 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
     return lhs;
 }
 
+/*
+ * unary_expression ::= 'not' call_expression
+ */
+ast::expression_ptr parser::unary_expression(token op) noexcept
+{
+    auto is_unary_operator = ([&] {
+        switch (op.type())
+        {
+        case token_type::not_: return true;
+        default: return false;
+        }
+    })();
+
+    if (!is_unary_operator)
+    {
+        return call_expression(op);
+    }
+
+    auto expr_token = _lexer.next_token();
+    if (!expr_token)
+    {
+        parser_error(
+            op.get_span(),
+            fmt::format(
+                "Expected expression after unary operator {}",
+                op.get_span().to_string()));
+        return nullptr;
+    }
+
+    auto expr = call_expression(expr_token.value());
+    if (!expr) return nullptr;
+
+    switch (op.type())
+    {
+    case token_type::not_:
+        return std::make_unique<ast::not_expression>(op, std::move(expr));
+    default:
+    {
+        assert(false && "should not happen");
+    }
+    }
+}
+
+/*
+ * call_expression ::= primary_expression '(' args_list ')'
+ *                   | primary_expression
+ *
+ * args_list ::= expression
+ *             | expression ',' args_list
+ */
 ast::expression_ptr parser::call_expression(token tk)
 {
     auto token = tk;
@@ -795,6 +845,12 @@ ast::expression_ptr parser::do_expression(token token)
         std::move(body));
 }
 
+/*
+ * primary_expression ::= NUMBER
+ *                      | IDENTIFIER
+ *                      | STRING
+ *                      | UNIT
+ */
 ast::expression_ptr parser::primary_expression(token token)
 {
     switch (token.type())

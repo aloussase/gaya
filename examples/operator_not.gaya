@@ -1,0 +1,9 @@
+(* Output: '0\n1\n0\n1\n1' *)
+
+discard io.println(not "true")
+discard io.println(not "")
+
+discard io.println(not 123)
+discard io.println(not 0)
+
+discard io.println(not unit)

@@ -31,6 +31,7 @@ enum class token_type {
     less_than_eq,
     let,
     lparen,
+    not_,
     number,
     otherwise,
     plus,

@@ -287,6 +287,35 @@ arithmetic_expression::execute(eval::interpreter& interp)
     return std::make_shared<eval::object::number>(op.get_span(), result);
 }
 
+/* Unary expressions */
+
+gaya::eval::object::object_ptr unary_expression::accept(ast_visitor& v)
+{
+    return v.visit_unary_expression(*this);
+}
+
+std::string unary_expression::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "unary_expression", "operator": ")"
+       << op.get_span().to_string() << R"(", "operand": )"
+       << operand->to_string() << "}";
+    return ss.str();
+}
+
+gaya::eval::object::object_ptr
+not_expression::execute(eval::interpreter& interp)
+{
+    auto value = operand->accept(interp);
+    if (!value) return nullptr;
+
+    return std::make_shared<eval::object::number>(
+        op.get_span(),
+        !value->is_truthy());
+}
+
+/* Primary expressions */
+
 std::string number::to_string() const noexcept
 {
     std::stringstream ss;

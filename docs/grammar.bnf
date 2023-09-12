@@ -57,11 +57,13 @@ term_expression ::= factor_expression '+' factor_expression
                   | factor_expression '-' factor_expression
                   | factor_expression
 
-factor_expression ::= call_expression '*' call_expression
-                    | call_expression '/' call_expression
-                    | call_expression
+factor_expression ::= unary_expression '*' unary_expression
+                    | unary_expression '/' unary_expression
+                    | unary_expression
 
-call_expression ::= primary_expression '(' params_list ')'
+unary_expression ::= 'not' call_expression
+
+call_expression ::= primary_expression '(' args_list ')'
                   | primary_expression
 
 args_list ::= expression

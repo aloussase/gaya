@@ -50,6 +50,7 @@ class parser
     [[nodiscard]] ast::expression_ptr comparison_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr term_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr factor_expression(token) noexcept;
+    [[nodiscard]] ast::expression_ptr unary_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr call_expression(token token);
     [[nodiscard]] ast::expression_ptr do_expression(token token);
     [[nodiscard]] ast::expression_ptr primary_expression(token);
