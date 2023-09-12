@@ -32,6 +32,10 @@ highlight link gayaFunction Function
 syntax match gayaNumber /\v[0-9]+(\.[0-9])*/
 highlight link gayaNumber Number
 
+" Array
+syntax region gayaArray start=/(/ end=/)/ contains=ALL
+highlight link gayaArray Structure
+
 " Blocks
 syntax region gayaFunctionBody start=/{/ end=/}/ transparent fold
 

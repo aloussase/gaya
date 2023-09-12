@@ -59,6 +59,7 @@ class interpreter final : public ast::ast_visitor
     o::object_ptr visit_call_expression(ast::call_expression&) override;
     o::object_ptr visit_function_expression(ast::function_expression&) override;
     o::object_ptr visit_let_expression(ast::let_expression&) override;
+    o::object_ptr visit_array(ast::array&) override;
     o::object_ptr visit_number(ast::number&) override;
     o::object_ptr visit_string(ast::string&) override;
     o::object_ptr visit_identifier(ast::identifier&) override;

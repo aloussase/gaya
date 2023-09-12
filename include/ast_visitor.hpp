@@ -24,6 +24,7 @@ class ast_visitor
     virtual o::object_ptr visit_let_expression(let_expression&)           = 0;
     virtual o::object_ptr visit_binary_expression(binary_expression&)     = 0;
     virtual o::object_ptr visit_unary_expression(unary_expression&)       = 0;
+    virtual o::object_ptr visit_array(array&)                             = 0;
     virtual o::object_ptr visit_number(number&)                           = 0;
     virtual o::object_ptr visit_string(string&)                           = 0;
     virtual o::object_ptr visit_identifier(identifier&)                   = 0;

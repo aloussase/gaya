@@ -96,6 +96,24 @@ struct builtin_function : public object, public callable
     std::string name;
 };
 
+struct array final : public object
+{
+    array(span s, std::vector<object_ptr> e)
+        : span_ { s }
+        , elems { e }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    bool is_callable() const noexcept override;
+    std::string typeof_() const noexcept override;
+    bool is_truthy() const noexcept override;
+    bool is_comparable() const noexcept override;
+
+    span span_;
+    std::vector<object_ptr> elems;
+};
+
 struct number final : public object, public comparable
 {
     number(span s, double v)

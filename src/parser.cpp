@@ -930,22 +930,71 @@ ast::expression_ptr parser::primary_expression(token token)
     switch (token.type())
     {
     case token_type::number:
+    {
         return std::make_unique<ast::number>(
             token.get_span(),
             std::stod(token.get_span().to_string()));
+    }
     case token_type::string:
+    {
         return std::make_unique<ast::string>(
             token.get_span(),
             unescape(token.get_span().to_string()));
+    }
     case token_type::identifier:
+    {
         return std::make_unique<ast::identifier>(
             token.get_span(),
             token.get_span().to_string());
-    case token_type::unit: return std::make_unique<ast::unit>(token.get_span());
+    }
+    case token_type::unit:
+    {
+        return std::make_unique<ast::unit>(token.get_span());
+    }
+    case token_type::lparen:
+    {
+        return array(token);
+    }
     default:
         parser_error(token.get_span(), "Invalid start of primary expression");
         return nullptr;
     }
+}
+
+ast::expression_ptr parser::array(token lparen) noexcept
+{
+    std::vector<ast::expression_ptr> elems;
+
+    for (;;)
+    {
+        auto token = _lexer.next_token();
+        if (!token) break;
+
+        if (match(token, token_type::rparen))
+        {
+            _lexer.push_back(token.value());
+            break;
+        }
+
+        auto expr = expression(token.value());
+        if (!expr) return nullptr;
+
+        elems.push_back(std::move(expr));
+
+        if (auto comma = _lexer.next_token(); !match(comma, token_type::comma))
+        {
+            _lexer.push_back(comma.value());
+            break;
+        }
+    }
+
+    if (auto rparen = _lexer.next_token(); !match(rparen, token_type::rparen))
+    {
+        parser_error(lparen.get_span(), "Missing ')' after array literal");
+        return nullptr;
+    }
+
+    return std::make_unique<ast::array>(lparen.get_span(), std::move(elems));
 }
 
 }

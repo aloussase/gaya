@@ -303,6 +303,21 @@ struct not_expression final : public unary_expression
 
 /* Primary expressions */
 
+struct array final : public expression
+{
+    array(span s, std::vector<expression_ptr> e)
+        : span_ { s }
+        , elems { std::move(e) }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+
+    span span_;
+    std::vector<expression_ptr> elems;
+};
+
 struct number final : public expression
 {
     number(span s, double v)
@@ -312,7 +327,6 @@ struct number final : public expression
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
     span _span;
@@ -328,7 +342,6 @@ struct string final : public expression
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
     span _span;
@@ -344,7 +357,6 @@ struct identifier final : public expression
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
     span _span;
@@ -359,7 +371,6 @@ struct unit final : public expression
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
     span _span;

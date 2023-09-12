@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
 #include <fmt/core.h>
 
@@ -90,6 +91,43 @@ bool builtin_function::is_truthy() const noexcept
 }
 
 bool builtin_function::is_comparable() const noexcept
+{
+    return false;
+}
+
+std::string array::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << "(";
+    for (size_t i = 0; i < elems.size(); i++)
+    {
+        ss << elems[i]->to_string();
+        if (i < elems.size() - 1)
+        {
+            ss << ", ";
+        }
+    }
+    ss << ")";
+    return ss.str();
+}
+
+bool array::is_callable() const noexcept
+{
+    /* TODO: Make array callable */
+    return false;
+}
+
+std::string array::typeof_() const noexcept
+{
+    return "array";
+}
+
+bool array::is_truthy() const noexcept
+{
+    return !elems.empty();
+}
+
+bool array::is_comparable() const noexcept
 {
     return false;
 }

@@ -73,3 +73,9 @@ primary_expression ::= NUMBER
                      | IDENTIFIER
                      | STRING
                      | UNIT
+                     | array
+
+array ::= '(' array_elems ')'
+
+array_elems ::= expression ',' array_elems
+              | expression

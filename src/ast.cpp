@@ -317,6 +317,19 @@ not_expression::execute(eval::interpreter& interp)
 
 /* Primary expressions */
 
+std::string array::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "array", "elems": [)"
+       << join(elems, [](auto& elem) { return elem->to_string(); }) << "]}";
+    return ss.str();
+}
+
+gaya::eval::object::object_ptr array::accept(ast_visitor& v)
+{
+    return v.visit_array(*this);
+}
+
 std::string number::to_string() const noexcept
 {
     std::stringstream ss;

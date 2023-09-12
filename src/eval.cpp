@@ -299,6 +299,21 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
     return result;
 }
 
+object::object_ptr interpreter::visit_array(ast::array& ary)
+{
+    std::vector<object::object_ptr> elems;
+
+    for (auto& elem : ary.elems)
+    {
+        auto o = elem->accept(*this);
+        if (!o) return nullptr;
+
+        elems.push_back(o);
+    }
+
+    return std::make_shared<object::array>(ary.span_, elems);
+}
+
 object::object_ptr interpreter::visit_number(ast::number& n)
 {
     return std::make_shared<object::number>(n._span, n.value);
