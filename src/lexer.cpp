@@ -106,6 +106,10 @@ std::optional<token> lexer::next_token() noexcept
     case '=': return arrow();
     case '>': return greater_than();
     case '<': return less_than();
+    case '+': return mk_token(token_type::plus);
+    case '*': return mk_token(token_type::star);
+    case '-': return mk_token(token_type::dash);
+    case '/': return mk_token(token_type::slash);
     case '0':
     case '1':
     case '2':

@@ -210,6 +210,10 @@ ast::stmt_ptr parser::expression_stmt(token discard)
 
 ast::expression_ptr parser::expression(token token)
 {
+    /*
+     NOTE: Might want to move these to primary expression or allow then in
+     grouping expressions.
+     */
     switch (token.type())
     {
     case token_type::lcurly: return function_expression(token);
@@ -293,7 +297,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
 ast::expression_ptr parser::comparison_expression(token token) noexcept
 {
-    auto lhs = call_expression(token);
+    auto lhs = term_expression(token);
     if (!lhs) return nullptr;
 
     auto done = false;
@@ -323,14 +327,127 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
                 return nullptr;
             }
 
-            auto rhs = call_expression(t.value());
+            auto rhs = term_expression(t.value());
             if (!rhs) return nullptr;
 
-            // NOTE: Check that this works as intended.
             lhs = std::make_unique<ast::cmp_expression>(
                 std::move(lhs),
                 op,
                 std::move(rhs));
+
+            break;
+        }
+        default:
+        {
+            _lexer.push_back(t.value());
+            done = true;
+            break;
+        }
+        }
+    }
+
+    return lhs;
+}
+
+/**
+ * term_expression ::= factor_expression '+' factor_expression
+ *                   | factor_expression '-' factor_expression
+ *                   | factor_expression
+ */
+ast::expression_ptr parser::term_expression(token token) noexcept
+{
+    auto lhs = factor_expression(token);
+    if (!lhs) return nullptr;
+
+    auto done = false;
+    while (!done)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        switch (t->type())
+        {
+        case token_type::plus:
+        case token_type::dash:
+        {
+            auto op = t.value();
+
+            t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    op.get_span(),
+                    fmt::format(
+                        "Expected an expression after {}",
+                        op.get_span().to_string()));
+                return nullptr;
+            }
+
+            auto rhs = factor_expression(t.value());
+            if (!rhs) return nullptr;
+
+            lhs = std::make_unique<ast::arithmetic_expression>(
+                std::move(lhs),
+                op,
+                std::move(rhs));
+
+            break;
+        }
+        default:
+        {
+            _lexer.push_back(t.value());
+            done = true;
+            break;
+        }
+        }
+    }
+
+    return lhs;
+}
+
+/**
+ * factor_expression ::= call_expression '*' call_expression
+ *                     | call_expression '/' call_expression
+ *                     | call_expression
+ */
+ast::expression_ptr parser::factor_expression(token token) noexcept
+{
+
+    auto lhs = call_expression(token);
+    if (!lhs) return nullptr;
+
+    auto done = false;
+    while (!done)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        switch (t->type())
+        {
+        case token_type::star:
+        case token_type::slash:
+        {
+            auto op = t.value();
+
+            t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    op.get_span(),
+                    fmt::format(
+                        "Expected an expression after {}",
+                        op.get_span().to_string()));
+                return nullptr;
+            }
+
+            auto rhs = call_expression(t.value());
+            if (!rhs) return nullptr;
+
+            lhs = std::make_unique<ast::arithmetic_expression>(
+                std::move(lhs),
+                op,
+                std::move(rhs));
+
             break;
         }
         default:

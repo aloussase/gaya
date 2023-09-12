@@ -10,6 +10,8 @@
 #include <eval.hpp>
 #include <object.hpp>
 
+// NOTE: Consider using a JSON library for stringification.
+
 namespace gaya::ast
 {
 
@@ -80,8 +82,8 @@ gaya::eval::object::object_ptr assignment_stmt::accept(ast_visitor& v)
 std::string do_expression::to_string() const noexcept
 {
     std::stringstream ss;
-    ss << R"("{type": "do_expression", "body": [)"
-       << join(body, [](auto& node) { return node->to_string(); }) << R"("]}")";
+    ss << R"({"type": "do_expression", "body": [)"
+       << join(body, [](auto& node) { return node->to_string(); }) << "]}";
     return ss.str();
 }
 
@@ -164,6 +166,15 @@ gaya::eval::object::object_ptr binary_expression::accept(ast_visitor& v)
     return v.visit_binary_expression(*this);
 }
 
+std::string binary_expression::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "binary_expression", "op": ")"
+       << op.get_span().to_string() << R"(", "lhs": )" << lhs->to_string()
+       << R"(, "rhs": )" << rhs->to_string() << "}";
+    return ss.str();
+}
+
 gaya::eval::object::object_ptr
 cmp_expression::execute(eval::interpreter& interp)
 {
@@ -181,16 +192,12 @@ cmp_expression::execute(eval::interpreter& interp)
         return nullptr;
     }
 
-    auto cmp    = std::static_pointer_cast<eval::object::comparable>(l);
-    auto result = cmp->cmp(r);
-
-    if (!result)
+    if (l->typeof_() != r->typeof_())
     {
-        interp.interp_error(
-            op.get_span(),
-            fmt::format("can't compare {} and {}", l->typeof_(), r->typeof_()));
-        return nullptr;
+        return std::make_shared<eval::object::number>(op.get_span(), 0);
     }
+
+    auto result = std::static_pointer_cast<eval::object::comparable>(l)->cmp(r);
 
     int ret = 0;
 
@@ -207,13 +214,47 @@ cmp_expression::execute(eval::interpreter& interp)
     return std::make_shared<eval::object::number>(op.get_span(), ret);
 }
 
-std::string cmp_expression::to_string() const noexcept
+gaya::eval::object::object_ptr
+arithmetic_expression::execute(eval::interpreter& interp)
 {
-    std::stringstream ss;
-    ss << R"({"type": "comparison_expression", "op": ")"
-       << op.get_span().to_string() << R"(", "lhs": )" << lhs->to_string()
-       << R"(, "rhs": )" << rhs->to_string() << "}";
-    return ss.str();
+    auto l = lhs->accept(interp);
+    auto r = rhs->accept(interp);
+
+    if (l->typeof_() != "number" || r->typeof_() != "number")
+    {
+        interp.interp_error(
+            op.get_span(),
+            fmt::format(
+                "{} expected {} and {} to be both numbers",
+                op.get_span().to_string(),
+                l->typeof_(),
+                r->typeof_()));
+        return nullptr;
+    }
+
+    auto fst = std::static_pointer_cast<eval::object::number>(l)->value;
+    auto snd = std::static_pointer_cast<eval::object::number>(r)->value;
+
+    double result = 0;
+
+    switch (op.type())
+    {
+    case token_type::plus: result = fst + snd; break;
+    case token_type::dash: result = fst - snd; break;
+    case token_type::star: result = fst * snd; break;
+    case token_type::slash:
+    {
+        if (snd == 0)
+        {
+            return std::make_shared<eval::object::unit>(op.get_span());
+        }
+        result = fst / snd;
+        break;
+    }
+    default: assert(false && "should not happen");
+    }
+
+    return std::make_shared<eval::object::number>(op.get_span(), result);
 }
 
 std::string number::to_string() const noexcept

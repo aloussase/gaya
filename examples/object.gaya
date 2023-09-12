@@ -1,0 +1,21 @@
+(* Output: 'Alina\nAlina\nDoes not understand' *)
+
+Person :: { name =>
+  let name = name in
+  { msg =>
+    cases
+      given msg == "getName" => name
+      given msg == "print"   => io.println(name)
+      otherwise              => io.println("Does not understand")
+    end
+  }
+}
+
+p :: Person("Alina")
+
+discard io.println(p("getName"))
+
+discard p("print")
+
+discard p("someOtherMessage")
+

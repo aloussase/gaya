@@ -217,27 +217,42 @@ struct let_expression final : public expression
 
 struct binary_expression : public expression
 {
-    virtual ~binary_expression() { }
-    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
-
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
-};
-
-struct cmp_expression final : public binary_expression
-{
-    cmp_expression(expression_ptr l, token o, expression_ptr r)
+    binary_expression(expression_ptr l, token o, expression_ptr r)
         : lhs { std::move(l) }
         , op { o }
         , rhs { std::move(r) }
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    virtual ~binary_expression() { }
+    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
+
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
     std::string to_string() const noexcept override;
 
     expression_ptr lhs;
     token op;
     expression_ptr rhs;
+};
+
+struct cmp_expression final : public binary_expression
+{
+    cmp_expression(expression_ptr l, token o, expression_ptr r)
+        : binary_expression { std::move(l), o, std::move(r) }
+    {
+    }
+
+    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+};
+
+struct arithmetic_expression final : public binary_expression
+{
+    arithmetic_expression(expression_ptr l, token o, expression_ptr r)
+        : binary_expression { std::move(l), o, std::move(r) }
+    {
+    }
+
+    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
 };
 
 /* Primary expressions */

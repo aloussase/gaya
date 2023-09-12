@@ -1,0 +1,19 @@
+(* Output: '1\n0\n1\n0\n0\n1\n1\n1\n0' *)
+
+x :: 1
+y :: 2
+
+discard io.println(x <  y)
+discard io.println(x >  y)
+discard io.println(x <= y)
+discard io.println(x >= y)
+discard io.println(x == y)
+
+x :: y
+
+discard io.println(x == y)
+discard io.println(x <= y)
+discard io.println(x >= y)
+
+(* Different types are not equal. *)
+discard io.println("str" == 42)
