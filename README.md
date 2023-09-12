@@ -1,5 +1,3 @@
-<img src="./assets/logo/logo_128x128.png" alt="logo" align="right" />
-
 ### Gaya
 
 Gaya is a scripting language I made for doing AoC problems in 2023.
