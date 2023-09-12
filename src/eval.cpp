@@ -209,7 +209,7 @@ interpreter::visit_call_expression(ast::call_expression& cexpr)
         interp_error(cexpr.span_, "Tried to call non-callable");
         interp_hint(
             cexpr.span_,
-            "To define a function, do f :: {{ <args> => <expr> }}");
+            "To define a function, do f :: { <args> => <expr> }");
         return nullptr;
     }
 

@@ -5,6 +5,10 @@
 Gaya is a scripting language I made for doing AoC problems in 2023.
 The name comes from my favourite cat.
 
+Since its a toy language, its focus is on elegance above anything else. I
+wanted something that makes me feel pleasure every time I use it. I hope this
+way I can give pleasure to you too.
+
 #### Features
 
 <p align="center">
