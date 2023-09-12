@@ -1,0 +1,3 @@
+(* Expect error *)
+
+discard "Hola"("Mundo")

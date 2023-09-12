@@ -1,0 +1,12 @@
+(* Output: 'H\no\nl\na' *)
+
+discard 
+  let s = "Hola" in
+  let i = 0 in do
+    while i < string.length(s) do
+      discard io.println(s(i))
+      i <- i + 1
+    done
+
+    unit
+  done

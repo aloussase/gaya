@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cmath>
 #include <iostream>
 
@@ -9,31 +10,6 @@
 
 namespace gaya::eval::object
 {
-
-bool callable::is_callable() const noexcept
-{
-    return true;
-}
-
-bool callable::is_comparable() const noexcept
-{
-    return false;
-}
-
-std::string callable::typeof_() const noexcept
-{
-    return "callable";
-}
-
-bool callable::is_truthy() const noexcept
-{
-    return true;
-}
-
-bool comparable::is_comparable() const noexcept
-{
-    return true;
-}
 
 function::function(
     span s,
@@ -53,9 +29,29 @@ std::string function::to_string() const noexcept
     return fmt::format("<function-{}>", _arity);
 }
 
+std::string function::typeof_() const noexcept
+{
+    return "function";
+}
+
 size_t function::arity() const noexcept
 {
     return _arity;
+}
+
+bool function::is_truthy() const noexcept
+{
+    return true;
+}
+
+bool function::is_comparable() const noexcept
+{
+    return false;
+}
+
+bool function::is_callable() const noexcept
+{
+    return true;
 }
 
 object_ptr
@@ -78,6 +74,26 @@ std::string builtin_function::to_string() const noexcept
     return fmt::format("<builtin-function: {}>", name);
 }
 
+bool builtin_function::is_callable() const noexcept
+{
+    return true;
+}
+
+std::string builtin_function::typeof_() const noexcept
+{
+    return "builtin-function";
+}
+
+bool builtin_function::is_truthy() const noexcept
+{
+    return true;
+}
+
+bool builtin_function::is_comparable() const noexcept
+{
+    return false;
+}
+
 std::string number::to_string() const noexcept
 {
     // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
@@ -90,6 +106,11 @@ std::string number::to_string() const noexcept
 bool number::is_callable() const noexcept
 {
     return false;
+}
+
+bool number::is_comparable() const noexcept
+{
+    return true;
 }
 
 std::string number::typeof_() const noexcept
@@ -114,11 +135,6 @@ std::string string::to_string() const noexcept
     return value;
 }
 
-bool string::is_callable() const noexcept
-{
-    return false;
-}
-
 std::string string::typeof_() const noexcept
 {
     return "string";
@@ -127,6 +143,50 @@ std::string string::typeof_() const noexcept
 bool string::is_truthy() const noexcept
 {
     return !value.empty();
+}
+
+bool string::is_comparable() const noexcept
+{
+    return true;
+}
+
+bool string::is_callable() const noexcept
+{
+    return true;
+}
+
+size_t string::arity() const noexcept
+{
+    return 1;
+}
+
+object_ptr string::call(
+    interpreter& interp,
+    span span,
+    std::vector<object_ptr> args) noexcept
+{
+    auto i = args[0];
+    if (i->typeof_() != "number")
+    {
+        interp.interp_error(span, "Can only index strings with numbers");
+        return nullptr;
+    }
+
+    auto n = std::static_pointer_cast<eval::object::number>(i)->value;
+    if (n < 0 || n >= value.size())
+    {
+        interp.interp_error(
+            span,
+            fmt::format(
+                "Invalid index for string of size {}: {}",
+                value.size(),
+                n));
+        return nullptr;
+    }
+
+    return std::make_shared<eval::object::string>(
+        span,
+        std::string { value[n] });
 }
 
 std::optional<int> string::cmp(object_ptr other) const noexcept
@@ -154,6 +214,11 @@ std::string unit::typeof_() const noexcept
 bool unit::is_truthy() const noexcept
 {
     return false;
+}
+
+bool unit::is_comparable() const noexcept
+{
+    return true;
 }
 
 std::optional<int> unit::cmp(object_ptr other) const noexcept

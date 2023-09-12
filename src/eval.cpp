@@ -5,6 +5,7 @@
 #include <builtins/core.hpp>
 #include <builtins/io.hpp>
 #include <builtins/math.hpp>
+#include <builtins/string.hpp>
 #include <eval.hpp>
 #include <parser.hpp>
 #include <span.hpp>
@@ -31,13 +32,15 @@ object::object_ptr interpreter::eval() noexcept
 
 object::object_ptr interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
+    using namespace object::builtin;
     _scopes.push(env);
-    define("io.println", std::make_shared<object::builtin::io::println>());
-    define("math.add", std::make_shared<object::builtin::math::add>());
-    define("math.sub", std::make_shared<object::builtin::math::sub>());
-    define("math.mult", std::make_shared<object::builtin::math::mult>());
-    define("math.div", std::make_shared<object::builtin::math::div>());
-    define("typeof", std::make_shared<object::builtin::core::typeof_>());
+    define("io.println", std::make_shared<io::println>());
+    define("math.add", std::make_shared<math::add>());
+    define("math.sub", std::make_shared<math::sub>());
+    define("math.mult", std::make_shared<math::mult>());
+    define("math.div", std::make_shared<math::div>());
+    define("typeof", std::make_shared<core::typeof_>());
+    define("string.length", std::make_shared<string::length>());
     return ast->accept(*this);
 }
 
@@ -239,7 +242,7 @@ interpreter::visit_call_expression(ast::call_expression& cexpr)
         return nullptr;
     }
 
-    auto callable = std::static_pointer_cast<object::callable>(o);
+    auto callable = std::dynamic_pointer_cast<object::callable>(o);
     if (callable->arity() != cexpr.args.size())
     {
         interp_error(
