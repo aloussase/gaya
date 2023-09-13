@@ -6,7 +6,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 " Keywords
-syntax keyword gayaKeyword let discard in do done unit cases end given otherwise while perform
+syntax keyword gayaKeyword let discard in do done unit cases end given otherwise while perform and or not
 highlight link gayaKeyword Keyword
 
 " Literals
@@ -22,7 +22,6 @@ syntax match gayaOperator /=>/
 syntax match gayaOperator /\v\s+\<-\s+/
 syntax match gayaOperator /\s\+\(==\|>=\|<=\)\s\+/
 syntax match gayaOperator /\v\s+[+-=/*><]\s+/
-syntax match gayaOperator /not/
 highlight link gayaOperator Operator
 
 " Functions

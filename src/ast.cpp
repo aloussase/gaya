@@ -190,6 +190,39 @@ std::string binary_expression::to_string() const noexcept
 }
 
 gaya::eval::object::object_ptr
+logical_expression::execute(eval::interpreter& interp)
+{
+    auto l = lhs->accept(interp);
+    if (!l) return nullptr;
+
+    if (op.type() == token_type::and_)
+    {
+        if (l->is_truthy())
+        {
+            return rhs->accept(interp);
+        }
+        else
+        {
+            return l;
+        }
+    }
+
+    if (op.type() == token_type::or_)
+    {
+        if (l->is_truthy())
+        {
+            return l;
+        }
+        else
+        {
+            return rhs->accept(interp);
+        }
+    }
+
+    assert(false && "unreachable");
+}
+
+gaya::eval::object::object_ptr
 cmp_expression::execute(eval::interpreter& interp)
 {
     auto l = lhs->accept(interp);

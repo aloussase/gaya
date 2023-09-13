@@ -13,7 +13,7 @@ expression_stmt ::= 'discard' expression
 expression ::= let_expression
              | do_expression
              | case_expression
-             | comparison_expression
+             | logical_expression
 
 let_expression ::= 'let' IDENTIFIER '=' expression 'in' expression
 
@@ -44,6 +44,10 @@ case_branches ::= case_branch
 case_branch ::= 'given' expression '=>' expression
 
 case_otherwise ::= 'otherwise' '=>' expression 
+
+logical_expression ::= comparison_expression 'and' comparison_expression
+                     | comparison_expression 'or' comparison_expression
+                     | comparison_expression
 
 comparison_expression ::= term_expression '<' term_expression
                         | term_expression '>' term_expression

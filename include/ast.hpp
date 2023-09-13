@@ -252,6 +252,16 @@ struct binary_expression : public expression
     expression_ptr rhs;
 };
 
+struct logical_expression final : public binary_expression
+{
+    logical_expression(expression_ptr l, token o, expression_ptr r)
+        : binary_expression { std::move(l), o, std::move(r) }
+    {
+    }
+
+    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+};
+
 struct cmp_expression final : public binary_expression
 {
     cmp_expression(expression_ptr l, token o, expression_ptr r)

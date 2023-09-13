@@ -1,0 +1,14 @@
+(* Output: '0\n1\n1\n1\nunit\nunit\n42\n0' *)
+
+discard io.println(0 and 1)
+discard io.println(1 and 1)
+
+discard io.println(0 or 1)
+discard io.println(1 or 0)
+
+(* Short-circuiting *)
+discard io.println(unit) and io.println(42)
+discard io.println(unit) or io.println(42)
+
+(* Precedence with not *)
+discard io.println(not 42 and 69)

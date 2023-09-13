@@ -3,30 +3,28 @@
 (* Return whether the provided string is empty or not. *)
 string.empty :: { s => string.length(s) == 0 }
 
+(* Return the first character in a string, or unit if empty. *)
 string.first :: { s =>
-  (* TODO: Check that string is at least 1 char. *)
   cases
-    given typeof(s) == "string" => s(0)
-    otherwise                   => unit
+    given typeof(s) == "string" and not string.empty(s) => s(0)
   end
 }
 
+(* Return the last character in a string, or unit if empty. *)
 string.last :: { s =>
-  (* TODO: Check that string is non-empty. *)
   cases
-    given typeof(s) == "string" => s(string.length(s) - 1)
-    otherwise                   => unit
+    given typeof(s) == "string" and not string.empty(s) => s(string.length(s) - 1)
   end
 }
 
+(* Return whether a string s starts with the given pattern. *)
 string.startswith :: { s, pattern =>
   cases
     given string.length(s) < string.length(pattern) => 0
     otherwise =>
       let i = 0 in
       let result = 1 in do
-        (* TODO: Check for result falsey here as well. *)
-        while i < string.length(pattern) do
+        while i < string.length(pattern) and result do
           result <- s(i) == pattern(i)
           i <- i + 1
         done

@@ -9,6 +9,7 @@
 #include <span.hpp>
 
 enum class token_type {
+    and_,
     arrow,
     back_arrow,
     cases,
@@ -34,6 +35,7 @@ enum class token_type {
     not_,
     not_equals,
     number,
+    or_,
     otherwise,
     perform,
     plus,

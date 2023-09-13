@@ -290,7 +290,7 @@ ast::expression_ptr parser::expression(token token)
     case token_type::let: return let_expression(token);
     case token_type::do_: return do_expression(token);
     case token_type::cases: return case_expression(token);
-    default: return comparison_expression(token);
+    default: return logical_expression(token);
     }
 }
 
@@ -363,6 +363,57 @@ ast::expression_ptr parser::function_expression(token lcurly)
         lcurly.get_span(),
         std::move(params),
         std::move(expr));
+}
+
+ast::expression_ptr parser::logical_expression(token token) noexcept
+{
+    auto lhs = comparison_expression(token);
+    if (!lhs) return nullptr;
+
+    auto done = false;
+    while (!done)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        switch (t->type())
+        {
+        case token_type::or_:
+        case token_type::and_:
+        {
+            auto op = t.value();
+
+            t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    op.get_span(),
+                    fmt::format(
+                        "Expected an expression after {}",
+                        op.get_span().to_string()));
+                return nullptr;
+            }
+
+            auto rhs = comparison_expression(t.value());
+            if (!rhs) return nullptr;
+
+            lhs = std::make_unique<ast::logical_expression>(
+                std::move(lhs),
+                op,
+                std::move(rhs));
+
+            break;
+        }
+        default:
+        {
+            _lexer.push_back(t.value());
+            done = true;
+            break;
+        }
+        }
+    }
+
+    return lhs;
 }
 
 ast::expression_ptr parser::comparison_expression(token token) noexcept

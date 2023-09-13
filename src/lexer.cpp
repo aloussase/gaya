@@ -19,6 +19,8 @@ lexer::lexer(const char* source)
     _keywords.insert({ "while", token_type::while_ });
     _keywords.insert({ "not", token_type::not_ });
     _keywords.insert({ "perform", token_type::perform });
+    _keywords.insert({ "and", token_type::and_ });
+    _keywords.insert({ "or", token_type::or_ });
 }
 
 std::optional<char> lexer::advance() noexcept
