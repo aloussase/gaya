@@ -852,6 +852,44 @@ ast::expression_ptr parser::do_expression(token token)
  */
 ast::expression_ptr parser::primary_expression(token token)
 {
+    switch (token.type())
+    {
+    case token_type::number:
+    {
+        return std::make_unique<ast::number>(
+            token.get_span(),
+            std::stod(token.get_span().to_string()));
+    }
+    case token_type::string:
+    {
+        return string(token);
+    }
+    case token_type::identifier:
+    {
+        return std::make_unique<ast::identifier>(
+            token.get_span(),
+            token.get_span().to_string());
+    }
+    case token_type::unit:
+    {
+        return std::make_unique<ast::unit>(token.get_span());
+    }
+    case token_type::lcurly:
+    {
+        return function_expression(token);
+    }
+    case token_type::lparen:
+    {
+        return array(token);
+    }
+    default:
+        parser_error(token.get_span(), "Invalid start of primary expression");
+        return nullptr;
+    }
+}
+
+ast::expression_ptr parser::string(token token) noexcept
+{
     auto is_hex_digit = [](char c) {
         return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
             || (c >= '0' && c <= '9');
@@ -926,42 +964,9 @@ ast::expression_ptr parser::primary_expression(token token)
         return result;
     };
 
-    switch (token.type())
-    {
-    case token_type::number:
-    {
-        return std::make_unique<ast::number>(
-            token.get_span(),
-            std::stod(token.get_span().to_string()));
-    }
-    case token_type::string:
-    {
-        return std::make_unique<ast::string>(
-            token.get_span(),
-            unescape(token.get_span().to_string()));
-    }
-    case token_type::identifier:
-    {
-        return std::make_unique<ast::identifier>(
-            token.get_span(),
-            token.get_span().to_string());
-    }
-    case token_type::unit:
-    {
-        return std::make_unique<ast::unit>(token.get_span());
-    }
-    case token_type::lcurly:
-    {
-        return function_expression(token);
-    }
-    case token_type::lparen:
-    {
-        return array(token);
-    }
-    default:
-        parser_error(token.get_span(), "Invalid start of primary expression");
-        return nullptr;
-    }
+    return std::make_unique<ast::string>(
+        token.get_span(),
+        unescape(token.get_span().to_string()));
 }
 
 ast::expression_ptr parser::array(token lparen) noexcept

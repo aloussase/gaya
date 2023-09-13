@@ -54,6 +54,7 @@ class parser
     [[nodiscard]] ast::expression_ptr call_expression(token token);
     [[nodiscard]] ast::expression_ptr do_expression(token token);
     [[nodiscard]] ast::expression_ptr array(token) noexcept;
+    [[nodiscard]] ast::expression_ptr string(token) noexcept;
     [[nodiscard]] ast::expression_ptr primary_expression(token);
 
     void parser_error(span, const std::string&);
