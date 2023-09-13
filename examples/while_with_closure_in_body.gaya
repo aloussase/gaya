@@ -9,9 +9,9 @@ discard
       discard let j = i in do
         let f = { => io.println(j) } in
         cases
-          given j == 1 => do f1 <- f unit done (* TODO: Replace with ignore f1 <- f *)
-          given j == 2 => do f2 <- f unit done
-          otherwise    => do f3 <- f unit done
+          given j == 1 => perform f1 <- f
+          given j == 2 => perform f2 <- f
+          otherwise    => perform f3 <- f
         end
       done
       i <- i + 1

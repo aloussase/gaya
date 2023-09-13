@@ -4,10 +4,7 @@ test :: { =>
   let f = unit in
   let finished = 0 in do
     while not finished do
-      discard let i = "i" in do (* TODO: Replace with ignore *)
-        f <- { => io.println(i) }
-        unit
-      done
+      discard let i = "i" in perform f <- { => io.println(i) }
       finished <- 1
     done
 

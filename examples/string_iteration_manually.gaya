@@ -2,11 +2,8 @@
 
 discard 
   let s = "Hola" in
-  let i = 0 in do
-    while i < string.length(s) do
-      discard io.println(s(i))
-      i <- i + 1
-    done
-
-    unit
+  let i = 0 in perform
+  while i < string.length(s) do
+    discard io.println(s(i))
+    i <- i + 1
   done

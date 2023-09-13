@@ -1,0 +1,10 @@
+(* Output: '52' *)
+
+test :: { =>
+  let x = 42 in do
+    discard perform x <- 52
+    x
+  done
+}
+
+discard io.println(test())

@@ -295,12 +295,11 @@ gaya::eval::object::object_ptr unary_expression::accept(ast_visitor& v)
     return v.visit_unary_expression(*this);
 }
 
-std::string unary_expression::to_string() const noexcept
+std::string not_expression::to_string() const noexcept
 {
     std::stringstream ss;
-    ss << R"({"type": "unary_expression", "operator": ")"
-       << op.get_span().to_string() << R"(", "operand": )"
-       << operand->to_string() << "}";
+    ss << R"({"type": "not_expression", "operand": )" << operand->to_string()
+       << "}";
     return ss.str();
 }
 
@@ -313,6 +312,23 @@ not_expression::execute(eval::interpreter& interp)
     return std::make_shared<eval::object::number>(
         op.get_span(),
         !value->is_truthy());
+}
+
+gaya::eval::object::object_ptr
+perform_expression::execute(eval::interpreter& interp)
+{
+    auto _result = stmt->accept(interp);
+    if (interp.had_error()) return nullptr;
+
+    return std::make_shared<eval::object::unit>(op.get_span());
+}
+
+std::string perform_expression::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "perform_expression", "stmt": )" << stmt->to_string()
+       << "}";
+    return ss.str();
 }
 
 /* Primary expressions */

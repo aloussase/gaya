@@ -275,30 +275,40 @@ struct arithmetic_expression final : public binary_expression
 /* Unary expressions */
 struct unary_expression : public expression
 {
-    unary_expression(token o, expression_ptr oper)
+    virtual ~unary_expression() { }
+    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
+
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+};
+
+struct not_expression final : public unary_expression
+{
+    not_expression(token o, expression_ptr oper)
         : op { o }
         , operand { std::move(oper) }
     {
     }
 
-    virtual ~unary_expression() { }
-    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
-
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
     std::string to_string() const noexcept override;
 
     token op;
     expression_ptr operand;
 };
 
-struct not_expression final : public unary_expression
+struct perform_expression final : public unary_expression
 {
-    not_expression(token op, expression_ptr operand)
-        : unary_expression { op, std::move(operand) }
+    perform_expression(token o, stmt_ptr s)
+        : op { o }
+        , stmt { std::move(s) }
     {
     }
 
     gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    std::string to_string() const noexcept override;
+
+    token op;
+    stmt_ptr stmt;
 };
 
 /* Primary expressions */

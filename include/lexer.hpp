@@ -34,6 +34,7 @@ enum class token_type {
     not_,
     number,
     otherwise,
+    perform,
     plus,
     rcurly,
     rparen,

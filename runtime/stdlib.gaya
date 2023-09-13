@@ -28,11 +28,7 @@ string.startswith :: { s, pattern =>
             cases
               (* TODO: Replace with not equals. *)
               given s(i) == pattern(i) => unit
-              otherwise => do
-                (* TODO: Use `perform result <- 0` *)
-                result <- 0
-                unit
-              done
+              otherwise                => perform result <- 0
             end
           i <- i + 1
         done

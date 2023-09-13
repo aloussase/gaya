@@ -142,7 +142,7 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
     case token_type::identifier: return assignment_stmt(token);
     case token_type::while_: return while_stmt(token);
     default:
-        parser_error(token.get_span(), "Invalid start of local stmt");
+        parser_error(token.get_span(), "Invalid start of local statement");
         return nullptr;
     }
 }
@@ -537,42 +537,46 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
  */
 ast::expression_ptr parser::unary_expression(token op) noexcept
 {
-    auto is_unary_operator = ([&] {
-        switch (op.type())
-        {
-        case token_type::not_: return true;
-        default: return false;
-        }
-    })();
-
-    if (!is_unary_operator)
+    switch (op.type())
     {
-        return call_expression(op);
+    case token_type::perform: return perform_expression(op);
+    case token_type::not_: return not_expression(op);
+    default: return call_expression(op);
     }
+}
 
-    auto expr_token = _lexer.next_token();
-    if (!expr_token)
+ast::expression_ptr parser::not_expression(token op) noexcept
+{
+    auto token = _lexer.next_token();
+    if (!token)
     {
         parser_error(
             op.get_span(),
             fmt::format(
-                "Expected expression after unary operator {}",
+                "Expected expression after 'not'",
                 op.get_span().to_string()));
         return nullptr;
     }
 
-    auto expr = call_expression(expr_token.value());
+    auto expr = call_expression(token.value());
     if (!expr) return nullptr;
 
-    switch (op.type())
+    return std::make_unique<ast::not_expression>(op, std::move(expr));
+}
+
+ast::expression_ptr parser::perform_expression(token op) noexcept
+{
+    auto token = _lexer.next_token();
+    if (!token)
     {
-    case token_type::not_:
-        return std::make_unique<ast::not_expression>(op, std::move(expr));
-    default:
-    {
-        assert(false && "should not happen");
+        parser_error(op.get_span(), "Expected a statement after 'perform'");
+        return nullptr;
     }
-    }
+
+    auto stmt = local_stmt(token.value());
+    if (!stmt) return nullptr;
+
+    return std::make_unique<ast::perform_expression>(op, std::move(stmt));
 }
 
 /*
@@ -836,6 +840,9 @@ ast::expression_ptr parser::do_expression(token token)
         parser_error(
             token.get_span(),
             "Expected 'done' after last expression in do block");
+        parser_hint(
+            token.get_span(),
+            "Check that you don't have leftover expressions in the do block");
         return nullptr;
     }
 

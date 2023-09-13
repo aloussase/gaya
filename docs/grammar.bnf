@@ -61,6 +61,7 @@ factor_expression ::= unary_expression '*' unary_expression
                     | unary_expression
 
 unary_expression ::= 'not' call_expression
+                   | 'perform' call_expression
 
 call_expression ::= primary_expression '(' args_list ')'
                   | primary_expression

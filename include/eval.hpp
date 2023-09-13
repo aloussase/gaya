@@ -50,6 +50,9 @@ class interpreter final : public ast::ast_visitor
     /// Evaluate the given file in the context of this interpreter.
     [[nodiscard]] bool loadfile(const std::string&) noexcept;
 
+    /// Whether the interpreter had an error.
+    [[nodiscard]] bool had_error() const noexcept;
+
     o::object_ptr visit_program(ast::program&) override;
     o::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
     o::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
@@ -70,8 +73,6 @@ class interpreter final : public ast::ast_visitor
 
   private:
     [[nodiscard]] env& current_env() noexcept;
-
-    [[nodiscard]] bool had_error() const noexcept;
 
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;

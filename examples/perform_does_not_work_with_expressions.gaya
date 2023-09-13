@@ -1,0 +1,7 @@
+(* Expect error *)
+
+discard perform 42
+
+discard perform { => 42 }
+
+

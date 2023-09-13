@@ -25,7 +25,7 @@ function! GayaIndent(lnum)
     let previous_linum = current_linum - 1
     let previous_line = getline(previous_linum)
 
-    if previous_line =~ '=>\s*$' || previous_line =~ 'do\s*$' || previous_line =~ 'cases\s*$'
+    if previous_line =~ '=>\s*$' || previous_line =~ 'do\s*$' || previous_line =~ 'cases\s*$' || previous_line =~ 'discard\s*$'
         return indent(previous_linum) + 2
     endif
 
