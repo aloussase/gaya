@@ -8,6 +8,7 @@
 #include <builtins/math.hpp>
 #include <builtins/string.hpp>
 #include <eval.hpp>
+#include <file_reader.hpp>
 #include <parser.hpp>
 #include <span.hpp>
 
@@ -17,6 +18,22 @@ namespace gaya::eval
 interpreter::interpreter(const char* source)
     : _source { source }
 {
+    _scopes.push(env {});
+
+    using namespace object::builtin;
+    define("io.println", std::make_shared<io::println>());
+    define("math.add", std::make_shared<math::add>());
+    define("math.sub", std::make_shared<math::sub>());
+    define("math.mult", std::make_shared<math::mult>());
+    define("math.div", std::make_shared<math::div>());
+    define("typeof", std::make_shared<core::typeof_>());
+    define("string.length", std::make_shared<string::length>());
+    define("array.length", std::make_shared<array::length>());
+
+    if (!loadfile(GAYA_STDLIB_PATH))
+    {
+        throw failed_to_load_stdlib {};
+    }
 }
 
 object::object_ptr interpreter::eval() noexcept
@@ -28,22 +45,48 @@ object::object_ptr interpreter::eval() noexcept
         _diagnostics = p.diagnostics();
         return nullptr;
     }
-    return eval(env {}, std::move(ast));
+    return eval(current_env(), std::move(ast));
 }
 
 object::object_ptr interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
-    using namespace object::builtin;
-    _scopes.push(env);
-    define("io.println", std::make_shared<io::println>());
-    define("math.add", std::make_shared<math::add>());
-    define("math.sub", std::make_shared<math::sub>());
-    define("math.mult", std::make_shared<math::mult>());
-    define("math.div", std::make_shared<math::div>());
-    define("typeof", std::make_shared<core::typeof_>());
-    define("string.length", std::make_shared<string::length>());
-    define("array.length", std::make_shared<array::length>());
+    // NOTE: We don't pop the scope because the repl needs it to keep state.
+    current_env() = env;
     return ast->accept(*this);
+}
+
+bool interpreter::loadfile(const std::string& filename) noexcept
+{
+    file_reader reader { filename };
+    if (!reader) return false;
+
+    auto* contents = reader.slurp();
+    if (strlen(contents) == 0)
+    {
+        free(contents);
+        return true;
+    }
+
+    assert(contents != nullptr);
+
+    auto p   = parser(contents);
+    auto ast = p.parse();
+
+    if (ast && p.diagnostics().empty())
+    {
+        // NOTE: We are leaking contents on purpose here.
+        (void)eval(current_env(), std::move(ast));
+        return !had_error();
+    }
+    else
+    {
+        for (const auto& diag : p.diagnostics())
+        {
+            _diagnostics.push_back(diag);
+        }
+        free(contents);
+        return false;
+    }
 }
 
 std::vector<diagnostic::diagnostic> interpreter::diagnostics() const noexcept

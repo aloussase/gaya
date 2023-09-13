@@ -13,6 +13,10 @@ namespace gaya::eval
 
 namespace o = object;
 
+class failed_to_load_stdlib final : public std::exception
+{
+};
+
 class interpreter final : public ast::ast_visitor
 {
   public:
@@ -46,6 +50,9 @@ class interpreter final : public ast::ast_visitor
 
     /// Add an interpreter hint.
     void interp_hint(span, const std::string& hint);
+
+    /// Evaluate the given file in the context of this interpreter.
+    [[nodiscard]] bool loadfile(const std::string&) noexcept;
 
     o::object_ptr visit_program(ast::program&) override;
     o::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;

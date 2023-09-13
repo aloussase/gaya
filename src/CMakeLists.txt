@@ -19,6 +19,9 @@ target_compile_options(gaya PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-Os>
     $<$<CONFIG:Debug>:-g>)
 
+target_compile_definitions(gaya PRIVATE
+    GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/gaya/runtime/stdlib.gaya","runtime/stdlib.gaya">)
+
 target_link_libraries(gaya PRIVATE
     fmt::fmt
     readline)

@@ -1,0 +1,17 @@
+(* Strings *)
+
+string.first :: { s =>
+  (* TODO: Check that string is at least 1 char. *)
+  cases
+    given typeof(s) == "string" => s(0)
+    otherwise                   => unit
+  end
+}
+
+string.last :: { s =>
+  (* TODO: Check that string is non-empty. *)
+  cases
+    given typeof(s) == "string" => s(string.length(s) - 1)
+    otherwise                   => unit
+  end
+}
