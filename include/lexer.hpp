@@ -32,6 +32,7 @@ enum class token_type {
     let,
     lparen,
     not_,
+    not_equals,
     number,
     otherwise,
     perform,
@@ -112,6 +113,7 @@ class lexer
     [[nodiscard]] std::optional<token> colon_colon() noexcept;
     [[nodiscard]] std::optional<token> comment() noexcept;
     [[nodiscard]] std::optional<token> dash() noexcept;
+    [[nodiscard]] std::optional<token> slash() noexcept;
     [[nodiscard]] std::optional<token> less_than() noexcept;
     [[nodiscard]] std::optional<token> greater_than() noexcept;
     [[nodiscard]] std::optional<token> arrow() noexcept;

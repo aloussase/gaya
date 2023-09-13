@@ -117,7 +117,7 @@ std::optional<token> lexer::next_token() noexcept
     case '+': return mk_token(token_type::plus);
     case '*': return mk_token(token_type::star);
     case '-': return dash();
-    case '/': return mk_token(token_type::slash);
+    case '/': return slash();
     case '0':
     case '1':
     case '2':
@@ -188,6 +188,16 @@ std::optional<token> lexer::comment() noexcept
     }
 
     return next_token();
+}
+
+std::optional<token> lexer::slash() noexcept
+{
+    if (auto c = peek(); c && c.value() == '=')
+    {
+        advance();
+        return mk_token(token_type::not_equals);
+    }
+    return mk_token(token_type::slash);
 }
 
 std::optional<token> lexer::less_than() noexcept

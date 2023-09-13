@@ -1,5 +1,8 @@
 (* Strings *)
 
+(* Return whether the provided string is empty or not. *)
+string.empty :: { s => string.length(s) == 0 }
+
 string.first :: { s =>
   (* TODO: Check that string is at least 1 char. *)
   cases
@@ -24,12 +27,7 @@ string.startswith :: { s, pattern =>
       let result = 1 in do
         (* TODO: Check for result falsey here as well. *)
         while i < string.length(pattern) do
-          discard
-            cases
-              (* TODO: Replace with not equals. *)
-              given s(i) == pattern(i) => unit
-              otherwise                => perform result <- 0
-            end
+          result <- s(i) == pattern(i)
           i <- i + 1
         done
 

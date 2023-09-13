@@ -209,9 +209,16 @@ cmp_expression::execute(eval::interpreter& interp)
         return nullptr;
     }
 
-    if (l->typeof_() != r->typeof_() && op.type() == token_type::equal_equal)
+    if (l->typeof_() != r->typeof_())
     {
-        return std::make_shared<eval::object::number>(op.get_span(), 0);
+        switch (op.type())
+        {
+        case token_type::equal_equal:
+            return std::make_shared<eval::object::number>(op.get_span(), 0);
+        case token_type::not_equals:
+            return std::make_shared<eval::object::number>(op.get_span(), 1);
+        default: break;
+        }
     }
 
     auto result
@@ -236,6 +243,7 @@ cmp_expression::execute(eval::interpreter& interp)
     case token_type::greater_than: ret = result > 0; break;
     case token_type::greater_than_eq: ret = result >= 0; break;
     case token_type::equal_equal: ret = result == 0; break;
+    case token_type::not_equals: ret = result != 0; break;
     default: assert(false && "should not happen");
     }
 

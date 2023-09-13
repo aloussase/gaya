@@ -383,6 +383,7 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
         case token_type::greater_than:
         case token_type::greater_than_eq:
         case token_type::equal_equal:
+        case token_type::not_equals:
         {
             auto op = t.value();
 
