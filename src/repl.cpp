@@ -85,6 +85,8 @@ void run() noexcept
         add_history(line);
         free(line);
     }
+
+    exit(EXIT_SUCCESS);
 }
 
 }

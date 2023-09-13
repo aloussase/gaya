@@ -13,10 +13,6 @@ namespace gaya::eval
 
 namespace o = object;
 
-class failed_to_load_stdlib final : public std::exception
-{
-};
-
 class interpreter final : public ast::ast_visitor
 {
   public:

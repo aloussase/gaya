@@ -15,3 +15,29 @@ string.last :: { s =>
     otherwise                   => unit
   end
 }
+
+string.startswith :: { s, pattern =>
+  cases
+    given string.length(s) < string.length(pattern) => 0
+    otherwise =>
+      let i = 0 in
+      let result = 1 in do
+        (* TODO: Check for result falsey here as well. *)
+        while i < string.length(pattern) do
+          discard
+            cases
+              (* TODO: Replace with not equals. *)
+              given s(i) == pattern(i) => unit
+              otherwise => do
+                (* TODO: Use `perform result <- 0` *)
+                result <- 0
+                unit
+              done
+            end
+          i <- i + 1
+        done
+
+        result
+      done
+  end
+}

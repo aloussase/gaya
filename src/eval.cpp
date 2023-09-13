@@ -32,7 +32,7 @@ interpreter::interpreter(const char* source)
 
     if (!loadfile(GAYA_STDLIB_PATH))
     {
-        throw failed_to_load_stdlib {};
+        fprintf(stderr, "warning: stdlib could not be loaded\n");
     }
 }
 
