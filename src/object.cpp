@@ -113,8 +113,7 @@ std::string array::to_string() const noexcept
 
 bool array::is_callable() const noexcept
 {
-    /* TODO: Make array callable */
-    return false;
+    return true;
 }
 
 std::string array::typeof_() const noexcept
@@ -130,6 +129,38 @@ bool array::is_truthy() const noexcept
 bool array::is_comparable() const noexcept
 {
     return false;
+}
+
+size_t array::arity() const noexcept
+{
+    return 1;
+}
+
+object_ptr array::call(
+    interpreter& interp,
+    span span,
+    std::vector<object_ptr> args) noexcept
+{
+    auto i = args[0];
+    if (i->typeof_() != "number")
+    {
+        interp.interp_error(span, "Can only index arrays with numbers");
+        return nullptr;
+    }
+
+    auto n = std::static_pointer_cast<eval::object::number>(i)->value;
+    if (n < 0 || n >= elems.size())
+    {
+        interp.interp_error(
+            span,
+            fmt::format(
+                "Invalid index for array of size {}: {}",
+                elems.size(),
+                n));
+        return nullptr;
+    }
+
+    return elems[n];
 }
 
 std::string number::to_string() const noexcept

@@ -12,7 +12,8 @@ add_executable(gaya main.cpp
     builtins/io.cpp
     builtins/math.cpp
     builtins/core.cpp
-    builtins/string.cpp)
+    builtins/string.cpp
+    builtins/array.cpp)
 
 target_compile_options(gaya PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-Os>

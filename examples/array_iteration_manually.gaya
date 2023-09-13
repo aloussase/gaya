@@ -1,0 +1,12 @@
+(* Output: '1\n2\n3' *)
+
+discard 
+  let a = (1, 2, 3) in
+  let i = 0 in do
+    while i < array.length(a) do
+      discard io.println(a(i))
+      i <- i + 1
+    done
+
+    unit
+  done

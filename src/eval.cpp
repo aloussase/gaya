@@ -2,6 +2,7 @@
 
 #include <fmt/core.h>
 
+#include <builtins/array.hpp>
 #include <builtins/core.hpp>
 #include <builtins/io.hpp>
 #include <builtins/math.hpp>
@@ -41,6 +42,7 @@ object::object_ptr interpreter::eval(env env, ast::node_ptr ast) noexcept
     define("math.div", std::make_shared<math::div>());
     define("typeof", std::make_shared<core::typeof_>());
     define("string.length", std::make_shared<string::length>());
+    define("array.length", std::make_shared<array::length>());
     return ast->accept(*this);
 }
 

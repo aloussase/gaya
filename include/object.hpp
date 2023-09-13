@@ -96,7 +96,7 @@ struct builtin_function : public object, public callable
     std::string name;
 };
 
-struct array final : public object
+struct array final : public object, public callable
 {
     array(span s, std::vector<object_ptr> e)
         : span_ { s }
@@ -109,6 +109,10 @@ struct array final : public object
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
+
+    size_t arity() const noexcept override;
+    object_ptr
+    call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
 
     span span_;
     std::vector<object_ptr> elems;
