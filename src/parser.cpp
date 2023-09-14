@@ -707,60 +707,88 @@ ast::expression_ptr parser::call_expression(token starttoken)
 
 ast::expression_ptr parser::let_expression(token let)
 {
-    auto ident = _lexer.next_token();
-    if (!match(ident, token_type::identifier))
+    auto let_binding = [&](token ident) -> std::optional<ast::let_binding> {
+        if (auto equal_sign = _lexer.next_token();
+            !match(equal_sign, token_type::equal))
+        {
+            parser_error(
+                ident.get_span(),
+                "Expected '=' after identifier in let expression");
+            return std::nullopt;
+        }
+
+        auto expr_token = _lexer.next_token();
+        if (!expr_token)
+        {
+            parser_error(ident.get_span(), "Expected an expression after '='");
+            return std::nullopt;
+        }
+
+        auto value = expression(expr_token.value());
+        if (!value) return std::nullopt;
+
+        auto identifier = std::make_unique<ast::identifier>(
+            ident.get_span(),
+            ident.get_span().to_string());
+
+        return ast::let_binding { std::move(identifier), std::move(value) };
+    };
+
+    std::vector<ast::let_binding> bindings;
+    for (;;)
     {
-        parser_error(let.get_span(), "Expected an identifier after 'let'");
+        auto ident = _lexer.next_token();
+        if (!ident) break;
+
+        if (!match(ident, token_type::identifier))
+        {
+            _lexer.push_back(ident.value());
+            break;
+        }
+
+        auto binding = let_binding(ident.value());
+        if (!binding) return nullptr;
+
+        bindings.push_back(std::move(binding.value()));
+
+        if (auto comma = _lexer.next_token(); !match(comma, token_type::comma))
+        {
+            if (comma)
+            {
+                _lexer.push_back(comma.value());
+            }
+            break;
+        }
+    }
+
+    if (bindings.empty())
+    {
+        parser_error(
+            let.get_span(),
+            "Expected at least one binding in let expression");
         return nullptr;
     }
 
-    auto equal_sign = _lexer.next_token();
-    if (!match(equal_sign, token_type::equal))
+    if (auto in = _lexer.next_token(); !match(in, token_type::in))
     {
         parser_error(
-            ident->get_span(),
-            "Expected '=' after identifier in let expression");
-        return nullptr;
-    }
-
-    auto token = _lexer.next_token();
-    if (!token)
-    {
-        parser_error(
-            equal_sign->get_span(),
-            "Expected an expression after '='");
-        return nullptr;
-    }
-
-    auto binding = expression(token.value());
-    if (!binding) return nullptr;
-
-    auto in = _lexer.next_token();
-    if (!match(in, token_type::in))
-    {
-        parser_error(
-            token->get_span(),
+            let.get_span(),
             "Expected 'in' after expression in let expression");
         return nullptr;
     }
 
-    token = _lexer.next_token();
-    if (!token)
+    auto expr_token = _lexer.next_token();
+    if (!expr_token)
     {
-        parser_error(in->get_span(), "Expected an expression after 'in'");
+        parser_error(let.get_span(), "Expected an expression after 'in'");
         return nullptr;
     }
 
-    auto expr = expression(token.value());
+    auto expr = expression(expr_token.value());
     if (!expr) return nullptr;
 
-    auto identifier = std::make_unique<ast::identifier>(
-        ident->get_span(),
-        ident->get_span().to_string());
-
     return std::make_unique<ast::let_expression>(
-        std::move(identifier),
-        std::move(binding),
+        std::move(bindings),
         std::move(expr));
 }
 

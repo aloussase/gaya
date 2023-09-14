@@ -164,9 +164,17 @@ gaya::eval::object::object_ptr function_expression::accept(ast_visitor& v)
 std::string let_expression::to_string() const noexcept
 {
     std::stringstream ss;
-    ss << R"({"type": "let_expression", "identifier": )" << ident->to_string()
-       << R"(, "binding": )" << binding->to_string() << R"(, "expr": )"
-       << expr->to_string() << "}";
+    ss << R"({"type": "let_expression", "bindings": [)"
+       << join(
+              bindings,
+              [](auto& binding) {
+                  std::stringstream ss;
+                  ss << R"({ "identifier": )" << binding.ident->to_string()
+                     << R"(, "binding": )" << binding.value->to_string()
+                     << R"(, "value": )" << binding.value->to_string() << "}";
+                  return ss.str();
+              })
+       << "]}";
     return ss.str();
 }
 
@@ -402,7 +410,20 @@ gaya::eval::object::object_ptr number::accept(ast_visitor& v)
 std::string string::to_string() const noexcept
 {
     std::stringstream ss;
-    ss << R"({"type": "string", "value": ")" << value << "\"}";
+    std::string s = "";
+
+    for (size_t i = 0; i < value.size(); i++)
+    {
+        switch (value[i])
+        {
+        case '\t': s += "\\t"; break;
+        case '\n': s += "\\n"; break;
+        case '\b': s += "\\b"; break;
+        default: s += value[i];
+        }
+    }
+
+    ss << R"({"type": "string", "value": ")" << s << "\"}";
     return ss.str();
 }
 

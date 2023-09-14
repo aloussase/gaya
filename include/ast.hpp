@@ -209,24 +209,31 @@ struct function_expression final : public expression
     std::shared_ptr<expression> body;
 };
 
+struct let_binding
+{
+    let_binding(std::unique_ptr<identifier> i, expression_ptr b)
+        : ident { std::move(i) }
+        , value { std::move(b) }
+
+    {
+    }
+
+    std::unique_ptr<identifier> ident;
+    expression_ptr value;
+};
+
 struct let_expression final : public expression
 {
-    let_expression(
-        std::unique_ptr<identifier> i, //
-        expression_ptr b,
-        expression_ptr e)
-        : ident { std::move(i) }
-        , binding { std::move(b) }
+    let_expression(std::vector<let_binding> b, expression_ptr e)
+        : bindings { std::move(b) }
         , expr { std::move(e) }
     {
     }
 
     std::string to_string() const noexcept override;
-
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
-    std::unique_ptr<identifier> ident;
-    expression_ptr binding;
+    std::vector<let_binding> bindings;
     expression_ptr expr;
 };
 

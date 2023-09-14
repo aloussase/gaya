@@ -340,13 +340,19 @@ interpreter::visit_function_expression(ast::function_expression& fexpr)
 object::object_ptr
 interpreter::visit_let_expression(ast::let_expression& let_expression)
 {
-    auto ident   = let_expression.ident->value;
-    auto binding = let_expression.binding->accept(*this);
-    if (!binding) return nullptr;
-
     begin_scope(env { std::make_shared<env>(current_env()) });
-    define(key::local(ident), binding);
+
+    for (auto& binding : let_expression.bindings)
+    {
+        auto ident = binding.ident->value;
+        auto value = binding.value->accept(*this);
+        if (!value) return nullptr;
+
+        define(key::local(ident), value);
+    }
+
     auto result = let_expression.expr->accept(*this);
+
     end_scope();
 
     return result;
