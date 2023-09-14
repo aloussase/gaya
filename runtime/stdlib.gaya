@@ -82,7 +82,7 @@ string.index :: { s, pattern =>
               j <- j + 1
             done
 
-            perform completeMatch <- match
+            completeMatch <- match
           done
 
           i <- i + 1
@@ -133,14 +133,12 @@ string.split :: { s, pattern =>
               result <- array.push(result, unitToStr(string.substring(s, j, i)))
               i <- i + string.length(pattern)
               j <- i
-              unit
             done
             otherwise => perform i <- i + 1
           end
         done
 
-        result <- array.push(result, unitToStr(string.substring(s, j, i)))
-        result
+        array.push(result, unitToStr(string.substring(s, j, i)))
       done
   end
 }

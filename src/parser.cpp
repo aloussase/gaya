@@ -897,9 +897,7 @@ ast::expression_ptr parser::do_expression(token token)
 
     if (!parsed_final_expression)
     {
-        parser_error(token.get_span(), "do blocks must end with an expression");
-        parser_hint(token.get_span(), "Maybe remove a discard?");
-        return nullptr;
+        body.push_back(std::make_unique<ast::unit>(token.get_span()));
     }
 
     if (auto tk = _lexer.next_token(); !match(tk, token_type::done))
