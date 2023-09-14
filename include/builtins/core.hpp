@@ -29,4 +29,16 @@ struct assert_ final : public builtin_function
     call(interpreter&, span, std::vector<object_ptr>) noexcept override;
 };
 
+struct tostring final : public builtin_function
+{
+    tostring()
+        : builtin_function { "tostring" }
+    {
+    }
+
+    size_t arity() const noexcept override;
+    object_ptr
+    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
+};
+
 }

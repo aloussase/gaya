@@ -177,3 +177,24 @@ array.range :: { start, finish => do
     end
   end
 }
+
+(*
+  Return a string that is the result of joining the elements of the provided
+  array by the given separator.
+*)
+array.join :: { ary, sep => do
+    discard assert(typeof(ary) == "array" and typeof(sep) == "string")
+    let i = 0, result = "" in do
+      while i < array.length(ary)
+        result <- result |> string.concat(_, tostring(ary(i)))
+        discard cases 
+          given i < array.length(ary) - 1 => 
+            perform result <- result |> string.concat(_, sep)
+        end
+        i <- i + 1
+      end
+
+      result
+    end
+  end
+}

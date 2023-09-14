@@ -13,3 +13,8 @@ discard io.println(array.push(("hello"), 1))
 (* Range *)
 discard array.range(1, 10) |> assert(_ == (1, 2, 3, 4, 5, 6, 7, 8, 9))
 discard array.range(10, 1) |> assert(_ == ())
+
+(* Join *)
+discard array.join((), "") |> assert(_ == "")
+discard array.join((1, 2, 3), ", ") |> assert(_ == "1, 2, 3")
+discard array.join(((1, 2, 3)), ", ") |> assert(_ == "(1, 2, 3)")

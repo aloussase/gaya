@@ -46,4 +46,19 @@ object_ptr assert_::call(
     }
 }
 
+size_t tostring::arity() const noexcept
+{
+    return 1;
+}
+
+object_ptr
+tostring::call(interpreter&, span span, std::vector<object_ptr> args) noexcept
+{
+    if (auto s = std::dynamic_pointer_cast<string>(args[0]); s)
+    {
+        return s;
+    }
+    return std::make_shared<string>(span, args[0]->to_string());
+}
+
 }

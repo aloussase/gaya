@@ -32,6 +32,7 @@ interpreter::interpreter(const std::string& filename, const char* source)
 
     define("typeof", std::make_shared<core::typeof_>());
     define("assert", std::make_shared<core::assert_>());
+    define("tostring", std::make_shared<core::tostring>());
 
     define("string.length", std::make_shared<string::length>());
     define("string.concat", std::make_shared<string::concat>());
