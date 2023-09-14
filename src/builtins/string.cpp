@@ -32,4 +32,33 @@ object_ptr length::call(
     return std::make_shared<number>(span, r);
 }
 
+size_t concat::arity() const noexcept
+{
+    return 2;
+}
+
+object_ptr concat::call(
+    interpreter& interp,
+    span span,
+    std::vector<object_ptr> args) noexcept
+{
+    if (args[0]->typeof_() != "string" || args[1]->typeof_() != "string")
+    {
+        interp.interp_error(
+            span,
+            fmt::format(
+                "Expected {} and {} to be both string",
+                args[0]->typeof_(),
+                args[1]->typeof_()));
+        return nullptr;
+    }
+
+    auto s1 = std::static_pointer_cast<gaya::eval::object::string>(args[0]);
+    auto s2 = std::static_pointer_cast<gaya::eval::object::string>(args[1]);
+
+    return std::make_shared<gaya::eval::object::string>(
+        span,
+        s1->value + s2->value);
+}
+
 }

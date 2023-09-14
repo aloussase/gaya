@@ -21,14 +21,22 @@ interpreter::interpreter(const char* source)
     _scopes.push(env {});
 
     using namespace object::builtin;
+
     define("io.println", std::make_shared<io::println>());
+
     define("math.add", std::make_shared<math::add>());
     define("math.sub", std::make_shared<math::sub>());
     define("math.mult", std::make_shared<math::mult>());
     define("math.div", std::make_shared<math::div>());
+
     define("typeof", std::make_shared<core::typeof_>());
+
     define("string.length", std::make_shared<string::length>());
+    define("string.concat", std::make_shared<string::concat>());
+
     define("array.length", std::make_shared<array::length>());
+    define("array.concat", std::make_shared<array::concat>());
+    define("array.push", std::make_shared<array::push>());
 
     if (!loadfile(GAYA_STDLIB_PATH))
     {
@@ -75,6 +83,7 @@ bool interpreter::loadfile(const std::string& filename) noexcept
     if (ast && p.diagnostics().empty())
     {
         // NOTE: We are leaking contents on purpose here.
+        // FIXME: Maybe there is a way to avoid leaking?
         (void)eval(current_env(), std::move(ast));
         return !had_error();
     }

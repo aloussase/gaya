@@ -1,0 +1,11 @@
+(* Output: '()\n(1)\n(1)\n(1, 2)\n(1)\n("hello", 1)' *)
+
+(* Concat *)
+discard io.println(array.concat((), ()))
+discard io.println(array.concat((1), ()))
+discard io.println(array.concat((), (1)))
+discard io.println(array.concat((1), (2)))
+
+(* Push *)
+discard io.println(array.push((), 1))
+discard io.println(array.push(("hello"), 1))

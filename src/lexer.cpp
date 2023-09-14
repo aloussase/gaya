@@ -307,23 +307,27 @@ std::optional<token> lexer::string() noexcept
 
     for (;;)
     {
-        if (auto c = peek();
-            c && (c.value() != '"' || (c.value() == '"' && previous == '\\')))
+        auto c = peek();
+        if (!c) break;
+
+        if (c && (c.value() != '"' || (c.value() == '"' && previous == '\\')))
         {
             previous = c.value();
             advance();
         }
         else if (c && c.value() == '"')
         {
-            advance();
             break;
         }
-        else
-        {
-            lexer_error("Unterminated string literal");
-            return std::nullopt;
-        }
     }
+
+    if (auto c = peek(); !c || c != '"')
+    {
+        lexer_error("Unterminated string literal");
+        return std::nullopt;
+    }
+
+    advance();
 
     return token {
         token_type::string,

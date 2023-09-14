@@ -15,7 +15,17 @@ size_t println::arity() const noexcept
 object_ptr
 println::call(interpreter&, span span, std::vector<object_ptr> args) noexcept
 {
-    fmt::println("{}", args.front()->to_string());
+    auto x = args[0];
+    auto s = x->to_string();
+
+    if (x->typeof_() == "string")
+    {
+        s.erase(s.cbegin());
+        s.erase(s.cend() - 1);
+    }
+
+    fmt::println("{}", s);
+
     return std::make_shared<unit>(span);
 }
 

@@ -1,3 +1,17 @@
+(* Constants *)
+
+true  :: 1
+false :: 0
+
+(* Utilities *)
+
+ifelse :: { b, iftrue, iffalse =>
+  cases
+    given b   => iftrue()
+    otherwise => iffalse()
+  end
+}
+
 (* Strings *)
 
 (* Return whether the provided string is empty or not. *)
@@ -32,4 +46,120 @@ string.startswith :: { s, pattern =>
         result
       done
   end
+}
+
+(* Return whether a string s ends with the given pattern. *)
+string.endswith :: { s, pattern =>
+  cases 
+    given string.length(s) < string.length(pattern) => 0
+    otherwise =>
+      let i = string.length(s) - 1 in
+      let j = string.length(pattern) - 1 in 
+      let result = 1 in do
+        while i >= 0 and j >= 0 and result do
+          result <- s(i) == pattern(j)
+          i <- i - 1
+          j <- j - 1
+        done
+
+        result
+      done
+  end
+}
+
+(* Return the index in s where the provided pattern starts, or unit if not found. *)
+string.index :: { s, pattern =>
+  cases 
+    given string.length(s) < string.length(pattern) => unit
+    otherwise =>
+      let completeMatch = false in
+      let i = 0 in do
+        while not completeMatch and i < string.length(s) - string.length(pattern) + 1 do
+          discard let j = 0 in
+          let match = true in do 
+            while match and j < string.length(pattern) do
+              match <- s(i + j) == pattern(j)
+              j <- j + 1
+            done
+
+            perform completeMatch <- match
+          done
+
+          i <- i + 1
+        done
+
+        ifelse(completeMatch, { => i - 1}, { => unit })
+      done
+  end
+}
+
+(* Return whether the provided pattern is contained in s. *)
+string.contains :: { s, pattern => string.index(s, pattern) /= unit }
+
+(* Return a substring of s from start to finish.
+
+  If start < finish or start < 0 or finish > string.length(s), unit
+  is returned instead.
+*)
+string.substring :: { s, start, finish =>
+  cases
+    given finish <= start or start < 0 or finish > string.length(s) => unit
+    otherwise =>
+      let result = "" in
+      let i = start in do
+        while i < finish do
+          result <- string.concat(result, s(i))
+          i <- i + 1
+        done
+
+        result
+      done
+  end
+}
+
+(* Splits a string on the given pattern and returns an array with the parts. *)
+string.split :: { s, pattern =>
+  cases 
+    given not string.contains(s, pattern) => ()
+    otherwise =>
+      let result = () in
+      let i = 0 in 
+      let j = 0 in 
+      let unitToStr = { x => ifelse(x == unit, { => "" }, { => x }) } in do
+        while i < string.length(s) do
+          discard let ss = string.substring(s, i, string.length(s)) in
+          cases 
+            given string.index(ss, pattern) == 0 => do
+              result <- array.push(result, unitToStr(string.substring(s, j, i)))
+              i <- i + string.length(pattern)
+              j <- i
+              unit
+            done
+            otherwise => perform i <- i + 1
+          end
+        done
+
+        result <- array.push(result, unitToStr(string.substring(s, j, i)))
+        result
+      done
+  end
+}
+
+(* Return whether a string is a whitespace character. *)
+string.iswhitespace :: { s => s == " " or s == "\n" or s == "\t" }
+
+(* Trim leading and trailing whitespace from a string. *)
+string.trim :: { s =>
+  let start = 0 in
+  let finish = string.length(s) - 1 in do
+    while string.iswhitespace(s(start)) and start < string.length(s) do
+      start <- start + 1
+    done
+    
+    while string.iswhitespace(s(finish)) and finish > start do
+      finish <- finish - 1
+    done
+
+    string.substring(s, start, finish + 1)
+  done
 }

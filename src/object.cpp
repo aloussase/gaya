@@ -201,7 +201,7 @@ std::optional<int> number::cmp(object_ptr other) const noexcept
 
 std::string string::to_string() const noexcept
 {
-    return value;
+    return '"' + value + '"';
 }
 
 std::string string::typeof_() const noexcept

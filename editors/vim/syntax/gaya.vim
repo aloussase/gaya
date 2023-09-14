@@ -5,6 +5,10 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
+" Constants
+syntax keyword gayaConstant true false
+highlight link gayaConstant Constant
+
 " Keywords
 syntax keyword gayaKeyword let discard in do done unit cases end given otherwise while perform and or not
 highlight link gayaKeyword Keyword

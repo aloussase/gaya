@@ -1,0 +1,39 @@
+(* Output: '1\n0\n1\n0\nGaya\nGa\n2\n0\nunit\n1\n1\n0\nGay\nGaya\nunit\nunit\n("Hello", "Gaya", "!")\n()\n("", "Hello", "World!", "")\nHello\nHello\nHello' *)
+
+(* startswith *)
+discard io.println(string.startswith("Gaya", "Ga"))
+discard io.println(string.startswith("Gaya", "ya"))
+
+(* endswith *)
+discard io.println(string.endswith("Gaya", "ya"))
+discard io.println(string.endswith("Gaya", "Ga"))
+
+(* concat *)
+discard io.println(string.concat("Ga", "ya"))
+discard io.println(string.concat("Ga", ""))
+
+(* index *)
+discard io.println(string.index("Gaya", "ya"))
+discard io.println(string.index("Gaya", "Ga"))
+discard io.println(string.index("Gaya", "Gata"))
+
+(* contains *)
+discard io.println(string.contains("Gaya", "ya"))
+discard io.println(string.contains("Gaya", "Ga"))
+discard io.println(string.contains("Gaya", "Gata"))
+
+(* substring *)
+discard io.println(string.substring("Gaya", 0, 3))
+discard io.println(string.substring("Gaya", 0, 4))
+discard io.println(string.substring("Gaya", -1, 4))
+discard io.println(string.substring("Gaya", 4, 0))
+
+(* split *)
+discard io.println(string.split("Hello\nGaya\n!", "\n"))
+discard io.println(string.split("Hello World!", "\n"))
+discard io.println(string.split(" Hello World! ", " "))
+
+(* trim *)
+discard io.println(string.trim("  \n\t  Hello   "))
+discard io.println(string.trim("    \n\tHello"))
+discard io.println(string.trim("Hello  \n\t"))
