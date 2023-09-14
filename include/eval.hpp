@@ -70,6 +70,7 @@ class interpreter final : public ast::ast_visitor
     o::object_ptr visit_string(ast::string&) override;
     o::object_ptr visit_identifier(ast::identifier&) override;
     o::object_ptr visit_unit(ast::unit&) override;
+    o::object_ptr visit_placeholder(ast::placeholder&) override;
 
   private:
     [[nodiscard]] env& current_env() noexcept;

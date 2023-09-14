@@ -29,6 +29,7 @@ class ast_visitor
     virtual o::object_ptr visit_string(string&)                           = 0;
     virtual o::object_ptr visit_identifier(identifier&)                   = 0;
     virtual o::object_ptr visit_unit(unit&)                               = 0;
+    virtual o::object_ptr visit_placeholder(placeholder&)                 = 0;
 };
 
 }

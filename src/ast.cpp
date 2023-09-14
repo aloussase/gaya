@@ -379,8 +379,11 @@ pipe_expression::execute(eval::interpreter& interp)
     }
 
     auto replacement = lhs->accept(interp);
-    auto args        = std::vector { replacement };
-    auto rhs_object  = rhs->accept(interp);
+    if (!replacement) return nullptr;
+
+    auto args       = std::vector { replacement };
+    auto rhs_object = rhs->accept(interp);
+    if (!rhs_object) return nullptr;
 
     if (!rhs_object->is_callable())
     {
@@ -520,9 +523,9 @@ std::string placeholder::to_string() const noexcept
     return R"({"type": "placeholder"})";
 }
 
-gaya::eval::object::object_ptr placeholder::accept(ast_visitor&)
+gaya::eval::object::object_ptr placeholder::accept(ast_visitor& v)
 {
-    assert(false && "tried to interpret placeholder");
+    return v.visit_placeholder(*this);
 }
 
 }

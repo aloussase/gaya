@@ -408,4 +408,11 @@ object::object_ptr interpreter::visit_unit(ast::unit& u)
     return std::make_shared<object::unit>(u._span);
 }
 
+object::object_ptr interpreter::visit_placeholder(ast::placeholder& p)
+{
+    interp_error(p.span_, "Can't evaluate an expression with placeholders");
+    interp_hint(p.span_, "Apply the call using a pipeline, e.g: x |> f(_, y)");
+    return nullptr;
+}
+
 }
