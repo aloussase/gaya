@@ -10,8 +10,7 @@ declaration_stmt ::= IDENTIFIER '::' expression
 
 expression_stmt ::= 'discard' expression
 
-expression ::= let_expression
-             | do_expression
+expression ::= do_expression
              | case_expression
              | logical_expression
 
@@ -80,6 +79,7 @@ primary_expression ::= NUMBER
                      | STRING
                      | UNIT
                      | PLACEHOLDER
+                     | let_expression
                      | function_expression
                      | array
 

@@ -341,64 +341,20 @@ gaya::eval::object::object_ptr
 pipe_expression::execute(eval::interpreter& interp)
 {
     using namespace eval::object;
-    auto span = op.get_span();
-
-    if (auto callexpr = std::dynamic_pointer_cast<call_expression>(rhs);
-        callexpr)
-    {
-        std::vector<expression_ptr> args(callexpr->args.size());
-        auto performed_replacement = false;
-        for (size_t i = 0; i < callexpr->args.size(); i++)
-        {
-            if (auto arg = callexpr->args[i];
-                std::dynamic_pointer_cast<placeholder>(arg))
-            {
-                if (performed_replacement)
-                {
-                    interp.interp_error(
-                        op.get_span(),
-                        "Can use pipe placeholder only once per call");
-                    interp.interp_hint(
-                        op.get_span(),
-                        "Otherwise, the replacement expression would be "
-                        "evaluated more than once");
-                    return nullptr;
-                }
-
-                args[i]               = lhs;
-                performed_replacement = true;
-            }
-            else
-            {
-                args[i] = arg;
-            }
-        }
-
-        callexpr->args = std::move(args);
-        return callexpr->accept(interp);
-    }
+    using namespace eval;
 
     auto replacement = lhs->accept(interp);
     if (!replacement) return nullptr;
 
-    auto args       = std::vector { replacement };
-    auto rhs_object = rhs->accept(interp);
-    if (!rhs_object) return nullptr;
+    interp.begin_scope(env { std::make_shared<env>(interp.get_env()) });
+    interp.define("_", replacement);
 
-    if (!rhs_object->is_callable())
-    {
-        interp.interp_error(span, "Can't pipe into non-callable");
-        return nullptr;
-    }
+    auto result = rhs->accept(interp);
+    if (!result) return nullptr;
 
-    auto func = std::dynamic_pointer_cast<callable>(rhs_object);
-    if (func->arity() != 1)
-    {
-        interp.interp_error(span, "Can't pipe into non-unary function");
-        return nullptr;
-    }
+    interp.end_scope();
 
-    return func->call(interp, span, args);
+    return result;
 }
 
 /* Unary expressions */

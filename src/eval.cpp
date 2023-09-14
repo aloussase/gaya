@@ -410,9 +410,16 @@ object::object_ptr interpreter::visit_unit(ast::unit& u)
 
 object::object_ptr interpreter::visit_placeholder(ast::placeholder& p)
 {
-    interp_error(p.span_, "Can't evaluate an expression with placeholders");
-    interp_hint(p.span_, "Apply the call using a pipeline, e.g: x |> f(_, y)");
-    return nullptr;
+    if (auto value = current_env().get(std::string("_")); value)
+    {
+        return value;
+    }
+    else
+    {
+        interp_error(p.span_, "Failed to replace placeholder");
+        interp_hint(p.span_, "Placeholders can only be used in pipelines");
+        return nullptr;
+    }
 }
 
 }

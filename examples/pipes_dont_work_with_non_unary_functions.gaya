@@ -1,3 +1,0 @@
-(* Expect error *)
-
-discard 42 |> { x, y => x }

@@ -125,7 +125,7 @@ string.split :: { s, pattern =>
       let nextPart = { =>
           s 
           |> string.substring(_, j, i) 
-          |> unitToStr
+          |> unitToStr(_)
           |> array.push(result, _) 
         } in do
         while i < string.length(s)

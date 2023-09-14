@@ -275,7 +275,6 @@ ast::expression_ptr parser::expression(token token)
      */
     switch (token.type())
     {
-    case token_type::let: return let_expression(token);
     case token_type::do_: return do_expression(token);
     case token_type::cases: return case_expression(token);
     default: return logical_expression(token);
@@ -995,6 +994,10 @@ ast::expression_ptr parser::primary_expression(token token)
     case token_type::lcurly:
     {
         return function_expression(token);
+    }
+    case token_type::let:
+    {
+        return let_expression(token);
     }
     case token_type::lparen:
     {

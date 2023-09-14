@@ -2,7 +2,7 @@
 
 test :: { s =>
   s
-  |> string.trim
+  |> string.trim(_)
   |> string.concat(_, "!")
   |> string.concat("anon says: ", _)
 }
