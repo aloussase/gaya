@@ -121,12 +121,18 @@ string.split :: { s, pattern =>
     given not string.contains(s, pattern) => ()
     otherwise =>
       let result = (), i = 0, j = 0 in
-      let unitToStr = { x => ifelse(x == unit, { => "" }, { => x }) } in do
+      let unitToStr = { x => ifelse(x == unit, { => "" }, { => x }) } in 
+      let nextPart = { =>
+          s 
+          |> string.substring(_, j, i) 
+          |> unitToStr
+          |> array.push(result, _) 
+        } in do
         while i < string.length(s)
           discard let ss = string.substring(s, i, string.length(s)) in
           cases 
             given string.index(ss, pattern) == 0 => do
-              result <- array.push(result, unitToStr(string.substring(s, j, i)))
+              result <- nextPart()
               i <- i + string.length(pattern)
               j <- i
             end
@@ -134,7 +140,7 @@ string.split :: { s, pattern =>
           end
         end
 
-        array.push(result, unitToStr(string.substring(s, j, i)))
+        nextPart()
       end
   end
 }

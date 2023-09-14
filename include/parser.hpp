@@ -48,6 +48,7 @@ class parser
 
     [[nodiscard]] ast::expression_ptr logical_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr comparison_expression(token) noexcept;
+    [[nodiscard]] ast::expression_ptr pipe_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr term_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr factor_expression(token) noexcept;
 

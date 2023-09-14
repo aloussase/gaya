@@ -1,0 +1,5 @@
+(* Expect error *)
+
+test :: { s1, s2 => string.concat(s1, s2) }
+
+discard "Hello" |> test(_, _)

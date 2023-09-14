@@ -1,0 +1,11 @@
+(* Output: 'anon says: Hello!\nanon says: Hallo!' *)
+
+test :: { s =>
+  s
+  |> string.trim
+  |> string.concat(_, "!")
+  |> string.concat("anon says: ", _)
+}
+
+discard io.println(test("   Hello \n "))
+discard io.println(test("   Hallo   "))

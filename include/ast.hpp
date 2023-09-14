@@ -27,9 +27,15 @@ struct stmt;
 struct expression;
 struct identifier;
 
-using node_ptr       = std::unique_ptr<ast_node>;
-using stmt_ptr       = std::unique_ptr<stmt>;
-using expression_ptr = std::unique_ptr<expression>;
+using node_ptr       = std::shared_ptr<ast_node>;
+using stmt_ptr       = std::shared_ptr<stmt>;
+using expression_ptr = std::shared_ptr<expression>;
+
+template <typename T, typename... Ts>
+std::shared_ptr<T> make_node(Ts&&... args)
+{
+    return std::make_shared<T>(std::forward<Ts>(args)...);
+}
 
 class ast_visitor;
 
@@ -289,6 +295,16 @@ struct arithmetic_expression final : public binary_expression
     gaya::eval::object::object_ptr execute(eval::interpreter&) override;
 };
 
+struct pipe_expression final : public binary_expression
+{
+    pipe_expression(expression_ptr l, token o, expression_ptr r)
+        : binary_expression { std::move(l), o, std::move(r) }
+    {
+    }
+
+    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+};
+
 /* Unary expressions */
 struct unary_expression : public expression
 {
@@ -401,6 +417,19 @@ struct unit final : public expression
     gaya::eval::object::object_ptr accept(ast_visitor&) override;
 
     span _span;
+};
+
+struct placeholder final : public expression
+{
+    placeholder(span s)
+        : span_ { s }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+
+    span span_;
 };
 
 }

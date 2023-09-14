@@ -49,12 +49,14 @@ logical_expression ::= comparison_expression 'and' comparison_expression
                      | comparison_expression 'or' comparison_expression
                      | comparison_expression
 
-comparison_expression ::= term_expression '<' term_expression
-                        | term_expression '>' term_expression
-                        | term_expression '<=' term_expression
-                        | term_expression '>=' term_expression
-                        | term_expression '==' term_expression
-                        | term_expression
+comparison_expression ::= pipe_expression '<' pipe_expression
+                        | pipe_expression '>' pipe_expression
+                        | pipe_expression '<=' pipe_expression
+                        | pipe_expression '>=' pipe_expression
+                        | pipe_expression '==' pipe_expression
+                        | pipe_expression
+
+pipe_expression ::= term_expression '|>' term_expression
 
 term_expression ::= factor_expression '+' factor_expression
                   | factor_expression '-' factor_expression
@@ -77,6 +79,7 @@ primary_expression ::= NUMBER
                      | IDENTIFIER
                      | STRING
                      | UNIT
+                     | PLACEHOLDER
                      | function_expression
                      | array
 

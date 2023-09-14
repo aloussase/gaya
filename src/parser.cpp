@@ -76,7 +76,7 @@ std::vector<token> parser::remaining_tokens() noexcept
 
 ast::node_ptr parser::parse() noexcept
 {
-    auto program   = std::make_unique<ast::program>();
+    auto program   = ast::make_node<ast::program>();
     program->stmts = stmts();
     merge_diagnostics();
     return program;
@@ -174,9 +174,7 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
         identifier.get_span(),
         identifier.get_span().to_string());
 
-    return std::make_unique<ast::assignment_stmt>(
-        std::move(ident),
-        std::move(expr));
+    return ast::make_node<ast::assignment_stmt>(std::move(ident), expr);
 }
 
 ast::stmt_ptr parser::while_stmt(token while_) noexcept
@@ -219,10 +217,7 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         return nullptr;
     }
 
-    return std::make_unique<ast::WhileStmt>(
-        span,
-        std::move(condition),
-        std::move(body));
+    return ast::make_node<ast::WhileStmt>(span, condition, std::move(body));
 }
 
 ast::stmt_ptr parser::declaration_stmt(token identifier)
@@ -251,9 +246,7 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
     auto expr = expression(token.value());
     if (!expr) return nullptr;
 
-    return std::make_unique<ast::declaration_stmt>(
-        std::move(ident),
-        std::move(expr));
+    return ast::make_node<ast::declaration_stmt>(std::move(ident), expr);
 }
 
 ast::stmt_ptr parser::expression_stmt(token discard)
@@ -271,7 +264,7 @@ ast::stmt_ptr parser::expression_stmt(token discard)
     auto expr = expression(token.value());
     if (!expr) return nullptr;
 
-    return std::make_unique<ast::expression_stmt>(std::move(expr));
+    return ast::make_node<ast::expression_stmt>(expr);
 }
 
 ast::expression_ptr parser::expression(token token)
@@ -335,7 +328,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
     auto expr = ([&]() -> ast::expression_ptr {
         if (match(token, token_type::rcurly))
         {
-            return std::make_unique<ast::unit>(token->get_span());
+            return ast::make_node<ast::unit>(token->get_span());
         }
         else
         {
@@ -354,10 +347,10 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
     if (!expr) return nullptr;
 
-    return std::make_unique<ast::function_expression>(
+    return ast::make_node<ast::function_expression>(
         lcurly.get_span(),
         std::move(params),
-        std::move(expr));
+        expr);
 }
 
 ast::expression_ptr parser::logical_expression(token token) noexcept
@@ -392,10 +385,7 @@ ast::expression_ptr parser::logical_expression(token token) noexcept
             auto rhs = comparison_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = std::make_unique<ast::logical_expression>(
-                std::move(lhs),
-                op,
-                std::move(rhs));
+            lhs = ast::make_node<ast::logical_expression>(lhs, op, rhs);
 
             break;
         }
@@ -411,56 +401,98 @@ ast::expression_ptr parser::logical_expression(token token) noexcept
     return lhs;
 }
 
+/*
+ * comparison_expression ::= pipe_expression '<' pipe_expression
+ *                         | pipe_expression '>' pipe_expression
+ *                         | pipe_expression '<=' pipe_expression
+ *                         | pipe_expression '>=' pipe_expression
+ *                         | pipe_expression '==' pipe_expression
+ *                         | pipe_expression
+ */
 ast::expression_ptr parser::comparison_expression(token token) noexcept
 {
-    auto lhs = term_expression(token);
+    auto lhs = pipe_expression(token);
     if (!lhs) return nullptr;
 
-    auto done = false;
-    while (!done)
-    {
-        auto t = _lexer.next_token();
-        if (!t) break;
-
-        switch (t->type())
+    auto is_comparison_op = [](auto t) {
+        switch (t.type())
         {
         case token_type::less_than:
         case token_type::less_than_eq:
         case token_type::greater_than:
         case token_type::greater_than_eq:
         case token_type::equal_equal:
-        case token_type::not_equals:
-        {
-            auto op = t.value();
+        case token_type::not_equals: return true;
+        default: return false;
+        }
+    };
 
-            t = _lexer.next_token();
-            if (!t)
+    for (;;)
+    {
+        auto op = _lexer.next_token();
+        if (!op) break;
+
+        if (!is_comparison_op(op.value()))
+        {
+            _lexer.push_back(op.value());
+            break;
+        }
+
+        auto expr_token = _lexer.next_token();
+        if (!expr_token)
+        {
+            parser_error(
+                token.get_span(),
+                fmt::format(
+                    "Expected an expression after {}",
+                    token.get_span().to_string()));
+            return nullptr;
+        }
+
+        auto rhs = pipe_expression(expr_token.value());
+        if (!rhs) return nullptr;
+
+        lhs = ast::make_node<ast::cmp_expression>(lhs, op.value(), rhs);
+    }
+
+    return lhs;
+}
+
+/*
+ * pipe_expression ::= term_expression '|>' term_expression
+ */
+ast::expression_ptr parser::pipe_expression(token token) noexcept
+{
+    auto lhs = term_expression(token);
+    if (!lhs) return nullptr;
+
+    for (;;)
+    {
+        auto pipe = _lexer.next_token();
+        if (!match(pipe, token_type::pipe))
+        {
+            if (pipe)
             {
-                parser_error(
-                    op.get_span(),
-                    fmt::format(
-                        "Expected an expression after {}",
-                        op.get_span().to_string()));
-                return nullptr;
+                _lexer.push_back(pipe.value());
             }
-
-            auto rhs = term_expression(t.value());
-            if (!rhs) return nullptr;
-
-            lhs = std::make_unique<ast::cmp_expression>(
-                std::move(lhs),
-                op,
-                std::move(rhs));
-
             break;
         }
-        default:
+
+        auto expr_token = _lexer.next_token();
+        if (!expr_token)
         {
-            _lexer.push_back(t.value());
-            done = true;
-            break;
+            parser_error(
+                token.get_span(),
+                "Expected an expression after pipe operator");
+            return nullptr;
         }
-        }
+
+        auto rhs = term_expression(expr_token.value());
+        if (!rhs) return nullptr;
+
+        assert(lhs && rhs);
+
+        lhs = ast::make_node<ast::pipe_expression>(lhs, pipe.value(), rhs);
     }
 
     return lhs;
@@ -503,10 +535,7 @@ ast::expression_ptr parser::term_expression(token token) noexcept
             auto rhs = factor_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = std::make_unique<ast::arithmetic_expression>(
-                std::move(lhs),
-                op,
-                std::move(rhs));
+            lhs = ast::make_node<ast::arithmetic_expression>(lhs, op, rhs);
 
             break;
         }
@@ -560,10 +589,7 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
             auto rhs = unary_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = std::make_unique<ast::arithmetic_expression>(
-                std::move(lhs),
-                op,
-                std::move(rhs));
+            lhs = ast::make_node<ast::arithmetic_expression>(lhs, op, rhs);
 
             break;
         }
@@ -608,7 +634,7 @@ ast::expression_ptr parser::not_expression(token op) noexcept
     auto expr = call_expression(token.value());
     if (!expr) return nullptr;
 
-    return std::make_unique<ast::not_expression>(op, std::move(expr));
+    return ast::make_node<ast::not_expression>(op, expr);
 }
 
 ast::expression_ptr parser::perform_expression(token op) noexcept
@@ -623,7 +649,7 @@ ast::expression_ptr parser::perform_expression(token op) noexcept
     auto stmt = local_stmt(token.value());
     if (!stmt) return nullptr;
 
-    return std::make_unique<ast::perform_expression>(op, std::move(stmt));
+    return ast::make_node<ast::perform_expression>(op, stmt);
 }
 
 /*
@@ -696,9 +722,9 @@ ast::expression_ptr parser::call_expression(token starttoken)
             return nullptr;
         }
 
-        expr = std::make_unique<ast::call_expression>(
+        expr = ast::make_node<ast::call_expression>(
             starttoken.get_span(),
-            std::move(expr),
+            expr,
             std::move(args));
     }
 
@@ -787,9 +813,7 @@ ast::expression_ptr parser::let_expression(token let)
     auto expr = expression(expr_token.value());
     if (!expr) return nullptr;
 
-    return std::make_unique<ast::let_expression>(
-        std::move(bindings),
-        std::move(expr));
+    return ast::make_node<ast::let_expression>(std::move(bindings), expr);
 }
 
 ast::expression_ptr parser::case_expression(token cases)
@@ -877,10 +901,10 @@ ast::expression_ptr parser::case_expression(token cases)
         return nullptr;
     }
 
-    return std::make_unique<ast::case_expression>(
+    return ast::make_node<ast::case_expression>(
         cases.get_span(),
         std::move(branches),
-        std::move(otherwise));
+        otherwise);
 }
 
 ast::expression_ptr parser::do_expression(token token)
@@ -919,7 +943,7 @@ ast::expression_ptr parser::do_expression(token token)
 
     if (!parsed_final_expression)
     {
-        body.push_back(std::make_unique<ast::unit>(token.get_span()));
+        body.push_back(ast::make_node<ast::unit>(token.get_span()));
     }
 
     if (auto tk = _lexer.next_token(); !match(tk, token_type::end))
@@ -933,7 +957,7 @@ ast::expression_ptr parser::do_expression(token token)
         return nullptr;
     }
 
-    return std::make_unique<ast::do_expression>(
+    return ast::make_node<ast::do_expression>(
         token.get_span(),
         std::move(body));
 }
@@ -950,7 +974,7 @@ ast::expression_ptr parser::primary_expression(token token)
     {
     case token_type::number:
     {
-        return std::make_unique<ast::number>(
+        return ast::make_node<ast::number>(
             token.get_span(),
             std::stod(token.get_span().to_string()));
     }
@@ -960,13 +984,13 @@ ast::expression_ptr parser::primary_expression(token token)
     }
     case token_type::identifier:
     {
-        return std::make_unique<ast::identifier>(
+        return ast::make_node<ast::identifier>(
             token.get_span(),
             token.get_span().to_string());
     }
     case token_type::unit:
     {
-        return std::make_unique<ast::unit>(token.get_span());
+        return ast::make_node<ast::unit>(token.get_span());
     }
     case token_type::lcurly:
     {
@@ -975,6 +999,10 @@ ast::expression_ptr parser::primary_expression(token token)
     case token_type::lparen:
     {
         return array(token);
+    }
+    case token_type::underscore:
+    {
+        return ast::make_node<ast::placeholder>(token.get_span());
     }
     default:
         parser_error(token.get_span(), "Invalid start of primary expression");
@@ -1058,7 +1086,7 @@ ast::expression_ptr parser::string(token token) noexcept
         return result;
     };
 
-    return std::make_unique<ast::string>(
+    return ast::make_node<ast::string>(
         token.get_span(),
         unescape(token.get_span().to_string()));
 }
@@ -1096,7 +1124,7 @@ ast::expression_ptr parser::array(token lparen) noexcept
         return nullptr;
     }
 
-    return std::make_unique<ast::array>(lparen.get_span(), std::move(elems));
+    return ast::make_node<ast::array>(lparen.get_span(), std::move(elems));
 }
 
 }

@@ -37,12 +37,14 @@ enum class token_type {
     or_,
     otherwise,
     perform,
+    pipe,
     plus,
     rcurly,
     rparen,
     slash,
     star,
     string,
+    underscore,
     unit,
     while_,
 };
@@ -115,6 +117,7 @@ class lexer
     [[nodiscard]] std::optional<token> comment() noexcept;
     [[nodiscard]] std::optional<token> dash() noexcept;
     [[nodiscard]] std::optional<token> slash() noexcept;
+    [[nodiscard]] std::optional<token> pipe() noexcept;
     [[nodiscard]] std::optional<token> less_than() noexcept;
     [[nodiscard]] std::optional<token> greater_than() noexcept;
     [[nodiscard]] std::optional<token> arrow() noexcept;

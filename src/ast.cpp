@@ -337,6 +337,67 @@ arithmetic_expression::execute(eval::interpreter& interp)
     return std::make_shared<eval::object::number>(op.get_span(), result);
 }
 
+gaya::eval::object::object_ptr
+pipe_expression::execute(eval::interpreter& interp)
+{
+    using namespace eval::object;
+    auto span = op.get_span();
+
+    if (auto callexpr = std::dynamic_pointer_cast<call_expression>(rhs);
+        callexpr)
+    {
+        std::vector<expression_ptr> args(callexpr->args.size());
+        auto performed_replacement = false;
+        for (size_t i = 0; i < callexpr->args.size(); i++)
+        {
+            if (auto arg = callexpr->args[i];
+                std::dynamic_pointer_cast<placeholder>(arg))
+            {
+                if (performed_replacement)
+                {
+                    interp.interp_error(
+                        op.get_span(),
+                        "Can use pipe placeholder only once per call");
+                    interp.interp_hint(
+                        op.get_span(),
+                        "Otherwise, the replacement expression would be "
+                        "evaluated more than once");
+                    return nullptr;
+                }
+
+                args[i]               = lhs;
+                performed_replacement = true;
+            }
+            else
+            {
+                args[i] = arg;
+            }
+        }
+
+        callexpr->args = std::move(args);
+        return callexpr->accept(interp);
+    }
+
+    auto replacement = lhs->accept(interp);
+    auto args        = std::vector { replacement };
+    auto rhs_object  = rhs->accept(interp);
+
+    if (!rhs_object->is_callable())
+    {
+        interp.interp_error(span, "Can't pipe into non-callable");
+        return nullptr;
+    }
+
+    auto func = std::dynamic_pointer_cast<callable>(rhs_object);
+    if (func->arity() != 1)
+    {
+        interp.interp_error(span, "Can't pipe into non-unary function");
+        return nullptr;
+    }
+
+    return func->call(interp, span, args);
+}
+
 /* Unary expressions */
 
 gaya::eval::object::object_ptr unary_expression::accept(ast_visitor& v)
@@ -452,6 +513,16 @@ std::string unit::to_string() const noexcept
 gaya::eval::object::object_ptr unit::accept(ast_visitor& v)
 {
     return v.visit_unit(*this);
+}
+
+std::string placeholder::to_string() const noexcept
+{
+    return R"({"type": "placeholder"})";
+}
+
+gaya::eval::object::object_ptr placeholder::accept(ast_visitor&)
+{
+    assert(false && "tried to interpret placeholder");
 }
 
 }

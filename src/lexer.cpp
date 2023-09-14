@@ -117,8 +117,10 @@ std::optional<token> lexer::next_token() noexcept
     case '<': return less_than();
     case '+': return mk_token(token_type::plus);
     case '*': return mk_token(token_type::star);
+    case '_': return mk_token(token_type::underscore);
     case '-': return dash();
     case '/': return slash();
+    case '|': return pipe();
     case '0':
     case '1':
     case '2':
@@ -199,6 +201,19 @@ std::optional<token> lexer::slash() noexcept
         return mk_token(token_type::not_equals);
     }
     return mk_token(token_type::slash);
+}
+
+std::optional<token> lexer::pipe() noexcept
+{
+    if (auto c = peek(); c && c.value() == '>')
+    {
+        advance();
+        return mk_token(token_type::pipe);
+    }
+
+    lexer_error("Invalid token");
+    lexer_hint("Maybe you meant to use the pipe operator '|>'?");
+    return std::nullopt;
 }
 
 std::optional<token> lexer::less_than() noexcept

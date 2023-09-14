@@ -10,7 +10,7 @@
 namespace gaya::ast
 {
 struct expression;
-using expression_ptr = std::unique_ptr<expression>;
+using expression_ptr = std::shared_ptr<expression>;
 }
 
 namespace gaya::eval
