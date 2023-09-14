@@ -51,7 +51,7 @@ void run() noexcept
 {
     char* line;
     eval::env repl_env;
-    eval::interpreter interp { nullptr };
+    eval::interpreter interp { "<interactive>", nullptr };
     auto* prompt = "\x1b[35mgaya> \x1b[m";
 
     while ((line = readline(prompt)) != nullptr)

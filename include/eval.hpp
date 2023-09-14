@@ -16,7 +16,7 @@ namespace o = object;
 class interpreter final : public ast::ast_visitor
 {
   public:
-    interpreter(const char* source);
+    interpreter(const std::string& filename, const char* source);
 
     [[nodiscard]] object::object_ptr eval() noexcept;
 
@@ -25,6 +25,9 @@ class interpreter final : public ast::ast_visitor
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
+
+    /// Return the name of the file currently being interpreted.
+    [[nodiscard]] const std::string& current_filename() const noexcept;
 
     /// Remove all diagnostics from this interpreter.
     void clear_diagnostics() noexcept;
@@ -75,6 +78,7 @@ class interpreter final : public ast::ast_visitor
   private:
     [[nodiscard]] env& current_env() noexcept;
 
+    std::string _filename;
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;
     std::stack<env> _scopes;

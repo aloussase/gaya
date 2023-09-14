@@ -8,26 +8,16 @@
 namespace diagnostic
 {
 
-diagnostic::diagnostic(span s, const std::string& m, severity svr)
+diagnostic::diagnostic(
+    span s,
+    const std::string& m,
+    severity svr,
+    const std::string& filename)
     : _span { s }
     , _message { m }
     , _severity { svr }
+    , _filename { filename }
 {
-}
-
-static diagnostic error(span s, const std::string& m) noexcept
-{
-    return diagnostic { s, m, severity::error };
-}
-
-static diagnostic warning(span s, const std::string& m) noexcept
-{
-    return diagnostic { s, m, severity::warning };
-}
-
-static diagnostic hint(span s, const std::string& m) noexcept
-{
-    return diagnostic { s, m, severity::hint };
 }
 
 std::string diagnostic::to_string() const noexcept
@@ -44,8 +34,9 @@ std::string diagnostic::to_string() const noexcept
     std::stringstream ss;
 
     ss << fmt::format(
-        "{} at line {}: {}\n\n",
+        "{} at {}{}: {}\n\n",
         diagnostic_kind,
+        _filename != "" ? fmt::format("{}:", _filename) : "",
         _span.lineno(),
         _message);
 
@@ -53,7 +44,7 @@ std::string diagnostic::to_string() const noexcept
     {
         const char* newline = strchr(_span.start(), '\n');
         auto line           = std::accumulate(
-            _span.start(), //
+            _span.start(),
             newline ? newline : strchr(_span.start(), '\0'),
             std::string(),
             [](auto acc, char c) { return acc + c; });

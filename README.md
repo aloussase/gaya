@@ -1,4 +1,6 @@
-### Gaya
+<p align="center">
+  <h3>Gaya</h3>
+</p>
 
 ```ocaml
 "  Gaya is cool  "

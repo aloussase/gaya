@@ -15,8 +15,9 @@
 namespace gaya::eval
 {
 
-interpreter::interpreter(const char* source)
-    : _source { source }
+interpreter::interpreter(const std::string& filename, const char* source)
+    : _filename { filename }
+    , _source { source }
 {
     _scopes.push(env {});
 
@@ -30,6 +31,7 @@ interpreter::interpreter(const char* source)
     define("math.div", std::make_shared<math::div>());
 
     define("typeof", std::make_shared<core::typeof_>());
+    define("assert", std::make_shared<core::assert_>());
 
     define("string.length", std::make_shared<string::length>());
     define("string.concat", std::make_shared<string::concat>());
@@ -84,7 +86,10 @@ bool interpreter::loadfile(const std::string& filename) noexcept
     {
         // NOTE: We are leaking contents on purpose here.
         // FIXME: Maybe there is a way to avoid leaking?
+        auto old_filename = _filename;
+        _filename         = filename;
         (void)eval(current_env(), std::move(ast));
+        _filename = old_filename;
         return !had_error();
     }
     else
@@ -103,6 +108,11 @@ std::vector<diagnostic::diagnostic> interpreter::diagnostics() const noexcept
     return _diagnostics;
 }
 
+const std::string& interpreter::current_filename() const noexcept
+{
+    return _filename;
+}
+
 void interpreter::clear_diagnostics() noexcept
 {
     _diagnostics.clear();
@@ -110,12 +120,12 @@ void interpreter::clear_diagnostics() noexcept
 
 void interpreter::interp_error(span s, const std::string& msg)
 {
-    _diagnostics.emplace_back(s, msg, diagnostic::severity::error);
+    _diagnostics.emplace_back(s, msg, diagnostic::severity::error, _filename);
 }
 
 void interpreter::interp_hint(span s, const std::string& hint)
 {
-    _diagnostics.emplace_back(s, hint, diagnostic::severity::hint);
+    _diagnostics.emplace_back(s, hint, diagnostic::severity::hint, _filename);
 }
 
 bool interpreter::had_error() const noexcept

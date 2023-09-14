@@ -74,8 +74,7 @@ string.index :: { s, pattern =>
     otherwise =>
       let completeMatch = false, i = 0 in do
         while not completeMatch and i < string.length(s) - string.length(pattern) + 1
-          discard let j = 0 in
-          let match = true in do 
+          discard let j = 0, match = true in do
             while match and j < string.length(pattern)
               match <- s(i + j) == pattern(j)
               j <- j + 1
@@ -160,5 +159,21 @@ string.trim :: { s =>
     end
 
     string.substring(s, start, finish + 1)
+  end
+}
+
+(* Arrays *)
+
+
+array.range :: { start, finish => do
+    discard assert(typeof(start) == "number" and typeof(finish) == "number")
+    let i = start, a = () in do
+      while i < finish
+        a <- array.push(a, i)
+        i <- i +  1
+      end
+
+      a
+    end
   end
 }

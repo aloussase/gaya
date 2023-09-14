@@ -42,7 +42,7 @@ static void eval_file(char* filename)
     }
     else
     {
-        auto interp  = gaya::eval::interpreter { contents };
+        auto interp  = gaya::eval::interpreter { filename, contents };
         auto _result = interp.eval();
         if (!interp.diagnostics().empty())
         {
