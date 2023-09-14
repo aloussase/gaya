@@ -164,7 +164,7 @@ string.trim :: { s =>
 
 (* Arrays *)
 
-
+(* Return an array with the numbers from start to finish exclusive. *)
 array.range :: { start, finish => do
     discard assert(typeof(start) == "number" and typeof(finish) == "number")
     let i = start, a = () in do

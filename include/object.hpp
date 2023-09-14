@@ -34,6 +34,7 @@ struct object
     virtual std::string typeof_() const noexcept   = 0;
     virtual bool is_truthy() const noexcept        = 0;
     virtual bool is_comparable() const noexcept    = 0;
+    virtual bool equals(object_ptr) const noexcept = 0;
 };
 
 struct callable
@@ -66,6 +67,7 @@ struct function final : public object, public callable
     bool is_truthy() const noexcept override;
     bool is_callable() const noexcept override;
     bool is_comparable() const noexcept override;
+    bool equals(object_ptr) const noexcept override;
 
     size_t arity() const noexcept override;
     object_ptr
@@ -92,6 +94,7 @@ struct builtin_function : public object, public callable
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
+    bool equals(object_ptr) const noexcept override;
 
     std::string name;
 };
@@ -109,6 +112,7 @@ struct array final : public object, public callable
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
+    bool equals(object_ptr) const noexcept override;
 
     size_t arity() const noexcept override;
     object_ptr
@@ -132,6 +136,7 @@ struct number final : public object, public comparable
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
     std::optional<int> cmp(object_ptr other) const noexcept override;
+    bool equals(object_ptr) const noexcept override;
 
     span _span;
     double value;
@@ -151,6 +156,7 @@ struct string final : public object, public callable, public comparable
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
     bool is_callable() const noexcept override;
+    bool equals(object_ptr) const noexcept override;
 
     std::optional<int> cmp(object_ptr other) const noexcept override;
 
@@ -175,6 +181,7 @@ struct unit final : public object, public comparable
     bool is_truthy() const noexcept override;
     std::optional<int> cmp(object_ptr other) const noexcept override;
     bool is_comparable() const noexcept override;
+    bool equals(object_ptr) const noexcept override;
 
     span _span;
 };

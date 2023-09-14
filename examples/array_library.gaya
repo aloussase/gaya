@@ -9,3 +9,7 @@ discard io.println(array.concat((1), (2)))
 (* Push *)
 discard io.println(array.push((), 1))
 discard io.println(array.push(("hello"), 1))
+
+(* Range *)
+discard array.range(1, 10) |> assert(_ == (1, 2, 3, 4, 5, 6, 7, 8, 9))
+discard array.range(10, 1) |> assert(_ == ())

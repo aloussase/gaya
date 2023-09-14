@@ -239,31 +239,39 @@ cmp_expression::execute(eval::interpreter& interp)
     auto r = rhs->accept(interp);
     if (!r) return nullptr;
 
-    if (!l->is_comparable() || !r->is_comparable())
-    {
-        interp.interp_error(
-            op.get_span(),
-            fmt::format(
-                "{} and {} are not both comparable",
-                l->typeof_(),
-                r->typeof_()));
-        return nullptr;
-    }
-
-    if (l->typeof_() != r->typeof_())
-    {
+    auto result = [&]() -> std::optional<int> {
         switch (op.type())
         {
-        case token_type::equal_equal:
-            return std::make_shared<eval::object::number>(op.get_span(), 0);
-        case token_type::not_equals:
-            return std::make_shared<eval::object::number>(op.get_span(), 1);
-        default: break;
-        }
-    }
+        case token_type::equal_equal: return l->equals(r) ? 1 : 0;
+        case token_type::not_equals: return !l->equals(r) ? 1 : 0;
+        default:
+        {
+            if (!l->is_comparable() || !r->is_comparable())
+            {
+                interp.interp_error(
+                    op.get_span(),
+                    fmt::format(
+                        "{} and {} are not both comparable",
+                        l->typeof_(),
+                        r->typeof_()));
+                return std::nullopt;
+            }
 
-    auto result
-        = std::dynamic_pointer_cast<eval::object::comparable>(l)->cmp(r);
+            auto cmp = std::dynamic_pointer_cast<eval::object::comparable>(l);
+            auto result = cmp->cmp(r);
+
+            switch (op.type())
+            {
+            case token_type::less_than: return result < 0 ? 1 : 0;
+            case token_type::less_than_eq: return result <= 0 ? 1 : 0;
+            case token_type::greater_than: return result > 0 ? 1 : 0;
+            case token_type::greater_than_eq: return result >= 0 ? 1 : 0;
+            default: assert(false && "unreachable");
+            }
+        }
+        }
+    }();
+
     if (!result)
     {
         interp.interp_error(
@@ -275,20 +283,9 @@ cmp_expression::execute(eval::interpreter& interp)
         return nullptr;
     }
 
-    int ret = 0;
-
-    switch (op.type())
-    {
-    case token_type::less_than: ret = result < 0; break;
-    case token_type::less_than_eq: ret = result <= 0; break;
-    case token_type::greater_than: ret = result > 0; break;
-    case token_type::greater_than_eq: ret = result >= 0; break;
-    case token_type::equal_equal: ret = result == 0; break;
-    case token_type::not_equals: ret = result != 0; break;
-    default: assert(false && "should not happen");
-    }
-
-    return std::make_shared<eval::object::number>(op.get_span(), ret);
+    return std::make_shared<eval::object::number>(
+        op.get_span(),
+        result.value());
 }
 
 gaya::eval::object::object_ptr

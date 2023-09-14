@@ -70,6 +70,11 @@ function::call(interpreter& interp, span, std::vector<object_ptr> args) noexcept
     return ret;
 }
 
+bool function::equals(object_ptr) const noexcept
+{
+    return false;
+}
+
 std::string builtin_function::to_string() const noexcept
 {
     return fmt::format("<builtin-function: {}>", name);
@@ -91,6 +96,11 @@ bool builtin_function::is_truthy() const noexcept
 }
 
 bool builtin_function::is_comparable() const noexcept
+{
+    return false;
+}
+
+bool builtin_function::equals(object_ptr) const noexcept
 {
     return false;
 }
@@ -163,6 +173,25 @@ object_ptr array::call(
     return elems[n];
 }
 
+bool array::equals(object_ptr o) const noexcept
+{
+    if (typeof_() != o->typeof_()) return false;
+
+    auto other = std::static_pointer_cast<array>(o);
+
+    if (elems.size() != other->elems.size()) return false;
+
+    for (size_t i = 0; i < elems.size(); i++)
+    {
+        if (!elems[i]->equals(other->elems[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 std::string number::to_string() const noexcept
 {
     // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
@@ -197,6 +226,13 @@ std::optional<int> number::cmp(object_ptr other) const noexcept
     if (other->typeof_() != typeof_()) return std::nullopt;
     auto other_value = std::static_pointer_cast<number>(other)->value;
     return (value < other_value) ? -1 : ((value == other_value) ? 0 : 1);
+}
+
+bool number::equals(object_ptr o) const noexcept
+{
+    if (typeof_() != o->typeof_()) return false;
+    auto other = std::static_pointer_cast<number>(o);
+    return value == other->value;
 }
 
 std::string string::to_string() const noexcept
@@ -265,6 +301,13 @@ std::optional<int> string::cmp(object_ptr other) const noexcept
     return (cmp < 0) ? -1 : ((cmp == 0) ? 0 : 1);
 }
 
+bool string::equals(object_ptr o) const noexcept
+{
+    if (typeof_() != o->typeof_()) return false;
+    auto other = std::static_pointer_cast<string>(o);
+    return value == other->value;
+}
+
 std::string unit::to_string() const noexcept
 {
     return "unit";
@@ -294,6 +337,11 @@ std::optional<int> unit::cmp(object_ptr other) const noexcept
 {
     if (other->typeof_() != typeof_()) return std::nullopt;
     return 0;
+}
+
+bool unit::equals(object_ptr o) const noexcept
+{
+    return typeof_() == o->typeof_();
 }
 
 }
