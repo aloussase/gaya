@@ -1,27 +1,27 @@
 ### Gaya
 
-Gaya is a scripting language I made for doing AoC problems in 2023.
-The name comes from my favourite cat.
+Gaya is a scripting language I made for solving [AoC](https://adventofcode.com/)
+problems in 2023. The name comes from my favourite cat.
 
 Since its a toy language, its focus is on elegance above anything else. I
 wanted something that makes me feel pleasure every time I use it. I hope this
 way I can give pleasure to you too.
 
-#### Features
-
-<p align="center">
-  <img src="./assets/demo/nice_errors.png" alt="nice errors" height="100" />
+<p align="right">
+```ocaml
+"  Gaya is cool  "
+    |> string.trim(_)
+    |> string.concat(_, "!")
+    |> string.split(_, " ")
+```
 </p>
-<p align="center">Nice error messages</p>
-
-<p align="center">
-  <img src="./assets/demo/escape_sequences.png" alt="escape sequences" height="100" />
-</p>
-<p align="center">Escape sequences in strings</p>
 
 #### Documentation
 
 You can read the language documentation [here](./docs/toc.md).
+
+For examples, take a look at the `examples` directory of at the standard
+library at `runtime/stdlib.gaya`.
 
 ### Feedback & Contributing
 
