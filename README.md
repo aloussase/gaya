@@ -1,20 +1,18 @@
 ### Gaya
 
-Gaya is a scripting language I made for solving [AoC](https://adventofcode.com/)
-problems in 2023. The name comes from my favourite cat.
-
-Since its a toy language, its focus is on elegance above anything else. I
-wanted something that makes me feel pleasure every time I use it. I hope this
-way I can give pleasure to you too.
-
-<p align="right">
 ```ocaml
 "  Gaya is cool  "
     |> string.trim(_)
     |> string.concat(_, "!")
     |> string.split(_, " ")
 ```
-</p>
+
+Gaya is a scripting language I made for solving [AoC](https://adventofcode.com/)
+problems in 2023. The name comes from my favourite cat.
+
+Since its a toy language, its focus is on elegance above anything else. I
+wanted something that makes me feel pleasure every time I use it. I hope this
+way I can give pleasure to you too.
 
 #### Documentation
 
