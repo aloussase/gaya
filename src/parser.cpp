@@ -191,12 +191,6 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 
     auto condition = expression(token.value());
 
-    if (auto do_ = _lexer.next_token(); !match(do_, token_type::do_))
-    {
-        parser_error(span, "Expected 'do' after condition in while statement");
-        return nullptr;
-    }
-
     std::vector<ast::stmt_ptr> body;
 
     for (;;)
@@ -218,9 +212,9 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         }
     }
 
-    if (auto done = _lexer.next_token(); !match(done, token_type::done))
+    if (auto end = _lexer.next_token(); !match(end, token_type::end))
     {
-        parser_error(span, "Expected 'done' after while body");
+        parser_error(span, "Expected 'end' after while body");
         parser_hint(span, "You can only use local statements in while body");
         return nullptr;
     }
@@ -871,7 +865,7 @@ ast::expression_ptr parser::do_expression(token token)
         auto tk = _lexer.next_token();
         if (!tk) break;
 
-        if (match(tk, token_type::done))
+        if (match(tk, token_type::end))
         {
             _lexer.push_back(tk.value());
             break;
@@ -900,11 +894,11 @@ ast::expression_ptr parser::do_expression(token token)
         body.push_back(std::make_unique<ast::unit>(token.get_span()));
     }
 
-    if (auto tk = _lexer.next_token(); !match(tk, token_type::done))
+    if (auto tk = _lexer.next_token(); !match(tk, token_type::end))
     {
         parser_error(
             token.get_span(),
-            "Expected 'done' after last expression in do block");
+            "Expected 'end' after last expression in do block");
         parser_hint(
             token.get_span(),
             "Check that you don't have leftover expressions in the do block");

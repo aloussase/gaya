@@ -38,13 +38,13 @@ string.startswith :: { s, pattern =>
     otherwise =>
       let i = 0 in
       let result = 1 in do
-        while i < string.length(pattern) and result do
+        while i < string.length(pattern) and result
           result <- s(i) == pattern(i)
           i <- i + 1
-        done
+        end
 
         result
-      done
+      end
   end
 }
 
@@ -56,14 +56,14 @@ string.endswith :: { s, pattern =>
       let i = string.length(s) - 1 in
       let j = string.length(pattern) - 1 in 
       let result = 1 in do
-        while i >= 0 and j >= 0 and result do
+        while i >= 0 and j >= 0 and result
           result <- s(i) == pattern(j)
           i <- i - 1
           j <- j - 1
-        done
+        end
 
         result
-      done
+      end
   end
 }
 
@@ -74,22 +74,22 @@ string.index :: { s, pattern =>
     otherwise =>
       let completeMatch = false in
       let i = 0 in do
-        while not completeMatch and i < string.length(s) - string.length(pattern) + 1 do
+        while not completeMatch and i < string.length(s) - string.length(pattern) + 1
           discard let j = 0 in
           let match = true in do 
-            while match and j < string.length(pattern) do
+            while match and j < string.length(pattern)
               match <- s(i + j) == pattern(j)
               j <- j + 1
-            done
+            end
 
             completeMatch <- match
-          done
+          end
 
           i <- i + 1
-        done
+        end
 
         ifelse(completeMatch, { => i - 1}, { => unit })
-      done
+      end
   end
 }
 
@@ -107,13 +107,13 @@ string.substring :: { s, start, finish =>
     otherwise =>
       let result = "" in
       let i = start in do
-        while i < finish do
+        while i < finish
           result <- string.concat(result, s(i))
           i <- i + 1
-        done
+        end
 
         result
-      done
+      end
   end
 }
 
@@ -126,20 +126,20 @@ string.split :: { s, pattern =>
       let i = 0 in 
       let j = 0 in 
       let unitToStr = { x => ifelse(x == unit, { => "" }, { => x }) } in do
-        while i < string.length(s) do
+        while i < string.length(s)
           discard let ss = string.substring(s, i, string.length(s)) in
           cases 
             given string.index(ss, pattern) == 0 => do
               result <- array.push(result, unitToStr(string.substring(s, j, i)))
               i <- i + string.length(pattern)
               j <- i
-            done
+            end
             otherwise => perform i <- i + 1
           end
-        done
+        end
 
         array.push(result, unitToStr(string.substring(s, j, i)))
-      done
+      end
   end
 }
 
@@ -150,14 +150,14 @@ string.iswhitespace :: { s => s == " " or s == "\n" or s == "\t" }
 string.trim :: { s =>
   let start = 0 in
   let finish = string.length(s) - 1 in do
-    while string.iswhitespace(s(start)) and start < string.length(s) do
+    while string.iswhitespace(s(start)) and start < string.length(s)
       start <- start + 1
-    done
+    end
     
-    while string.iswhitespace(s(finish)) and finish > start do
+    while string.iswhitespace(s(finish)) and finish > start
       finish <- finish - 1
-    done
+    end
 
     string.substring(s, start, finish + 1)
-  done
+  end
 }

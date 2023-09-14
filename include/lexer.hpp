@@ -18,7 +18,6 @@ enum class token_type {
     dash,
     discard,
     do_,
-    done,
     end,
     equal,
     equal_equal,

@@ -4,7 +4,7 @@ test :: { =>
   let x = 42 in do
     discard perform x <- 52
     x
-  done
+  end
 }
 
 discard io.println(test())

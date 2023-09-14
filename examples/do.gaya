@@ -8,8 +8,8 @@ f :: { =>
     do 
       discard io.println(x)
       let x = "World!" in io.println(x)
-    done
-  done
+    end
+  end
 }
 
 discard f()

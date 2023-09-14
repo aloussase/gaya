@@ -3,7 +3,7 @@
 f :: { =>
   do
     io.println("Ahooy!")
-  done
+  end
 }
 
 discard f()

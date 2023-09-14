@@ -9,4 +9,4 @@ discard
   let ys = ( f("Gaya") ) in do
     discard xs(0)()
     ys(0)()
-  done
+  end

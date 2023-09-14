@@ -5,7 +5,7 @@ x :: 42
 test :: { => 
   do 
     x <- 69
-  done
+  end
 }
 
 discard test()

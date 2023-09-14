@@ -5,7 +5,7 @@ discard
   let f2 = unit in
   let f3 = unit in 
   let i = 1 in do
-    while i < 4 do
+    while i < 4
       discard let j = i in do
         let f = { => io.println(j) } in
         cases
@@ -13,13 +13,13 @@ discard
           given j == 2 => perform f2 <- f
           otherwise    => perform f3 <- f
         end
-      done
+      end
       i <- i + 1
-    done
+    end
 
     discard f1()
     discard f2()
     discard f3()
 
     unit
-  done
+  end

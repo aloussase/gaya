@@ -3,7 +3,7 @@
 discard 
   let s = "Hola" in
   let i = 0 in perform
-  while i < string.length(s) do
+  while i < string.length(s)
     discard io.println(s(i))
     i <- i + 1
-  done
+  end

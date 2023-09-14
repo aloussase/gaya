@@ -3,13 +3,13 @@
 sumFirstN :: { n =>
   let sum = 0 in
   let i = 0 in do
-    while i < n do
+    while i < n
       sum <- sum + i
       i <- i + 1
-    done
+    end
 
     sum
-  done
+  end
 }
 
 discard io.println(sumFirstN(10))

@@ -10,7 +10,6 @@ lexer::lexer(const char* source)
     _keywords.insert({ "let", token_type::let });
     _keywords.insert({ "in", token_type::in });
     _keywords.insert({ "do", token_type::do_ });
-    _keywords.insert({ "done", token_type::done });
     _keywords.insert({ "unit", token_type::unit });
     _keywords.insert({ "cases", token_type::cases });
     _keywords.insert({ "given", token_type::given });

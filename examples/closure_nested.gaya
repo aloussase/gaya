@@ -9,7 +9,7 @@ f :: { =>
         discard io.println(a)
         discard io.println(b)
         io.println(c)
-      done
+      end
     }
   }
 }

@@ -4,7 +4,7 @@ test :: { x =>
   let x = x in do
     x <- 42
     io.println(x)
-  done
+  end
 }
 
 discard test(69)

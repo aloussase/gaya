@@ -4,6 +4,6 @@ discard do
   discard let a = "before" in io.println(a)
   discard let a = "after"  in io.println(a)
   unit
-done
+end
     
 

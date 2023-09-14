@@ -3,12 +3,12 @@
 discard 
   let i = 0 in 
   let j = 0 in do 
-    while i < 5 do
-      while j < 5 do
+    while i < 5
+      while j < 5 
         j <- j + 1
-      done
+      end
       i <- i + 1
-    done
+    end
     
     io.println(i * j)
-  done
+  end

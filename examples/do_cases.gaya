@@ -6,12 +6,12 @@ f :: { x =>
       do
         discard io.println("Truthy")
         io.println(x)
-      done
+      end
     otherwise =>
       do
         discard io.println("Falsey")
         io.println(x)
-      done
+      end
     end
 }
 

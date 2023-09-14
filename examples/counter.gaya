@@ -9,7 +9,7 @@ mkCounter :: { =>
     let previous = count in do
       count <- count + 1
       previous
-    done
+    end
   }
 }
 
