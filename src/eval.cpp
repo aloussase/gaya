@@ -6,6 +6,7 @@
 #include <builtins/core.hpp>
 #include <builtins/io.hpp>
 #include <builtins/math.hpp>
+#include <builtins/sequence.hpp>
 #include <builtins/string.hpp>
 #include <eval.hpp>
 #include <file_reader.hpp>
@@ -23,6 +24,12 @@ interpreter::interpreter(const std::string& filename, const char* source)
 
     using namespace object::builtin;
 
+    define("typeof", std::make_shared<core::typeof_>());
+    define("assert", std::make_shared<core::assert_>());
+    define("tostring", std::make_shared<core::tostring>());
+    define("issequence", std::make_shared<core::issequence>());
+    define("tosequence", std::make_shared<core::tosequence>());
+
     define("io.println", std::make_shared<io::println>());
 
     define("math.add", std::make_shared<math::add>());
@@ -30,16 +37,16 @@ interpreter::interpreter(const std::string& filename, const char* source)
     define("math.mult", std::make_shared<math::mult>());
     define("math.div", std::make_shared<math::div>());
 
-    define("typeof", std::make_shared<core::typeof_>());
-    define("assert", std::make_shared<core::assert_>());
-    define("tostring", std::make_shared<core::tostring>());
-
     define("string.length", std::make_shared<string::length>());
     define("string.concat", std::make_shared<string::concat>());
 
     define("array.length", std::make_shared<array::length>());
     define("array.concat", std::make_shared<array::concat>());
     define("array.push", std::make_shared<array::push>());
+
+    define("seq.hasnext", std::make_shared<sequence::hasnext>());
+    define("seq.next", std::make_shared<sequence::next>());
+    define("seq.map", std::make_shared<sequence::map>());
 
     if (!loadfile(GAYA_STDLIB_PATH))
     {
@@ -219,7 +226,7 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     return nullptr;
 }
 
-object::object_ptr interpreter::visit_while_stmt(ast::WhileStmt& while_stmt)
+object::object_ptr interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
 {
     begin_scope(env { std::make_shared<env>(current_env()) });
     for (;;)
@@ -231,6 +238,12 @@ object::object_ptr interpreter::visit_while_stmt(ast::WhileStmt& while_stmt)
         for (auto& stmt : while_stmt.body)
         {
             stmt->accept(*this);
+            if (had_error()) return nullptr;
+        }
+
+        if (while_stmt.continuation)
+        {
+            while_stmt.continuation->accept(*this);
             if (had_error()) return nullptr;
         }
     }

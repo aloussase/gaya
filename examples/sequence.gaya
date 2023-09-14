@@ -1,0 +1,14 @@
+(* Output: 'G!\na!\ny!\na!\nG,a,y,a,' *)
+
+discard
+  "Gaya"
+  |> tosequence(_)
+  |> seq.map(_, { c => string.concat(c, "!") })
+  |> seq.foreach(_, io.println)
+
+discard
+  "Gaya"
+  |> tosequence(_)
+  |> seq.map(_, { c => string.concat(c, ",") })
+  |> seq.reduce(_, "", { acc, c => string.concat(acc, c) })
+  |> io.println(_)

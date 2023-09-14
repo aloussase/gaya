@@ -72,18 +72,17 @@ string.index :: { s, pattern =>
   cases 
     given string.length(s) < string.length(pattern) => unit
     otherwise =>
-      let completeMatch = false, i = 0 in do
-        while not completeMatch and i < string.length(s) - string.length(pattern) + 1
+      let slen = string.length(s),
+          plen = string.length(pattern),
+          completeMatch = false, i = 0 in do
+        while not completeMatch and i < slen - plen + 1 : i <- i + 1
           discard let j = 0, match = true in do
-            while match and j < string.length(pattern)
+            while match and j < plen : j <- j + 1
               match <- s(i + j) == pattern(j)
-              j <- j + 1
             end
 
             completeMatch <- match
           end
-
-          i <- i + 1
         end
 
         ifelse(completeMatch, { => i - 1}, { => unit })
@@ -104,9 +103,8 @@ string.substring :: { s, start, finish =>
     given finish <= start or start < 0 or finish > string.length(s) => unit
     otherwise =>
       let result = "", i = start in do
-        while i < finish
+        while i < finish : i <- i + 1
           result <- string.concat(result, s(i))
-          i <- i + 1
         end
 
         result
@@ -168,9 +166,8 @@ string.trim :: { s =>
 array.range :: { start, finish => do
     discard assert(typeof(start) == "number" and typeof(finish) == "number")
     let i = start, a = () in do
-      while i < finish
+      while i < finish : i <- i + 1
         a <- array.push(a, i)
-        i <- i +  1
       end
 
       a
@@ -185,16 +182,47 @@ array.range :: { start, finish => do
 array.join :: { ary, sep => do
     discard assert(typeof(ary) == "array" and typeof(sep) == "string")
     let i = 0, result = "" in do
-      while i < array.length(ary)
-        result <- result |> string.concat(_, tostring(ary(i)))
+      while i < array.length(ary) : i <- i + 1
+        result <- result |> string.concat(_, ary(i) |> tostring(_))
         discard cases 
           given i < array.length(ary) - 1 => 
             perform result <- result |> string.concat(_, sep)
         end
-        i <- i + 1
       end
 
       result
+    end
+  end
+}
+
+(* Sequences *)
+
+(*
+  Call the provided function for each element in the sequence, discarding
+  the results.
+ *)
+seq.foreach :: { s, f => do
+    discard s |> issequence(_) |> assert(_)
+    let xs = tosequence(s) in perform
+    while seq.hasnext(xs)
+      discard xs |> seq.next(_) |> f(_)
+    end
+  end
+}
+
+(* 
+  Reduce the provided sequence according to the specified accumulator function,
+  using the given initial element. Return the initial element if the sequence
+  was empty.
+ *)
+seq.reduce :: { s, init, f => do
+    discard s |> issequence(_) |> assert(_)
+    let acc = init, xs = tosequence(s) in do
+      while seq.hasnext(xs)
+        acc <- xs |> seq.next(_) |> f(acc, _)
+      end
+
+      acc
     end
   end
 }

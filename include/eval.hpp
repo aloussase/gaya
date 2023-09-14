@@ -60,7 +60,7 @@ class interpreter final : public ast::ast_visitor
     o::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
     o::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
     o::object_ptr visit_assignment_stmt(ast::assignment_stmt&) override;
-    o::object_ptr visit_while_stmt(ast::WhileStmt&) override;
+    o::object_ptr visit_while_stmt(ast::while_stmt&) override;
     o::object_ptr visit_do_expression(ast::do_expression&) override;
     o::object_ptr visit_case_expression(ast::case_expression&) override;
     o::object_ptr visit_unary_expression(ast::unary_expression&) override;

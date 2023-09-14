@@ -8,9 +8,20 @@
 #include <ast.hpp>
 #include <eval.hpp>
 #include <object.hpp>
+#include <sequence.hpp>
 
 namespace gaya::eval::object
 {
+
+sequence_ptr object::to_sequence() noexcept
+{
+    return nullptr;
+}
+
+bool object::is_sequence() const noexcept
+{
+    return false;
+}
 
 function::function(
     span s,
@@ -25,7 +36,7 @@ function::function(
 {
 }
 
-std::string function::to_string() const noexcept
+std::string function::to_string() noexcept
 {
     return fmt::format("<function-{}>", _arity);
 }
@@ -75,7 +86,7 @@ bool function::equals(object_ptr) const noexcept
     return false;
 }
 
-std::string builtin_function::to_string() const noexcept
+std::string builtin_function::to_string() noexcept
 {
     return fmt::format("<builtin-function: {}>", name);
 }
@@ -105,7 +116,7 @@ bool builtin_function::equals(object_ptr) const noexcept
     return false;
 }
 
-std::string array::to_string() const noexcept
+std::string array::to_string() noexcept
 {
     std::stringstream ss;
     ss << "(";
@@ -192,7 +203,7 @@ bool array::equals(object_ptr o) const noexcept
     return true;
 }
 
-std::string number::to_string() const noexcept
+std::string number::to_string() noexcept
 {
     // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
     double intval;
@@ -235,7 +246,7 @@ bool number::equals(object_ptr o) const noexcept
     return value == other->value;
 }
 
-std::string string::to_string() const noexcept
+std::string string::to_string() noexcept
 {
     return '"' + value + '"';
 }
@@ -308,7 +319,17 @@ bool string::equals(object_ptr o) const noexcept
     return value == other->value;
 }
 
-std::string unit::to_string() const noexcept
+bool string::is_sequence() const noexcept
+{
+    return true;
+}
+
+sequence_ptr string::to_sequence() noexcept
+{
+    return std::make_shared<string_sequence>(_span, value);
+}
+
+std::string unit::to_string() noexcept
 {
     return "unit";
 }

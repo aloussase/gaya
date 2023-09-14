@@ -187,7 +187,26 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         return nullptr;
     }
 
-    auto condition = expression(token.value());
+    auto condition             = expression(token.value());
+    ast::stmt_ptr continuation = nullptr;
+
+    if (auto colon = _lexer.next_token(); match(colon, token_type::colon))
+    {
+        auto stmt_token = _lexer.next_token();
+        if (!stmt_token || !is_local_stmt(stmt_token.value()))
+        {
+            parser_error(
+                while_.get_span(),
+                "Expected a statement after ':' in while");
+            return nullptr;
+        }
+
+        continuation = local_stmt(stmt_token.value());
+    }
+    else if (colon)
+    {
+        _lexer.push_back(colon.value());
+    }
 
     std::vector<ast::stmt_ptr> body;
 
@@ -217,7 +236,11 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         return nullptr;
     }
 
-    return ast::make_node<ast::WhileStmt>(span, condition, std::move(body));
+    return ast::make_node<ast::while_stmt>(
+        span,
+        condition,
+        std::move(body),
+        continuation);
 }
 
 ast::stmt_ptr parser::declaration_stmt(token identifier)

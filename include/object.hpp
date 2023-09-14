@@ -22,19 +22,35 @@ namespace gaya::eval::object
 {
 
 struct object;
-using object_ptr = std::shared_ptr<object>;
+struct sequence;
+struct callable;
+
+using object_ptr   = std::shared_ptr<object>;
+using sequence_ptr = std::shared_ptr<sequence>;
+using callable_ptr = std::shared_ptr<callable>;
 
 /* Interfaces */
 
 struct object
 {
     virtual ~object() { }
-    virtual std::string to_string() const noexcept = 0;
+    virtual std::string to_string() noexcept       = 0;
     virtual bool is_callable() const noexcept      = 0;
     virtual std::string typeof_() const noexcept   = 0;
     virtual bool is_truthy() const noexcept        = 0;
     virtual bool is_comparable() const noexcept    = 0;
     virtual bool equals(object_ptr) const noexcept = 0;
+
+    /**
+     * Should return whether this object takes part in the sequence protocol.
+     */
+    [[nodiscard]] virtual bool is_sequence() const noexcept;
+
+    /**
+     * This method returns nullptr if the object does not
+     * participate in the sequence protocol.
+     */
+    [[nodiscard]] virtual sequence_ptr to_sequence() noexcept;
 };
 
 struct callable
@@ -62,7 +78,7 @@ struct function final : public object, public callable
         std::shared_ptr<ast::expression> b,
         env);
 
-    std::string to_string() const noexcept override;
+    std::string to_string() noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
     bool is_callable() const noexcept override;
@@ -89,7 +105,7 @@ struct builtin_function : public object, public callable
 
     virtual ~builtin_function() { }
 
-    std::string to_string() const noexcept override;
+    std::string to_string() noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
@@ -107,7 +123,7 @@ struct array final : public object, public callable
     {
     }
 
-    std::string to_string() const noexcept override;
+    std::string to_string() noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
@@ -130,7 +146,7 @@ struct number final : public object, public comparable
     {
     }
 
-    std::string to_string() const noexcept override;
+    std::string to_string() noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
@@ -151,12 +167,14 @@ struct string final : public object, public callable, public comparable
     {
     }
 
-    std::string to_string() const noexcept override;
+    std::string to_string() noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
     bool is_callable() const noexcept override;
     bool equals(object_ptr) const noexcept override;
+    bool is_sequence() const noexcept override;
+    sequence_ptr to_sequence() noexcept override;
 
     std::optional<int> cmp(object_ptr other) const noexcept override;
 
@@ -175,7 +193,7 @@ struct unit final : public object, public comparable
     {
     }
 
-    std::string to_string() const noexcept override;
+    std::string to_string() noexcept override;
     bool is_callable() const noexcept override;
     std::string typeof_() const noexcept override;
     bool is_truthy() const noexcept override;

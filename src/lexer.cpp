@@ -151,8 +151,7 @@ std::optional<token> lexer::colon_colon() noexcept
 {
     if (auto c = peek(); !c || c.value() != ':')
     {
-        lexer_error("Expected ':' after first ':'");
-        return std::nullopt;
+        return mk_token(token_type::colon);
     }
     advance();
     return mk_token(token_type::colon_colon);

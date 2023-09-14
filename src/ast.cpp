@@ -79,7 +79,7 @@ gaya::eval::object::object_ptr assignment_stmt::accept(ast_visitor& v)
     return v.visit_assignment_stmt(*this);
 }
 
-std::string WhileStmt::to_string() const noexcept
+std::string while_stmt::to_string() const noexcept
 {
     std::stringstream ss;
     ss << R"({"type": "while_stmt", "condition":)" << condition->to_string()
@@ -88,7 +88,7 @@ std::string WhileStmt::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr WhileStmt::accept(ast_visitor& v)
+gaya::eval::object::object_ptr while_stmt::accept(ast_visitor& v)
 {
     return v.visit_while_stmt(*this);
 }

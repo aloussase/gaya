@@ -13,6 +13,7 @@ enum class token_type {
     arrow,
     back_arrow,
     cases,
+    colon,
     colon_colon,
     comma,
     dash,

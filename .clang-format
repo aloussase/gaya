@@ -19,7 +19,7 @@ AllowShortEnumsOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: WithoutElse
-AccessModifierOffset: -2
+AccessModifierOffset: -4
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterControlStatement: Always
