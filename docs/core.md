@@ -240,7 +240,29 @@ end
 
 ## While loops <a name="while-loops">
 
-TODO
+While loops work as you'd expect in other programming languages:
+
+```ocaml
+let x = 0 in perform
+while x < 10
+  discard io.println(x)
+  x <- x + 1
+end
+```
+
+An optional continuation statement may be put after the while condition like in
+Zig. So the last example could be rewritten to:
+
+```ocaml
+let x = 0 in perform
+while x < 10 : x <- x + 1
+  discard io.println(x)
+end
+```
+
+Note that the body of the while loop should consist entirely of statements.
+This means that if you call a function, you need to discard its result
+explicitely if you are not going to use it.
 
 ## Assignment <a name="assignment" />
 
