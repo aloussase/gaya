@@ -78,7 +78,7 @@ namespace gaya::eval
 
 class env final
 {
-  public:
+public:
     using parent_ptr = std::shared_ptr<env>;
     using bindings   = std::unordered_map<key, object::object_ptr>;
 
@@ -103,7 +103,7 @@ class env final
     /// Check whether the provided identifier is a valid assignment target.
     [[nodiscard]] bool can_assign_to(const std::string&) noexcept;
 
-  private:
+private:
     bindings _bindings;
     parent_ptr _parent = nullptr;
 };

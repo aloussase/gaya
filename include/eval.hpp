@@ -8,6 +8,8 @@
 #include <object.hpp>
 #include <span.hpp>
 
+#define STATIC_NUMBER_CACHE_SIZE 10'000
+
 namespace gaya::eval
 {
 
@@ -15,7 +17,7 @@ namespace o = object;
 
 class interpreter final : public ast::ast_visitor
 {
-  public:
+public:
     interpreter(const std::string& filename, const char* source);
 
     [[nodiscard]] object::object_ptr eval() noexcept;
@@ -75,13 +77,27 @@ class interpreter final : public ast::ast_visitor
     o::object_ptr visit_unit(ast::unit&) override;
     o::object_ptr visit_placeholder(ast::placeholder&) override;
 
-  private:
+    [[nodiscard]] std::shared_ptr<o::number>& true_object(span) noexcept;
+    [[nodiscard]] std::shared_ptr<o::number>& false_object(span) noexcept;
+    [[nodiscard]] std::shared_ptr<o::unit>& unit_object(span) noexcept;
+
+    [[nodiscard]] std::shared_ptr<o::number> make_number(span, double) noexcept;
+
+private:
     [[nodiscard]] env& current_env() noexcept;
+
+    /* Optimization for booleans and unit. */
+    std::shared_ptr<o::number> _true_object;
+    std::shared_ptr<o::number> _false_object;
+    std::shared_ptr<o::unit> _unit_object;
 
     std::string _filename;
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;
     std::stack<env> _scopes;
+
+    std::shared_ptr<o::number> _static_number_cache[STATIC_NUMBER_CACHE_SIZE];
+    std::unordered_map<int, std::shared_ptr<o::number>> _dynamic_number_cache;
 };
 
 }

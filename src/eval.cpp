@@ -1,4 +1,5 @@
 #include <cassert>
+#include <climits>
 
 #include <fmt/core.h>
 
@@ -20,6 +21,18 @@ interpreter::interpreter(const std::string& filename, const char* source)
     : _filename { filename }
     , _source { source }
 {
+    /* Create small objects */
+    auto s        = span { 0, nullptr, nullptr };
+    _true_object  = std::make_shared<object::number>(s, 1);
+    _false_object = std::make_shared<object::number>(s, 0);
+    _unit_object  = std::make_shared<object::unit>(s);
+
+    /* Zero out the number cache */
+    for (int i = 0; i < STATIC_NUMBER_CACHE_SIZE; i++)
+    {
+        _static_number_cache[i] = nullptr;
+    }
+
     _scopes.push(env {});
 
     using namespace object::builtin;
@@ -51,6 +64,63 @@ interpreter::interpreter(const std::string& filename, const char* source)
     if (!loadfile(GAYA_STDLIB_PATH))
     {
         fprintf(stderr, "warning: stdlib could not be loaded\n");
+    }
+}
+
+std::shared_ptr<o::number>& interpreter::true_object(span span) noexcept
+{
+    _true_object->_span = span;
+    return _true_object;
+}
+
+std::shared_ptr<o::number>& interpreter::false_object(span span) noexcept
+{
+    _false_object->_span = span;
+    return _false_object;
+}
+
+std::shared_ptr<o::unit>& interpreter::unit_object(span span) noexcept
+{
+    _unit_object->_span = span;
+    return _unit_object;
+}
+
+std::shared_ptr<o::number>
+interpreter::make_number(span span, double value) noexcept
+{
+    if (value >= STATIC_NUMBER_CACHE_SIZE || value < 0)
+    {
+        if (value < INT_MAX)
+        {
+            auto i = static_cast<int>(value);
+            if (_dynamic_number_cache.contains(i))
+            {
+                return _dynamic_number_cache[i];
+            }
+            else
+            {
+                auto newnumber = std::make_shared<object::number>(span, value);
+                _dynamic_number_cache[i] = newnumber;
+                return newnumber;
+            }
+        }
+        else
+        {
+            return std::make_shared<object::number>(span, value);
+        }
+    }
+
+    if (auto cached = _static_number_cache[static_cast<int>(value)]; cached)
+    {
+        cached->_span = span;
+        cached->value = value;
+        return cached;
+    }
+    else
+    {
+        auto newnumber = std::make_shared<object::number>(span, value);
+        _static_number_cache[static_cast<int>(value)] = newnumber;
+        return newnumber;
     }
 }
 
@@ -399,7 +469,7 @@ object::object_ptr interpreter::visit_array(ast::array& ary)
 
 object::object_ptr interpreter::visit_number(ast::number& n)
 {
-    return std::make_shared<object::number>(n._span, n.value);
+    return make_number(n._span, n.value);
 }
 
 object::object_ptr interpreter::visit_string(ast::string& s)

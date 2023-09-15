@@ -283,9 +283,11 @@ cmp_expression::execute(eval::interpreter& interp)
         return nullptr;
     }
 
-    return std::make_shared<eval::object::number>(
-        op.get_span(),
-        result.value());
+    return (result.value() == 1)
+        ? interp.true_object(op.get_span())
+        : ((result.value() == 0)
+               ? interp.false_object(op.get_span())
+               : interp.make_number(op.get_span(), result.value()));
 }
 
 gaya::eval::object::object_ptr
@@ -331,7 +333,7 @@ arithmetic_expression::execute(eval::interpreter& interp)
     default: assert(false && "should not happen");
     }
 
-    return std::make_shared<eval::object::number>(op.get_span(), result);
+    return interp.make_number(op.get_span(), result);
 }
 
 gaya::eval::object::object_ptr

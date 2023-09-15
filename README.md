@@ -16,6 +16,9 @@ Since its a toy language, its focus is on elegance above anything else. I
 wanted something that makes me feel pleasure every time I use it. I hope this
 way I can give pleasure to you too.
 
+**NOTE** The way the language is implemented, it's painfully slow. I wouldn't
+recommend trying to do heavy number processing with it or anything like that.
+
 #### Documentation
 
 You can read the language documentation [here](./docs/toc.md).
