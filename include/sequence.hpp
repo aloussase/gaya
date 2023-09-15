@@ -55,6 +55,42 @@ private:
     size_t _index         = 0;
 };
 
+class array_sequence final : public sequence
+{
+public:
+    array_sequence(span span, const std::vector<object_ptr> elems)
+        : _span { span }
+        , _elems { elems }
+    {
+    }
+
+    bool has_next() const noexcept override;
+    object_ptr next() noexcept override;
+
+private:
+    span _span;
+    std::vector<object_ptr> _elems = {};
+    size_t _index                  = 0;
+};
+
+class number_sequence final : public sequence
+{
+public:
+    number_sequence(span span, double n)
+        : _span { span }
+        , _n { n }
+    {
+    }
+
+    bool has_next() const noexcept override;
+    object_ptr next() noexcept override;
+
+private:
+    span _span;
+    double _n;
+    double _i = 0;
+};
+
 class mapper_sequence final : public sequence
 {
 public:

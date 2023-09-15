@@ -88,7 +88,7 @@ map::call(interpreter& interp, span span, std::vector<object_ptr> args) noexcept
     return std::make_shared<mapper_sequence>(
         interp,
         span,
-        std::static_pointer_cast<gaya::eval::object::sequence>(seq),
+        seq->to_sequence(),
         std::dynamic_pointer_cast<callable>(func));
 }
 

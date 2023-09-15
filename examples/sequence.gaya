@@ -1,5 +1,6 @@
 (* Output: 'G!\na!\ny!\na!\nG,a,y,a,' *)
 
+(* Works on strings *)
 discard
   "Gaya"
   |> tosequence(_)
@@ -12,3 +13,18 @@ discard
   |> seq.map(_, { c => string.concat(c, ",") })
   |> seq.reduce(_, "", { acc, c => string.concat(acc, c) })
   |> io.println(_)
+
+(* Works in arrays. *)
+discard 
+  array.range(1, 10)
+  |> tosequence(_)
+  |> seq.map(_, { x => x + 1 })
+  |> seq.reduce(_, 0, math.add)
+  |> assert(_ == 54)
+
+(* Works on numbers. *)
+discard
+  42
+  |> tosequence(_)
+  |> seq.reduce(_, 0, math.add)
+  |> assert(_ == 861)

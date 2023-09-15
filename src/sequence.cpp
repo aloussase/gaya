@@ -84,6 +84,44 @@ object_ptr string_sequence::next() noexcept
     }
 }
 
+/* Array sequence */
+
+bool array_sequence::has_next() const noexcept
+{
+    return _index < _elems.size();
+}
+
+object_ptr array_sequence::next() noexcept
+{
+    if (has_next())
+    {
+        return _elems[_index++];
+    }
+    else
+    {
+        return std::make_shared<unit>(_span);
+    }
+}
+
+/* Number sequence */
+
+bool number_sequence::has_next() const noexcept
+{
+    return _i < _n;
+}
+
+object_ptr number_sequence::next() noexcept
+{
+    if (has_next())
+    {
+        return std::make_shared<number>(_span, _i++);
+    }
+    else
+    {
+        return std::make_shared<unit>(_span);
+    }
+}
+
 /* Mapper sequence */
 
 bool mapper_sequence::has_next() const noexcept

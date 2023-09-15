@@ -203,6 +203,16 @@ bool array::equals(object_ptr o) const noexcept
     return true;
 }
 
+bool array::is_sequence() const noexcept
+{
+    return true;
+}
+
+sequence_ptr array::to_sequence() noexcept
+{
+    return std::make_shared<array_sequence>(span_, elems);
+}
+
 std::string number::to_string() noexcept
 {
     // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
@@ -244,6 +254,16 @@ bool number::equals(object_ptr o) const noexcept
     if (typeof_() != o->typeof_()) return false;
     auto other = std::static_pointer_cast<number>(o);
     return value == other->value;
+}
+
+bool number::is_sequence() const noexcept
+{
+    return true;
+}
+
+sequence_ptr number::to_sequence() noexcept
+{
+    return std::make_shared<number_sequence>(_span, value);
 }
 
 std::string string::to_string() noexcept

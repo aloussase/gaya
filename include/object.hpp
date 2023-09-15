@@ -129,6 +129,8 @@ struct array final : public object, public callable
     bool is_truthy() const noexcept override;
     bool is_comparable() const noexcept override;
     bool equals(object_ptr) const noexcept override;
+    bool is_sequence() const noexcept override;
+    sequence_ptr to_sequence() noexcept override;
 
     size_t arity() const noexcept override;
     object_ptr
@@ -153,6 +155,8 @@ struct number final : public object, public comparable
     bool is_comparable() const noexcept override;
     std::optional<int> cmp(object_ptr other) const noexcept override;
     bool equals(object_ptr) const noexcept override;
+    bool is_sequence() const noexcept override;
+    sequence_ptr to_sequence() noexcept override;
 
     span _span;
     double value;
