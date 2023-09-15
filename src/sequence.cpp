@@ -13,14 +13,23 @@ std::string sequence::to_string() noexcept
 {
     std::stringstream ss;
     ss << "(";
-    while (has_next())
+
+    auto value = next();
+    if (!value) return nullptr;
+    if (value->typeof_() != "unit")
     {
-        ss << next()->to_string();
-        if (has_next())
-        {
-            ss << ", ";
-        }
+        ss << value->to_string();
     }
+
+    for (;;)
+    {
+        auto value = next();
+        if (!value) return nullptr;
+        if (value->typeof_() == "unit") break;
+
+        ss << ", " << value->to_string();
+    }
+
     ss << ")";
     return ss.str();
 }
@@ -38,7 +47,7 @@ std::string sequence::typeof_() const noexcept
 
 bool sequence::is_truthy() const noexcept
 {
-    return has_next();
+    return false;
 }
 
 bool sequence::is_comparable() const noexcept
@@ -65,14 +74,9 @@ sequence_ptr sequence::to_sequence() noexcept
 
 /* String sequences */
 
-bool string_sequence::has_next() const noexcept
-{
-    return _index < _contents.size();
-}
-
 object_ptr string_sequence::next() noexcept
 {
-    if (has_next())
+    if (_index < _contents.size())
     {
         return std::make_shared<string>(
             _span,
@@ -86,14 +90,9 @@ object_ptr string_sequence::next() noexcept
 
 /* Array sequence */
 
-bool array_sequence::has_next() const noexcept
-{
-    return _index < _elems.size();
-}
-
 object_ptr array_sequence::next() noexcept
 {
-    if (has_next())
+    if (_index < _elems.size())
     {
         return _elems[_index++];
     }
@@ -105,14 +104,9 @@ object_ptr array_sequence::next() noexcept
 
 /* Number sequence */
 
-bool number_sequence::has_next() const noexcept
-{
-    return _i < _n;
-}
-
 object_ptr number_sequence::next() noexcept
 {
-    if (has_next())
+    if (_i < _n)
     {
         return std::make_shared<number>(_span, _i++);
     }
@@ -124,20 +118,20 @@ object_ptr number_sequence::next() noexcept
 
 /* Mapper sequence */
 
-bool mapper_sequence::has_next() const noexcept
-{
-    return _inner->has_next();
-}
-
 object_ptr mapper_sequence::next() noexcept
 {
-    if (!has_next()) return std::make_shared<unit>(_span);
-
     auto value = _inner->next();
     if (!value) return nullptr;
+    if (value->typeof_() == "unit") return value;
 
-    auto mapped = _mapper->call(_interp, _span, std::vector { value });
-    return mapped;
+    return _mapper->call(_interp, _span, std::vector { value });
+}
+
+/* User define sequence */
+
+object_ptr user_defined_sequence::next() noexcept
+{
+    return _next->call(_interp, _span, {});
 }
 
 }

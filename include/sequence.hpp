@@ -25,12 +25,6 @@ struct sequence : public object, public std::enable_shared_from_this<sequence>
     sequence_ptr to_sequence() noexcept override;
 
     /**
-     * Should return whether there are any more elements to consume from this
-     * sequence.
-     */
-    [[nodiscard]] virtual bool has_next() const noexcept = 0;
-
-    /**
      * Should return the next element in the sequence, or unit if there are
      * none.
      */
@@ -46,7 +40,6 @@ public:
     {
     }
 
-    bool has_next() const noexcept override;
     object_ptr next() noexcept override;
 
 private:
@@ -64,7 +57,6 @@ public:
     {
     }
 
-    bool has_next() const noexcept override;
     object_ptr next() noexcept override;
 
 private:
@@ -73,6 +65,9 @@ private:
     size_t _index                  = 0;
 };
 
+/**
+ * Acts like Python's range(n).
+ */
 class number_sequence final : public sequence
 {
 public:
@@ -82,7 +77,6 @@ public:
     {
     }
 
-    bool has_next() const noexcept override;
     object_ptr next() noexcept override;
 
 private:
@@ -91,6 +85,9 @@ private:
     double _i = 0;
 };
 
+/**
+ * TODO: This could be library defined.
+ */
 class mapper_sequence final : public sequence
 {
 public:
@@ -106,7 +103,6 @@ public:
     {
     }
 
-    bool has_next() const noexcept override;
     object_ptr next() noexcept override;
 
 private:
@@ -114,6 +110,28 @@ private:
     span _span;
     sequence_ptr _inner;
     callable_ptr _mapper;
+};
+
+/**
+ * A user can create a sequence by providing a next callback. This callback
+ * should return successive sequence element, and unit when it is done.
+ */
+class user_defined_sequence final : public sequence
+{
+public:
+    user_defined_sequence(span span, interpreter& interp, callable_ptr next)
+        : _span { span }
+        , _interp { interp }
+        , _next { next }
+    {
+    }
+
+    object_ptr next() noexcept override;
+
+private:
+    span _span;
+    interpreter& _interp;
+    callable_ptr _next;
 };
 
 }

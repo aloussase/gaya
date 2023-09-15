@@ -203,9 +203,9 @@ array.join :: { ary, sep => do
  *)
 seq.foreach :: { s, f => do
     discard s |> issequence(_) |> assert(_)
-    let xs = tosequence(s) in perform
-    while seq.hasnext(xs)
-      discard xs |> seq.next(_) |> f(_)
+    let xs = tosequence(s), next = seq.next(xs) in perform
+    while next /= unit : next <- seq.next(xs)
+      discard f(next)
     end
   end
 }
@@ -217,9 +217,9 @@ seq.foreach :: { s, f => do
  *)
 seq.reduce :: { s, init, f => do
     discard s |> issequence(_) |> assert(_)
-    let acc = init, xs = tosequence(s) in do
-      while seq.hasnext(xs)
-        acc <- xs |> seq.next(_) |> f(acc, _)
+    let acc = init, xs = tosequence(s), next = seq.next(xs) in do
+      while next /= unit : next <- seq.next(xs)
+        acc <- f(acc, next)
       end
 
       acc

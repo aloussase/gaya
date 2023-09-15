@@ -57,9 +57,9 @@ interpreter::interpreter(const std::string& filename, const char* source)
     define("array.concat", std::make_shared<array::concat>());
     define("array.push", std::make_shared<array::push>());
 
-    define("seq.hasnext", std::make_shared<sequence::hasnext>());
     define("seq.next", std::make_shared<sequence::next>());
     define("seq.map", std::make_shared<sequence::map>());
+    define("seq.make", std::make_shared<sequence::make>());
 
     if (!loadfile(GAYA_STDLIB_PATH))
     {

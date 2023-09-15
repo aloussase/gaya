@@ -1,0 +1,20 @@
+(* Output: '' *)
+
+upto :: { n => 
+  let i = 0 in
+  seq.make({ =>
+    cases
+      given i < n =>
+        let previous = i in do
+          i <- i + 1
+          previous
+        end
+    end
+  })
+}
+
+discard
+  upto(10)
+  |> seq.map(_, { x => (x + 1) })
+  |> seq.reduce(_, (), array.concat)
+  |> assert(_ == array.range(1, 11))
