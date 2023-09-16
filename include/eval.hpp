@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <ast_visitor.hpp>
 #include <diagnostic.hpp>
 #include <env.hpp>
@@ -32,7 +33,7 @@ public:
     [[nodiscard]] const env& get_env() const noexcept;
 
     /// Define a new symbol in the current scope.
-    void define(const key&, object::object) noexcept;
+    void define(key, object::object) noexcept;
 
     /// Begin a new scope.
     void begin_scope(env new_scope) noexcept;

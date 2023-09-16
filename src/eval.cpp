@@ -16,6 +16,8 @@
 namespace gaya::eval
 {
 
+using namespace std::string_literals;
+
 interpreter::interpreter(const std::string& filename, const char* source)
     : _filename { filename }
     , _source { source }
@@ -27,23 +29,23 @@ interpreter::interpreter(const std::string& filename, const char* source)
 
     using namespace object::builtin;
 
-    BUILTIN("typeof", 1, core::typeof_);
-    BUILTIN("assert", 1, core::assert_);
-    BUILTIN("tostring", 1, core::tostring);
-    BUILTIN("tosequence", 1, core::tosequence);
-    BUILTIN("issequence", 1, core::issequence);
+    BUILTIN("typeof"s, 1, core::typeof_);
+    BUILTIN("assert"s, 1, core::assert_);
+    BUILTIN("tostring"s, 1, core::tostring);
+    BUILTIN("tosequence"s, 1, core::tosequence);
+    BUILTIN("issequence"s, 1, core::issequence);
 
-    BUILTIN("io.println", 1, io::println);
+    BUILTIN("io.println"s, 1, io::println);
 
-    BUILTIN("string.length", 1, string::length);
-    BUILTIN("string.concat", 2, string::concat);
+    BUILTIN("string.length"s, 1, string::length);
+    BUILTIN("string.concat"s, 2, string::concat);
 
-    BUILTIN("array.length", 1, array::length);
-    BUILTIN("array.concat", 2, array::concat);
-    BUILTIN("array.push", 2, array::push);
+    BUILTIN("array.length"s, 1, array::length);
+    BUILTIN("array.concat"s, 2, array::concat);
+    BUILTIN("array.push"s, 2, array::push);
 
-    BUILTIN("seq.next", 1, sequence::next);
-    BUILTIN("seq.make", 1, sequence::make);
+    BUILTIN("seq.next"s, 1, sequence::next);
+    BUILTIN("seq.make"s, 1, sequence::make);
 
     if (!loadfile(GAYA_STDLIB_PATH))
     {
@@ -155,9 +157,9 @@ env& interpreter::current_env() noexcept
     return _scopes.back();
 }
 
-void interpreter::define(const key& k, object::object v) noexcept
+void interpreter::define(key k, object::object v) noexcept
 {
-    current_env().set(k, v);
+    current_env().set(std::move(k), v);
 }
 
 void interpreter::begin_scope(env new_scope) noexcept
@@ -183,12 +185,10 @@ object::maybe_object interpreter::visit_program(ast::program& program)
 object::maybe_object
 interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
 {
-    auto ident = declaration_stmt.ident->value;
     auto value = declaration_stmt.expr->accept(*this);
-
     if (value)
     {
-        define(key::global(ident), *value);
+        define(key::global(declaration_stmt.ident->value), *value);
     }
 
     return {};
@@ -207,24 +207,27 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     auto new_val = assignment.expr->accept(*this);
     if (!new_val) return {};
 
-    auto ident = assignment.ident->value;
+    auto key = assignment.ident->key;
+    key.kind = identifier_kind::local;
 
-    if (!current_env().can_assign_to(ident))
+    if (!current_env().can_assign_to(key))
     {
         interp_error(
             assignment.ident->_span,
             "Can only assign to local variables");
         interp_hint(
             assignment.ident->_span,
-            fmt::format("for example: let {} = ...", ident));
+            fmt::format("for example: let {} = ...", assignment.ident->value));
         return {};
     }
 
-    if (!current_env().update_at(ident, new_val.value()))
+    if (!current_env().update_at(std::move(key), new_val.value()))
     {
         interp_error(
             assignment.ident->_span,
-            fmt::format("{} was not previously declared", ident));
+            fmt::format(
+                "{} was not previously declared",
+                assignment.ident->value));
     }
 
     return {};
@@ -375,11 +378,10 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
 
     for (auto& binding : let_expression.bindings)
     {
-        auto ident = binding.ident->value;
         auto value = binding.value->accept(*this);
         if (!value) return {};
 
-        define(key::local(ident), *value);
+        define(key::local(binding.ident->value), *value);
     }
 
     auto result = let_expression.expr->accept(*this);
@@ -416,20 +418,19 @@ object::maybe_object interpreter::visit_string(ast::string& s)
 
 object::maybe_object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    auto ident = identifier.value;
-    if (auto value = current_env().get(ident); value)
+    if (auto value = current_env().get(identifier.key); value)
     {
         return value;
     }
 
     interp_error(
         identifier._span,
-        fmt::format("undefined identifier: {}", ident));
+        fmt::format("undefined identifier: {}", identifier.value));
     interp_hint(
         identifier._span,
         fmt::format(
             "Maybe you forgot to declare it? For example: {} :: \"someshit\"",
-            ident));
+            identifier.value));
 
     return {};
 }
@@ -441,7 +442,8 @@ object::maybe_object interpreter::visit_unit(ast::unit& u)
 
 object::maybe_object interpreter::visit_placeholder(ast::placeholder& p)
 {
-    if (auto value = current_env().get(std::string("_")); value)
+    static std::string underscore = "_";
+    if (auto value = current_env().get(underscore); value)
     {
         return value;
     }

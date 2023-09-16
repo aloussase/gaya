@@ -344,7 +344,8 @@ maybe_object pipe_expression::execute(eval::interpreter& interp)
     if (!replacement) return {};
 
     interp.begin_scope(env { std::make_shared<env>(interp.get_env()) });
-    interp.define("_", *replacement);
+    static std::string underscore = "_";
+    interp.define(underscore, *replacement);
 
     auto result = rhs->accept(interp);
     if (!result) return {};

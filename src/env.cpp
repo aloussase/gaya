@@ -1,4 +1,4 @@
-#include "env.hpp"
+#include "env.hpp" env
 
 namespace gaya::eval
 {
@@ -38,9 +38,9 @@ env::env(parent_ptr p)
 {
 }
 
-void env::set(const key& k, value_type v) noexcept
+void env::set(key&& k, value_type v) noexcept
 {
-    _bindings.insert_or_assign(k, v);
+    _bindings.insert_or_assign(std::move(k), v);
 }
 
 object::maybe_object env::get(const std::string& k) const noexcept
@@ -51,9 +51,9 @@ object::maybe_object env::get(const std::string& k) const noexcept
 
 object::maybe_object env::get(const key& k) const noexcept
 {
-    if (_bindings.contains(k))
+    if (auto it = _bindings.find(k); it != _bindings.end())
     {
-        return _bindings.at(k);
+        return it->second;
     }
 
     if (_parent != nullptr)
@@ -75,7 +75,7 @@ bool env::update_at(const key& k, value_type new_val) noexcept
     {
         if (auto k_ = it->first; k_.is_assignment_target())
         {
-            _bindings.at(k) = new_val;
+            it->second = new_val;
             return true;
         }
     }
@@ -90,14 +90,19 @@ bool env::update_at(const key& k, value_type new_val) noexcept
 
 bool env::can_assign_to(const std::string& ident) noexcept
 {
-    if (auto it = _bindings.find(key::local(ident)); it != _bindings.end())
+    return can_assign_to(key::local(ident));
+}
+
+bool env::can_assign_to(const key& k) noexcept
+{
+    if (auto it = _bindings.find(k); it != _bindings.end())
     {
         return it->first.is_assignment_target();
     }
 
     if (_parent != nullptr)
     {
-        return _parent->can_assign_to(ident);
+        return _parent->can_assign_to(k);
     }
 
     return false;

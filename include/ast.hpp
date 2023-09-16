@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include <env.hpp>
 #include <lexer.hpp>
 #include <object.hpp>
 #include <span.hpp>
@@ -398,6 +399,7 @@ struct identifier final : public expression
     identifier(span s, const std::string& v)
         : _span { s }
         , value { v }
+        , key { value }
     {
     }
 
@@ -406,6 +408,7 @@ struct identifier final : public expression
 
     span _span;
     std::string value;
+    gaya::eval::key key;
 };
 
 struct unit final : public expression

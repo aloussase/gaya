@@ -16,9 +16,7 @@ maybe_object call_function(
     interp.begin_scope(*func.closed_over_env);
     for (size_t i = 0; i < args.size(); i++)
     {
-        auto ident = func.params[i];
-        auto arg   = args[i];
-        interp.define(ident, arg);
+        interp.define(func.params[i], args[i]);
     }
     auto ret = func.body->accept(interp);
     interp.end_scope();
