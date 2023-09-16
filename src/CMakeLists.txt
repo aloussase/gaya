@@ -31,7 +31,21 @@ target_compile_options(gaya PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-Os>
     $<$<CONFIG:Debug>:-g>)
 
+
+set(GAYA_RUNTIME_STDLIB
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/gaya/runtime/stdlib.gaya")
+
 target_compile_definitions(gaya PRIVATE
-    GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/gaya/runtime/stdlib.gaya","runtime/stdlib.gaya">)
+    GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${GAYA_RUNTIME_STDLIB}","runtime/stdlib.gaya">)
 
 target_link_libraries(gaya PRIVATE fmt::fmt readline)
+
+install(
+    TARGETS gaya
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    CONFIGURATIONS Release)
+
+install(
+    FILES ${CMAKE_SOURCE_DIR}/runtime/stdlib.gaya
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/gaya/runtime
+    CONFIGURATIONS Release)
