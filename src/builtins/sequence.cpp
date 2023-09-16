@@ -18,7 +18,7 @@ next(interpreter& interp, span span, std::vector<object> args) noexcept
         return {};
     }
 
-    return gaya::eval::object::next(AS_SEQUENCE(args[0]));
+    return gaya::eval::object::next(interp, AS_SEQUENCE(args[0]));
 }
 
 /* seq.make */
@@ -32,7 +32,7 @@ make(interpreter& interp, span span, std::vector<object> args) noexcept
     {
         interp.interp_error(
             span,
-            fmt::format("Expected {} to callable", to_string(next)));
+            fmt::format("Expected {} to callable", to_string(interp, next)));
         return {};
     }
 

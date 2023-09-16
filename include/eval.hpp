@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stack>
-
 #include <ast_visitor.hpp>
 #include <diagnostic.hpp>
 #include <env.hpp>
@@ -54,6 +52,11 @@ public:
     /// Whether the interpreter had an error.
     [[nodiscard]] bool had_error() const noexcept;
 
+    /**
+     * @return The stack of scopes of this interpreter.
+     */
+    [[nodiscard]] const std::vector<env>& scopes() const noexcept;
+
     /* Visitor pattern */
 
     object::maybe_object visit_program(ast::program&) override;
@@ -85,7 +88,7 @@ private:
     std::string _filename;
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;
-    std::stack<env> _scopes;
+    std::vector<env> _scopes;
 };
 
 }

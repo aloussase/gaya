@@ -34,6 +34,8 @@ std::optional<int> cmp(object o1, object o2) noexcept
         assert(0 && "Should not happen");
     }
     }
+
+    assert(0 && "unhandled case in cmp");
 }
 
 }

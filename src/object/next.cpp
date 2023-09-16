@@ -7,12 +7,15 @@
 namespace gaya::eval::object
 {
 
-maybe_object string_sequence_next(span span, string_sequence& seq) noexcept
+maybe_object string_sequence_next(
+    interpreter& interp,
+    span span,
+    string_sequence& seq) noexcept
 {
     if (seq.index < seq.string.size())
     {
         std::string string = std::string { seq.string[seq.index++] };
-        return create_string(span, string);
+        return create_string(interp, span, string);
     }
     else
     {
@@ -49,13 +52,14 @@ maybe_object user_sequence_next(span span, user_defined_sequence& seq) noexcept
     return call(seq.next_func, seq.interp, span, {});
 }
 
-maybe_object next(sequence& seq) noexcept
+maybe_object next(interpreter& interp, sequence& seq) noexcept
 {
     switch (seq.type)
     {
     case sequence_type_string:
     {
         return string_sequence_next(
+            interp,
             seq.seq_span,
             std::get<string_sequence>(seq.seq));
     }

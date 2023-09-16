@@ -22,6 +22,8 @@ bool is_comparable(object o) noexcept
         return false;
     }
     }
+
+    assert(0 && "unhandled case in is_comparable");
 }
 
 }

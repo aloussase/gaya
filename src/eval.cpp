@@ -21,9 +21,9 @@ interpreter::interpreter(const std::string& filename, const char* source)
     , _source { source }
 {
 #define BUILTIN(name, arity, func) \
-    define(name, create_builtin_function(name, arity, func))
+    define(name, create_builtin_function(*this, name, arity, func))
 
-    _scopes.push(env {});
+    _scopes.push_back(env {});
 
     using namespace object::builtin;
 
@@ -31,7 +31,6 @@ interpreter::interpreter(const std::string& filename, const char* source)
     BUILTIN("assert", 1, core::assert_);
     BUILTIN("tostring", 1, core::tostring);
     BUILTIN("tosequence", 1, core::tosequence);
-
     BUILTIN("issequence", 1, core::issequence);
 
     BUILTIN("io.println", 1, io::println);
@@ -141,14 +140,19 @@ bool interpreter::had_error() const noexcept
     return !_diagnostics.empty();
 }
 
+const std::vector<env>& interpreter::scopes() const noexcept
+{
+    return _scopes;
+}
+
 const env& interpreter::get_env() const noexcept
 {
-    return _scopes.top();
+    return _scopes.back();
 }
 
 env& interpreter::current_env() noexcept
 {
-    return _scopes.top();
+    return _scopes.back();
 }
 
 void interpreter::define(const key& k, object::object v) noexcept
@@ -158,12 +162,12 @@ void interpreter::define(const key& k, object::object v) noexcept
 
 void interpreter::begin_scope(env new_scope) noexcept
 {
-    _scopes.push(new_scope);
+    _scopes.push_back(new_scope);
 }
 
 void interpreter::end_scope() noexcept
 {
-    _scopes.pop();
+    _scopes.pop_back();
 }
 
 object::maybe_object interpreter::visit_program(ast::program& program)
@@ -357,6 +361,7 @@ interpreter::visit_function_expression(ast::function_expression& fexpr)
         [](auto& param) { return key::param(param.value); });
 
     return object::create_function(
+        *this,
         fexpr._span,
         std::make_unique<env>(std::make_shared<env>(current_env())),
         std::move(params),
@@ -396,7 +401,7 @@ object::maybe_object interpreter::visit_array(ast::array& ary)
         elems.push_back(o.value());
     }
 
-    return object::create_array(ary.span_, elems);
+    return object::create_array(*this, ary.span_, elems);
 }
 
 object::maybe_object interpreter::visit_number(ast::number& n)
@@ -406,7 +411,7 @@ object::maybe_object interpreter::visit_number(ast::number& n)
 
 object::maybe_object interpreter::visit_string(ast::string& s)
 {
-    return object::create_string(s._span, s.value);
+    return object::create_string(*this, s._span, s.value);
 }
 
 object::maybe_object interpreter::visit_identifier(ast::identifier& identifier)

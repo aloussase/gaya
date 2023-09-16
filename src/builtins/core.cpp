@@ -8,11 +8,11 @@ namespace gaya::eval::object::builtin::core
 {
 
 gaya::eval::object::maybe_object
-typeof_(interpreter&, span span, std::vector<object> args) noexcept
+typeof_(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     auto& o   = args[0];
     auto type = gaya::eval::object::typeof_(o);
-    return create_string(span, type);
+    return create_string(interp, span, type);
 }
 
 gaya::eval::object::maybe_object
@@ -32,19 +32,22 @@ assert_(interpreter& interp, span span, std::vector<object> args) noexcept
                 "assertion failed at {}:{}: {} was false ",
                 interp.current_filename(),
                 span.lineno(),
-                to_string(args[0])));
+                to_string(interp, args[0])));
         return {};
     }
 }
 
 gaya::eval::object::maybe_object
-tostring(interpreter&, span span, std::vector<object> args) noexcept
+tostring(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     if (args[0].type == gaya::eval::object::object_type_string)
     {
         return args[0];
     }
-    return create_string(span, gaya::eval::object::to_string(args[0]));
+    return create_string(
+        interp,
+        span,
+        gaya::eval::object::to_string(interp, args[0]));
 }
 
 /* issequence */
@@ -68,10 +71,10 @@ tosequence(interpreter& interp, span span, std::vector<object> args) noexcept
             span,
             fmt::format(
                 "{} can't be converted to a sequence",
-                to_string(args[0])));
+                to_string(interp, args[0])));
     }
 
-    auto sequence = to_sequence(args[0]);
+    auto sequence = to_sequence(interp, args[0]);
     return sequence;
 }
 

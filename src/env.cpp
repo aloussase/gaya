@@ -23,6 +23,16 @@ key key::param(const std::string& ident) noexcept
     return key { identifier_kind::param, ident };
 }
 
+const env::bindings& env::get_bindings() const noexcept
+{
+    return _bindings;
+}
+
+const env::parent_ptr env::parent() const noexcept
+{
+    return _parent;
+}
+
 env::env(parent_ptr p)
     : _parent { p }
 {

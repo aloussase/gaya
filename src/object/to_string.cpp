@@ -2,8 +2,8 @@
 #include <sstream>
 
 #include <fmt/core.h>
-
 #include <nanbox.h>
+
 #include <object.hpp>
 
 namespace gaya::eval::object
@@ -17,13 +17,13 @@ std::string number_to_string(double number)
                         : fmt::format("{:.0f}", number);
 }
 
-std::string array_to_string(std::vector<object> elems)
+std::string array_to_string(interpreter& interp, std::vector<object> elems)
 {
     std::stringstream ss;
     ss << "(";
     for (size_t i = 0; i < elems.size(); i++)
     {
-        ss << to_string(elems[i]);
+        ss << to_string(interp, elems[i]);
         if (i < elems.size() - 1)
         {
             ss << ", ";
@@ -33,24 +33,24 @@ std::string array_to_string(std::vector<object> elems)
     return ss.str();
 }
 
-std::string sequence_to_string(sequence& seq) noexcept
+std::string sequence_to_string(interpreter& interp, sequence& seq) noexcept
 {
     std::stringstream ss;
 
     ss << "(";
 
-    auto o = next(seq);
+    auto o = next(interp, seq);
     if (o)
     {
-        ss << to_string(o.value());
+        ss << to_string(interp, o.value());
     }
 
     for (;;)
     {
-        auto o = next(seq);
+        auto o = next(interp, seq);
         if (!o) break;
 
-        ss << ", " << to_string(o.value());
+        ss << ", " << to_string(interp, o.value());
     }
 
     ss << ")";
@@ -58,7 +58,7 @@ std::string sequence_to_string(sequence& seq) noexcept
     return ss.str();
 }
 
-std::string to_string(object o) noexcept
+std::string to_string(interpreter& interp, object o) noexcept
 {
     switch (o.type)
     {
@@ -76,7 +76,7 @@ std::string to_string(object o) noexcept
     }
     case object_type_array:
     {
-        return array_to_string(AS_ARRAY(o));
+        return array_to_string(interp, AS_ARRAY(o));
     }
     case object_type_function:
     {
@@ -89,7 +89,7 @@ std::string to_string(object o) noexcept
     }
     case object_type_sequence:
     {
-        return sequence_to_string(AS_SEQUENCE(o));
+        return sequence_to_string(interp, AS_SEQUENCE(o));
     }
     }
 

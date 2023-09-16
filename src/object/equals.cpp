@@ -48,6 +48,8 @@ bool equals(object o1, object o2) noexcept
         return false;
     }
     }
+
+    assert(0 && "unhandled case in equals");
 }
 
 }

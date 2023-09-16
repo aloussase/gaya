@@ -44,7 +44,7 @@ concat(interpreter& interp, span span, std::vector<object> args) noexcept
         a2.begin(),
         a2.end());
 
-    return create_array(span, new_elems);
+    return create_array(interp, span, new_elems);
 }
 
 gaya::eval::object::maybe_object
@@ -59,7 +59,7 @@ push(interpreter& interp, span span, std::vector<object> args) noexcept
     auto new_elems = std::vector { AS_ARRAY(args[0]) };
     new_elems.push_back(args[1]);
 
-    return create_array(span, new_elems);
+    return create_array(interp, span, new_elems);
 }
 
 }

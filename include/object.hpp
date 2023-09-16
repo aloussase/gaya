@@ -10,8 +10,9 @@
 
 #include <span.hpp>
 
-#define IS_NUMBER(o) ((o).type == object_type_number)
-#define IS_STRING(o) ((o).type == object_type_string)
+#define IS_NUMBER(o)      ((o).type == object_type_number)
+#define IS_STRING(o)      ((o).type == object_type_string)
+#define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
 
 #define AS_NUMBER(o)           nanbox_to_number((o).box)
 #define AS_HEAP_OBJECT(o)      static_cast<heap_object*>(nanbox_to_pointer((o).box))
@@ -124,6 +125,7 @@ struct sequence
 
 struct heap_object
 {
+    object_type type;
     union {
         std::vector<object> as_array;
         std::string as_string;
@@ -131,7 +133,7 @@ struct heap_object
         builtin_function as_builtin_function;
         sequence as_sequence;
     };
-
+    unsigned char marked     = 0;
     struct heap_object* next = nullptr;
 };
 
@@ -152,17 +154,20 @@ struct heap_object
 /**
  * Create a string object.
  */
-[[nodiscard]] object create_string(span, const std::string&) noexcept;
+[[nodiscard]] object
+create_string(interpreter&, span, const std::string&) noexcept;
 
 /**
  * Create an array object.
  */
-[[nodiscard]] object create_array(span, const std::vector<object>&) noexcept;
+[[nodiscard]] object
+create_array(interpreter&, span, const std::vector<object>&) noexcept;
 
 /**
  * Create a function object.
  */
 [[nodiscard]] object create_function(
+    interpreter&,
     span,
     std::unique_ptr<env>,
     std::vector<key>,
@@ -172,6 +177,7 @@ struct heap_object
  * Create a builtin function object.
  */
 [[nodiscard]] object create_builtin_function(
+    interpreter&,
     const std::string&,
     size_t,
     builtin_function::invoke_t) noexcept;
@@ -180,17 +186,19 @@ struct heap_object
  * Create an array sequence object.
  */
 [[nodiscard]] object
-create_array_sequence(span, const std::vector<object>&) noexcept;
+create_array_sequence(interpreter&, span, const std::vector<object>&) noexcept;
 
 /**
  * Create a string sequence object.
  */
-[[nodiscard]] object create_string_sequence(span, const std::string&) noexcept;
+[[nodiscard]] object
+create_string_sequence(interpreter&, span, const std::string&) noexcept;
 
 /**
  * Create a number sequence object.
  */
-[[nodiscard]] object create_number_sequence(span, double) noexcept;
+[[nodiscard]] object
+create_number_sequence(interpreter&, span, double) noexcept;
 
 /**
  * Create a user defined sequence object.
@@ -202,7 +210,7 @@ create_array_sequence(span, const std::vector<object>&) noexcept;
 /**
  * Convert the provided object to a string representation.
  */
-[[nodiscard]] std::string to_string(object) noexcept;
+[[nodiscard]] std::string to_string(interpreter&, object) noexcept;
 
 /**
  * Return a string representing the type of the object.
@@ -253,12 +261,12 @@ call(object, interpreter&, span, std::vector<object>) noexcept;
 /**
  * Return the corresponding sequence.
  */
-[[nodiscard]] object to_sequence(object) noexcept;
+[[nodiscard]] object to_sequence(interpreter&, object) noexcept;
 
 /**
  * Should return the next element in the sequence, or an empty optional if there
  * are none.
  */
-[[nodiscard]] maybe_object next(sequence&) noexcept;
+[[nodiscard]] maybe_object next(interpreter&, sequence&) noexcept;
 
 }

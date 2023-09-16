@@ -76,7 +76,7 @@ maybe_object call_string(
         return std::nullopt;
     }
 
-    return create_string(span, std::string { string[i] });
+    return create_string(interp, span, std::string { string[i] });
 }
 
 std::optional<object> call(
@@ -110,6 +110,8 @@ std::optional<object> call(
         assert(0 && "Should not happen");
     }
     }
+
+    assert(0 && "unhandled case in call");
 }
 
 }

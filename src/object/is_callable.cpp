@@ -22,6 +22,8 @@ bool is_callable(object o) noexcept
         return true;
     }
     }
+
+    assert(0 && "unhandled case in is_callable");
 }
 
 }

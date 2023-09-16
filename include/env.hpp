@@ -93,6 +93,17 @@ public:
     /// Check whether the provided identifier is a valid assignment target.
     [[nodiscard]] bool can_assign_to(const std::string&) noexcept;
 
+    /**
+     * Return the underlying bindings map.
+     */
+    [[nodiscard]] const bindings& get_bindings() const noexcept;
+
+    /**
+     * Get this env's parent.
+     * @return The env's parent or nullptr if it doesn't have one.
+     */
+    [[nodiscard]] const parent_ptr parent() const noexcept;
+
 private:
     bindings _bindings;
     parent_ptr _parent = nullptr;

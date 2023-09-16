@@ -38,7 +38,7 @@ gaya::eval::object::maybe_object concat(
         return {};
     }
 
-    return create_string(span, AS_STRING(args[0]) + AS_STRING(args[1]));
+    return create_string(interp, span, AS_STRING(args[0]) + AS_STRING(args[1]));
 }
 
 }
