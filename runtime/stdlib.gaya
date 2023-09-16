@@ -3,6 +3,10 @@
 true  :: 1
 false :: 0
 
+(* Basic math *)
+
+math.add :: { x, y => x + y }
+
 (* Utilities *)
 
 ifelse :: { b, iftrue, iffalse =>
@@ -224,5 +228,16 @@ seq.reduce :: { s, init, f => do
 
       acc
     end
+  end
+}
+
+seq.map :: { s, func => do
+    discard s |> issequence(_) |> assert(_)
+    let xs = tosequence(s) in seq.make({ =>
+      let next = seq.next(xs) in
+      cases 
+        given next /= unit => func(next)
+      end
+    })
   end
 }

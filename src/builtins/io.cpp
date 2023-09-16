@@ -7,18 +7,15 @@
 namespace gaya::eval::object::builtin::io
 {
 
-size_t println::arity() const noexcept
+gaya::eval::object::maybe_object
+println(interpreter&, span span, std::vector<object> args) noexcept
 {
-    return 1;
-}
+    using namespace gaya::eval::object;
 
-object_ptr
-println::call(interpreter&, span span, std::vector<object_ptr> args) noexcept
-{
     auto x = args[0];
-    auto s = x->to_string();
+    auto s = to_string(x);
 
-    if (x->typeof_() == "string")
+    if (x.type == object_type_string)
     {
         s.erase(s.cbegin());
         s.erase(s.cend() - 1);
@@ -26,7 +23,7 @@ println::call(interpreter&, span span, std::vector<object_ptr> args) noexcept
 
     fmt::println("{}", s);
 
-    return std::make_shared<unit>(span);
+    return create_unit(span);
 }
 
 }

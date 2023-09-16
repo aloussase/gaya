@@ -5,43 +5,15 @@
 namespace gaya::eval::object::builtin::array
 {
 
-struct length final : public builtin_function
-{
-    length()
-        : builtin_function("array.length")
-    {
-    }
+/* TODO: Document these. */
 
-    size_t arity() const noexcept override;
+gaya::eval::object::maybe_object
+length(interpreter&, span, std::vector<object>) noexcept;
 
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
-};
+gaya::eval::object::maybe_object
+concat(interpreter&, span, std::vector<object>) noexcept;
 
-struct concat final : public builtin_function
-{
-    concat()
-        : builtin_function("array.concat")
-    {
-    }
-
-    size_t arity() const noexcept override;
-
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
-};
-
-struct push final : public builtin_function
-{
-    push()
-        : builtin_function("array.push")
-    {
-    }
-
-    size_t arity() const noexcept override;
-
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
-};
+gaya::eval::object::maybe_object
+push(interpreter&, span, std::vector<object>) noexcept;
 
 }

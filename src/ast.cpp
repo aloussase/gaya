@@ -10,8 +10,6 @@
 #include <eval.hpp>
 #include <object.hpp>
 
-// NOTE: Consider using a JSON library for stringification.
-
 namespace gaya::ast
 {
 
@@ -35,7 +33,7 @@ std::string program::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr program::accept(ast_visitor& v)
+maybe_object program::accept(ast_visitor& v)
 {
     return v.visit_program(*this);
 }
@@ -48,7 +46,7 @@ std::string declaration_stmt::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr declaration_stmt::accept(ast_visitor& v)
+maybe_object declaration_stmt::accept(ast_visitor& v)
 {
     return v.visit_declaration_stmt(*this);
 }
@@ -61,7 +59,7 @@ std::string expression_stmt::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr expression_stmt::accept(ast_visitor& v)
+maybe_object expression_stmt::accept(ast_visitor& v)
 {
     return v.visit_expression_stmt(*this);
 }
@@ -74,7 +72,7 @@ std::string assignment_stmt::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr assignment_stmt::accept(ast_visitor& v)
+maybe_object assignment_stmt::accept(ast_visitor& v)
 {
     return v.visit_assignment_stmt(*this);
 }
@@ -88,7 +86,7 @@ std::string while_stmt::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr while_stmt::accept(ast_visitor& v)
+maybe_object while_stmt::accept(ast_visitor& v)
 {
     return v.visit_while_stmt(*this);
 }
@@ -101,7 +99,7 @@ std::string do_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr do_expression::accept(ast_visitor& v)
+maybe_object do_expression::accept(ast_visitor& v)
 {
     return v.visit_do_expression(*this);
 }
@@ -128,7 +126,7 @@ std::string case_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr case_expression::accept(ast_visitor& v)
+maybe_object case_expression::accept(ast_visitor& v)
 {
     return v.visit_case_expression(*this);
 }
@@ -142,7 +140,7 @@ std::string call_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr call_expression::accept(ast_visitor& v)
+maybe_object call_expression::accept(ast_visitor& v)
 {
     return v.visit_call_expression(*this);
 }
@@ -156,7 +154,7 @@ std::string function_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr function_expression::accept(ast_visitor& v)
+maybe_object function_expression::accept(ast_visitor& v)
 {
     return v.visit_function_expression(*this);
 }
@@ -178,12 +176,12 @@ std::string let_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr let_expression::accept(ast_visitor& v)
+maybe_object let_expression::accept(ast_visitor& v)
 {
     return v.visit_let_expression(*this);
 }
 
-gaya::eval::object::object_ptr binary_expression::accept(ast_visitor& v)
+maybe_object binary_expression::accept(ast_visitor& v)
 {
     return v.visit_binary_expression(*this);
 }
@@ -197,15 +195,16 @@ std::string binary_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr
-logical_expression::execute(eval::interpreter& interp)
+maybe_object logical_expression::execute(eval::interpreter& interp)
 {
+    using namespace gaya::eval;
+
     auto l = lhs->accept(interp);
-    if (!l) return nullptr;
+    if (!l) return {};
 
     if (op.type() == token_type::and_)
     {
-        if (l->is_truthy())
+        if (object::is_truthy(l.value()))
         {
             return rhs->accept(interp);
         }
@@ -217,7 +216,7 @@ logical_expression::execute(eval::interpreter& interp)
 
     if (op.type() == token_type::or_)
     {
-        if (l->is_truthy())
+        if (object::is_truthy(l.value()))
         {
             return l;
         }
@@ -230,37 +229,35 @@ logical_expression::execute(eval::interpreter& interp)
     assert(false && "unreachable");
 }
 
-gaya::eval::object::object_ptr
-cmp_expression::execute(eval::interpreter& interp)
+maybe_object cmp_expression::execute(eval::interpreter& interp)
 {
+    using namespace gaya::eval;
+
     auto l = lhs->accept(interp);
-    if (!l) return nullptr;
+    if (!l) return {};
 
     auto r = rhs->accept(interp);
-    if (!r) return nullptr;
+    if (!r) return {};
 
     auto result = [&]() -> std::optional<int> {
         switch (op.type())
         {
-        case token_type::equal_equal: return l->equals(r) ? 1 : 0;
-        case token_type::not_equals: return !l->equals(r) ? 1 : 0;
+        case token_type::equal_equal: return object::equals(*l, *r) ? 1 : 0;
+        case token_type::not_equals: return !object::equals(*l, *r) ? 1 : 0;
         default:
         {
-            if (!l->is_comparable() || !r->is_comparable())
+            if (!object::is_comparable(*l) || !object::is_comparable(*r))
             {
                 interp.interp_error(
                     op.get_span(),
                     fmt::format(
                         "{} and {} are not both comparable",
-                        l->typeof_(),
-                        r->typeof_()));
+                        object::typeof_(*l),
+                        object::typeof_(*r)));
                 return std::nullopt;
             }
 
-            auto cmp = std::dynamic_pointer_cast<eval::object::comparable>(l);
-            auto result = cmp->cmp(r);
-
-            switch (op.type())
+            switch (auto result = object::cmp(*l, *r); op.type())
             {
             case token_type::less_than: return result < 0 ? 1 : 0;
             case token_type::less_than_eq: return result <= 0 ? 1 : 0;
@@ -278,41 +275,43 @@ cmp_expression::execute(eval::interpreter& interp)
             op.get_span(),
             fmt::format(
                 "Cannot compare {} and {}",
-                l->typeof_(),
-                r->typeof_()));
-        return nullptr;
+                object::typeof_(*l),
+                object::typeof_(*r)));
+        return {};
     }
 
-    return (result.value() == 1)
-        ? interp.true_object(op.get_span())
-        : ((result.value() == 0)
-               ? interp.false_object(op.get_span())
-               : interp.make_number(op.get_span(), result.value()));
+    auto span = op.get_span();
+    return (*result == 1)
+        ? object::create_number(span, 1)
+        : ((*result == 0) ? object::create_number(span, 0)
+                          : object::create_number(span, *result));
 }
 
-gaya::eval::object::object_ptr
-arithmetic_expression::execute(eval::interpreter& interp)
+maybe_object arithmetic_expression::execute(eval::interpreter& interp)
 {
+    using namespace gaya::eval;
+
     auto l = lhs->accept(interp);
-    if (!l) return nullptr;
+    if (!l) return {};
 
     auto r = rhs->accept(interp);
-    if (!r) return nullptr;
+    if (!r) return {};
 
-    if (l->typeof_() != "number" || r->typeof_() != "number")
+    if (l->type != object::object_type_number
+        || r->type != object::object_type_number)
     {
         interp.interp_error(
             op.get_span(),
             fmt::format(
                 "{} expected {} and {} to be both numbers",
                 op.get_span().to_string(),
-                l->typeof_(),
-                r->typeof_()));
-        return nullptr;
+                object::typeof_(*l),
+                object::typeof_(*r)));
+        return {};
     }
 
-    auto fst = std::static_pointer_cast<eval::object::number>(l)->value;
-    auto snd = std::static_pointer_cast<eval::object::number>(r)->value;
+    auto fst = AS_NUMBER(*l);
+    auto snd = AS_NUMBER(*r);
 
     double result = 0;
 
@@ -325,7 +324,7 @@ arithmetic_expression::execute(eval::interpreter& interp)
     {
         if (snd == 0)
         {
-            return std::make_shared<eval::object::unit>(op.get_span());
+            return object::create_unit(op.get_span());
         }
         result = fst / snd;
         break;
@@ -333,23 +332,22 @@ arithmetic_expression::execute(eval::interpreter& interp)
     default: assert(false && "should not happen");
     }
 
-    return interp.make_number(op.get_span(), result);
+    return object::create_number(op.get_span(), result);
 }
 
-gaya::eval::object::object_ptr
-pipe_expression::execute(eval::interpreter& interp)
+maybe_object pipe_expression::execute(eval::interpreter& interp)
 {
     using namespace eval::object;
     using namespace eval;
 
     auto replacement = lhs->accept(interp);
-    if (!replacement) return nullptr;
+    if (!replacement) return {};
 
     interp.begin_scope(env { std::make_shared<env>(interp.get_env()) });
-    interp.define("_", replacement);
+    interp.define("_", *replacement);
 
     auto result = rhs->accept(interp);
-    if (!result) return nullptr;
+    if (!result) return {};
 
     interp.end_scope();
 
@@ -358,7 +356,7 @@ pipe_expression::execute(eval::interpreter& interp)
 
 /* Unary expressions */
 
-gaya::eval::object::object_ptr unary_expression::accept(ast_visitor& v)
+maybe_object unary_expression::accept(ast_visitor& v)
 {
     return v.visit_unary_expression(*this);
 }
@@ -371,24 +369,22 @@ std::string not_expression::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr
-not_expression::execute(eval::interpreter& interp)
+maybe_object not_expression::execute(eval::interpreter& interp)
 {
     auto value = operand->accept(interp);
-    if (!value) return nullptr;
+    if (!value) return {};
 
-    return std::make_shared<eval::object::number>(
+    return gaya::eval::object::create_number(
         op.get_span(),
-        !value->is_truthy());
+        !gaya::eval::object::is_truthy(*value));
 }
 
-gaya::eval::object::object_ptr
-perform_expression::execute(eval::interpreter& interp)
+maybe_object perform_expression::execute(eval::interpreter& interp)
 {
-    auto _result = stmt->accept(interp);
-    if (interp.had_error()) return nullptr;
+    stmt->accept(interp);
+    if (interp.had_error()) return {};
 
-    return std::make_shared<eval::object::unit>(op.get_span());
+    return gaya::eval::object::create_unit(op.get_span());
 }
 
 std::string perform_expression::to_string() const noexcept
@@ -409,7 +405,7 @@ std::string array::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr array::accept(ast_visitor& v)
+maybe_object array::accept(ast_visitor& v)
 {
     return v.visit_array(*this);
 }
@@ -421,7 +417,7 @@ std::string number::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr number::accept(ast_visitor& v)
+maybe_object number::accept(ast_visitor& v)
 {
     return v.visit_number(*this);
 }
@@ -446,7 +442,7 @@ std::string string::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr string::accept(ast_visitor& v)
+maybe_object string::accept(ast_visitor& v)
 {
     return v.visit_string(*this);
 }
@@ -458,7 +454,7 @@ std::string identifier::to_string() const noexcept
     return ss.str();
 }
 
-gaya::eval::object::object_ptr identifier::accept(ast_visitor& v)
+maybe_object identifier::accept(ast_visitor& v)
 {
     return v.visit_identifier(*this);
 }
@@ -468,7 +464,7 @@ std::string unit::to_string() const noexcept
     return R"({"type": "unit"})";
 }
 
-gaya::eval::object::object_ptr unit::accept(ast_visitor& v)
+maybe_object unit::accept(ast_visitor& v)
 {
     return v.visit_unit(*this);
 }
@@ -478,7 +474,7 @@ std::string placeholder::to_string() const noexcept
     return R"({"type": "placeholder"})";
 }
 
-gaya::eval::object::object_ptr placeholder::accept(ast_visitor& v)
+maybe_object placeholder::accept(ast_visitor& v)
 {
     return v.visit_placeholder(*this);
 }

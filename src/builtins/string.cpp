@@ -6,59 +6,39 @@
 namespace gaya::eval::object::builtin::string
 {
 
-size_t length::arity() const noexcept
-{
-    return 1;
-}
-
-object_ptr length::call(
+gaya::eval::object::maybe_object length(
     interpreter& interp,
     span span,
-    std::vector<object_ptr> args) noexcept
+    std::vector<gaya::eval::object::object> args) noexcept
 {
     auto o = args[0];
 
-    if (o->typeof_() != "string")
+    if (o.type != object_type_string)
     {
-        interp.interp_error(
-            span,
-            fmt::format("{} expected its argument to be a string", name));
-        return nullptr;
+        interp.interp_error(span, "Expected argument to be a string");
+        return {};
     }
 
-    auto s = std::static_pointer_cast<gaya::eval::object::string>(o);
-    auto r = s->value.size();
-
-    return std::make_shared<number>(span, r);
+    return create_number(span, AS_STRING(o).size());
 }
 
-size_t concat::arity() const noexcept
-{
-    return 2;
-}
-
-object_ptr concat::call(
+gaya::eval::object::maybe_object concat(
     interpreter& interp,
     span span,
-    std::vector<object_ptr> args) noexcept
+    std::vector<gaya::eval::object::object> args) noexcept
 {
-    if (args[0]->typeof_() != "string" || args[1]->typeof_() != "string")
+    if (args[0].type != object_type_string
+        || args[1].type != object_type_string)
     {
+        auto t1 = typeof_(args[0]);
+        auto t2 = typeof_(args[1]);
         interp.interp_error(
             span,
-            fmt::format(
-                "Expected {} and {} to be both string",
-                args[0]->typeof_(),
-                args[1]->typeof_()));
-        return nullptr;
+            fmt::format("Expected {} and {} to be both string", t1, t2));
+        return {};
     }
 
-    auto s1 = std::static_pointer_cast<gaya::eval::object::string>(args[0]);
-    auto s2 = std::static_pointer_cast<gaya::eval::object::string>(args[1]);
-
-    return std::make_shared<gaya::eval::object::string>(
-        span,
-        s1->value + s2->value);
+    return create_string(span, AS_STRING(args[0]) + AS_STRING(args[1]));
 }
 
 }

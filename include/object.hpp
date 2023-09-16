@@ -1,211 +1,264 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <optional>
+#include <variant>
 #include <vector>
 
-#include <env.hpp>
+#include <nanbox.h>
+
 #include <span.hpp>
+
+#define IS_NUMBER(o) ((o).type == object_type_number)
+#define IS_STRING(o) ((o).type == object_type_string)
+
+#define AS_NUMBER(o)           nanbox_to_number((o).box)
+#define AS_HEAP_OBJECT(o)      static_cast<heap_object*>(nanbox_to_pointer((o).box))
+#define AS_STRING(o)           AS_HEAP_OBJECT(o)->as_string
+#define AS_ARRAY(o)            AS_HEAP_OBJECT(o)->as_array
+#define AS_FUNCTION(o)         AS_HEAP_OBJECT(o)->as_function
+#define AS_BUILTIN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_builtin_function
+#define AS_SEQUENCE(o)         AS_HEAP_OBJECT(o)->as_sequence
 
 namespace gaya::ast
 {
 struct expression;
-using expression_ptr = std::shared_ptr<expression>;
 }
 
 namespace gaya::eval
 {
 class interpreter;
+class env;
+struct key;
 }
 
 namespace gaya::eval::object
 {
 
-struct object;
-struct sequence;
-struct callable;
-
-using object_ptr   = std::shared_ptr<object>;
-using sequence_ptr = std::shared_ptr<sequence>;
-using callable_ptr = std::shared_ptr<callable>;
-
-/* Interfaces */
+enum object_type {
+    object_type_number,
+    object_type_unit,
+    object_type_string,
+    object_type_array,
+    object_type_function,
+    object_type_builtin_function,
+    object_type_sequence,
+};
 
 struct object
 {
-    virtual ~object() { }
-    virtual std::string to_string() noexcept       = 0;
-    virtual bool is_callable() const noexcept      = 0;
-    virtual std::string typeof_() const noexcept   = 0;
-    virtual bool is_truthy() const noexcept        = 0;
-    virtual bool is_comparable() const noexcept    = 0;
-    virtual bool equals(object_ptr) const noexcept = 0;
-
-    /**
-     * Should return whether this object takes part in the sequence protocol.
-     */
-    [[nodiscard]] virtual bool is_sequence() const noexcept;
-
-    /**
-     * This method returns nullptr if the object does not
-     * participate in the sequence protocol.
-     */
-    [[nodiscard]] virtual sequence_ptr to_sequence() noexcept;
+    object_type type;
+    class span span;
+    nanbox_t box;
 };
 
-struct callable
+using maybe_object = std::optional<object>;
+
+/* Heap objects */
+
+/* Functions */
+
+struct function final
 {
-    virtual ~callable() { }
-    virtual size_t arity() const noexcept = 0;
-    virtual object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept
-        = 0;
-};
-
-struct comparable
-{
-    virtual ~comparable() { }
-    virtual std::optional<int> cmp(object_ptr other) const noexcept = 0;
-};
-
-/* Gaya objects */
-
-struct function final : public object, public callable
-{
-    function(
-        span s,
-        std::vector<key> p,
-        std::shared_ptr<ast::expression> b,
-        env);
-
-    std::string to_string() noexcept override;
-    std::string typeof_() const noexcept override;
-    bool is_truthy() const noexcept override;
-    bool is_callable() const noexcept override;
-    bool is_comparable() const noexcept override;
-    bool equals(object_ptr) const noexcept override;
-
-    size_t arity() const noexcept override;
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
-
-    span _span;
+    size_t arity;
+    std::shared_ptr<env> closed_over_env;
     std::vector<key> params;
-    size_t _arity;
     std::shared_ptr<ast::expression> body;
-    env closed_over_env;
 };
 
-struct builtin_function : public object, public callable
+struct builtin_function
 {
-    builtin_function(const std::string& n)
-        : name { n }
-    {
-    }
+    using invoke_t
+        = std::function<maybe_object(interpreter&, span, std::vector<object>)>;
 
-    virtual ~builtin_function() { }
-
-    std::string to_string() noexcept override;
-    bool is_callable() const noexcept override;
-    std::string typeof_() const noexcept override;
-    bool is_truthy() const noexcept override;
-    bool is_comparable() const noexcept override;
-    bool equals(object_ptr) const noexcept override;
-
+    size_t arity;
     std::string name;
+    invoke_t invoke;
 };
 
-struct array final : public object, public callable
+/* Sequences */
+
+struct string_sequence
 {
-    array(span s, std::vector<object_ptr> e)
-        : span_ { s }
-        , elems { e }
-    {
-    }
-
-    std::string to_string() noexcept override;
-    bool is_callable() const noexcept override;
-    std::string typeof_() const noexcept override;
-    bool is_truthy() const noexcept override;
-    bool is_comparable() const noexcept override;
-    bool equals(object_ptr) const noexcept override;
-    bool is_sequence() const noexcept override;
-    sequence_ptr to_sequence() noexcept override;
-
-    size_t arity() const noexcept override;
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
-
-    span span_;
-    std::vector<object_ptr> elems;
+    std::string string;
+    size_t index = 0;
 };
 
-struct number final : public object, public comparable
+struct array_sequence final
 {
-    number(span s, double v)
-        : _span { s }
-        , value { v }
-    {
-    }
-
-    std::string to_string() noexcept override;
-    bool is_callable() const noexcept override;
-    std::string typeof_() const noexcept override;
-    bool is_truthy() const noexcept override;
-    bool is_comparable() const noexcept override;
-    std::optional<int> cmp(object_ptr other) const noexcept override;
-    bool equals(object_ptr) const noexcept override;
-    bool is_sequence() const noexcept override;
-    sequence_ptr to_sequence() noexcept override;
-
-    span _span;
-    double value;
+    std::vector<object> elems;
+    size_t index = 0;
 };
 
-struct string final : public object, public callable, public comparable
-
+struct number_sequence final
 {
-    string(span s, const std::string& v)
-        : _span { s }
-        , value { v }
-    {
-    }
-
-    std::string to_string() noexcept override;
-    std::string typeof_() const noexcept override;
-    bool is_truthy() const noexcept override;
-    bool is_comparable() const noexcept override;
-    bool is_callable() const noexcept override;
-    bool equals(object_ptr) const noexcept override;
-    bool is_sequence() const noexcept override;
-    sequence_ptr to_sequence() noexcept override;
-
-    std::optional<int> cmp(object_ptr other) const noexcept override;
-
-    size_t arity() const noexcept override;
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr> args) noexcept override;
-
-    span _span;
-    std::string value;
+    double upto;
+    double i = 0;
 };
 
-struct unit final : public object, public comparable
+struct user_defined_sequence final
 {
-    unit(span s)
-        : _span { s }
-    {
-    }
-
-    std::string to_string() noexcept override;
-    bool is_callable() const noexcept override;
-    std::string typeof_() const noexcept override;
-    bool is_truthy() const noexcept override;
-    std::optional<int> cmp(object_ptr other) const noexcept override;
-    bool is_comparable() const noexcept override;
-    bool equals(object_ptr) const noexcept override;
-
-    span _span;
+    interpreter& interp;
+    object next_func;
 };
+
+enum sequence_type {
+    sequence_type_string,
+    sequence_type_array,
+    sequence_type_number,
+    sequence_type_user,
+};
+
+struct sequence
+{
+    span seq_span;
+    sequence_type type;
+    std::variant<
+        string_sequence,
+        array_sequence,
+        number_sequence,
+        user_defined_sequence>
+        seq;
+};
+
+struct heap_object
+{
+    union {
+        std::vector<object> as_array;
+        std::string as_string;
+        function as_function;
+        builtin_function as_builtin_function;
+        sequence as_sequence;
+    };
+
+    struct heap_object* next = nullptr;
+};
+
+/* Api */
+
+/* Constructors */
+
+/**
+ * Create a unit object.
+ */
+[[nodiscard]] object create_unit(span) noexcept;
+
+/**
+ * Create a number.
+ */
+[[nodiscard]] object create_number(span, double) noexcept;
+
+/**
+ * Create a string object.
+ */
+[[nodiscard]] object create_string(span, const std::string&) noexcept;
+
+/**
+ * Create an array object.
+ */
+[[nodiscard]] object create_array(span, const std::vector<object>&) noexcept;
+
+/**
+ * Create a function object.
+ */
+[[nodiscard]] object create_function(
+    span,
+    std::unique_ptr<env>,
+    std::vector<key>,
+    std::shared_ptr<ast::expression>);
+
+/**
+ * Create a builtin function object.
+ */
+[[nodiscard]] object create_builtin_function(
+    const std::string&,
+    size_t,
+    builtin_function::invoke_t) noexcept;
+
+/**
+ * Create an array sequence object.
+ */
+[[nodiscard]] object
+create_array_sequence(span, const std::vector<object>&) noexcept;
+
+/**
+ * Create a string sequence object.
+ */
+[[nodiscard]] object create_string_sequence(span, const std::string&) noexcept;
+
+/**
+ * Create a number sequence object.
+ */
+[[nodiscard]] object create_number_sequence(span, double) noexcept;
+
+/**
+ * Create a user defined sequence object.
+ */
+[[nodiscard]] object create_user_sequence(span, interpreter&, object) noexcept;
+
+/* Operations */
+
+/**
+ * Convert the provided object to a string representation.
+ */
+[[nodiscard]] std::string to_string(object) noexcept;
+
+/**
+ * Return a string representing the type of the object.
+ */
+[[nodiscard]] std::string typeof_(object) noexcept;
+
+/**
+ * Return whether the given object is truthy.
+ */
+[[nodiscard]] bool is_truthy(object) noexcept;
+
+/**
+ * Return whether the given object can be compared.
+ */
+[[nodiscard]] bool is_comparable(object) noexcept;
+
+/**
+ * Compare two objects.
+ */
+[[nodiscard]] std::optional<int> cmp(object, object) noexcept;
+
+/**
+ * Return whether two objects are equal to each other.
+ */
+[[nodiscard]] bool equals(object, object) noexcept;
+
+/**
+ * Return whether the given object is callable or not.
+ */
+[[nodiscard]] bool is_callable(object) noexcept;
+
+/**
+ * For callables, return the arity of the callable.
+ */
+[[nodiscard]] size_t arity(object) noexcept;
+
+/**
+ * For callables, invoke the callable.
+ */
+[[nodiscard]] maybe_object
+call(object, interpreter&, span, std::vector<object>) noexcept;
+
+/**
+ * Return whether a given object participates in the sequence protocol.
+ */
+[[nodiscard]] bool is_sequence(object) noexcept;
+
+/**
+ * Return the corresponding sequence.
+ */
+[[nodiscard]] object to_sequence(object) noexcept;
+
+/**
+ * Should return the next element in the sequence, or an empty optional if there
+ * are none.
+ */
+[[nodiscard]] maybe_object next(sequence&) noexcept;
 
 }

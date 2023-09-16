@@ -1,388 +1,152 @@
 #include <cassert>
-#include <cmath>
-#include <iostream>
-#include <sstream>
 
-#include <fmt/core.h>
+#include <nanbox.h>
 
-#include <ast.hpp>
 #include <eval.hpp>
 #include <object.hpp>
-#include <sequence.hpp>
 
 namespace gaya::eval::object
 {
 
-sequence_ptr object::to_sequence() noexcept
+static object create_object(object_type type, span span)
 {
-    return nullptr;
+    /* NOTE: Callers should replace the nanbox with whatever is suitable */
+    return { type, span, nanbox_empty() };
 }
 
-bool object::is_sequence() const noexcept
+static heap_object* create_heap_object()
 {
-    return false;
+    static heap_object* heap_objects = nullptr;
+    auto* o = static_cast<heap_object*>(malloc(sizeof(heap_object)));
+    assert(o);
+    o->next = heap_objects;
+    return o;
 }
 
-function::function(
-    span s,
-    std::vector<key> p,
-    std::shared_ptr<ast::expression> b,
-    eval::env e)
-    : _span { s }
-    , params { std::move(p) }
-    , _arity { params.size() }
-    , body { b }
-    , closed_over_env { std::move(e) }
+object create_unit(span span) noexcept
 {
+    auto o = create_object(object_type_unit, span);
+    o.box  = nanbox_null();
+    return o;
 }
 
-std::string function::to_string() noexcept
+object create_number(span span, double number) noexcept
 {
-    return fmt::format("<function-{}>", _arity);
+    auto o = create_object(object_type_number, span);
+    o.box  = nanbox_from_double(number);
+    return o;
 }
 
-std::string function::typeof_() const noexcept
+object create_string(span span, const std::string& string) noexcept
 {
-    return "function";
+    auto* ptr = create_heap_object();
+    new (ptr) heap_object { .as_string = string };
+
+    auto o = create_object(object_type_string, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
 }
 
-size_t function::arity() const noexcept
+object create_array(span span, const std::vector<object>& elems) noexcept
 {
-    return _arity;
+    auto* ptr = create_heap_object();
+    new (ptr) heap_object { .as_array = elems };
+
+    auto o = create_object(object_type_array, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
 }
 
-bool function::is_truthy() const noexcept
+object create_builtin_function(
+    const std::string& name,
+    size_t arity,
+    builtin_function::invoke_t invoke) noexcept
 {
-    return true;
+    builtin_function function = { arity, name, invoke };
+    auto* ptr                 = create_heap_object();
+    new (ptr) heap_object { .as_builtin_function = function };
+
+    span span = { 0, nullptr, nullptr };
+    auto o    = create_object(object_type_builtin_function, span);
+    o.box     = nanbox_from_pointer(ptr);
+
+    return o;
 }
 
-bool function::is_comparable() const noexcept
-{
-    return false;
-}
-
-bool function::is_callable() const noexcept
-{
-    return true;
-}
-
-object_ptr
-function::call(interpreter& interp, span, std::vector<object_ptr> args) noexcept
-{
-    interp.begin_scope(env { std::make_shared<env>(closed_over_env) });
-    for (size_t i = 0; i < args.size(); i++)
-    {
-        auto ident = params[i];
-        auto arg   = args[i];
-        interp.define(ident, arg);
-    }
-    auto ret = body->accept(interp);
-    interp.end_scope();
-    return ret;
-}
-
-bool function::equals(object_ptr) const noexcept
-{
-    return false;
-}
-
-std::string builtin_function::to_string() noexcept
-{
-    return fmt::format("<builtin-function: {}>", name);
-}
-
-bool builtin_function::is_callable() const noexcept
-{
-    return true;
-}
-
-std::string builtin_function::typeof_() const noexcept
-{
-    return "builtin-function";
-}
-
-bool builtin_function::is_truthy() const noexcept
-{
-    return true;
-}
-
-bool builtin_function::is_comparable() const noexcept
-{
-    return false;
-}
-
-bool builtin_function::equals(object_ptr) const noexcept
-{
-    return false;
-}
-
-std::string array::to_string() noexcept
-{
-    std::stringstream ss;
-    ss << "(";
-    for (size_t i = 0; i < elems.size(); i++)
-    {
-        ss << elems[i]->to_string();
-        if (i < elems.size() - 1)
-        {
-            ss << ", ";
-        }
-    }
-    ss << ")";
-    return ss.str();
-}
-
-bool array::is_callable() const noexcept
-{
-    return true;
-}
-
-std::string array::typeof_() const noexcept
-{
-    return "array";
-}
-
-bool array::is_truthy() const noexcept
-{
-    return !elems.empty();
-}
-
-bool array::is_comparable() const noexcept
-{
-    return false;
-}
-
-size_t array::arity() const noexcept
-{
-    return 1;
-}
-
-object_ptr array::call(
-    interpreter& interp,
+object create_function(
     span span,
-    std::vector<object_ptr> args) noexcept
+    std::unique_ptr<env> env,
+    std::vector<key> params,
+    std::shared_ptr<ast::expression> body)
 {
-    auto i = args[0];
-    if (i->typeof_() != "number")
-    {
-        interp.interp_error(span, "Can only index arrays with numbers");
-        return nullptr;
-    }
+    function function = { params.size(), std::move(env), params, body };
+    auto* ptr         = create_heap_object();
+    new (ptr) heap_object { .as_function = std::move(function) };
 
-    auto n = std::static_pointer_cast<eval::object::number>(i)->value;
-    if (n < 0 || n >= elems.size())
-    {
-        interp.interp_error(
-            span,
-            fmt::format(
-                "Invalid index for array of size {}: {}",
-                elems.size(),
-                n));
-        return nullptr;
-    }
+    auto o = create_object(object_type_function, span);
+    o.box  = nanbox_from_pointer(ptr);
 
-    return elems[n];
+    return o;
 }
 
-bool array::equals(object_ptr o) const noexcept
+object
+create_array_sequence(span span, const std::vector<object>& elems) noexcept
 {
-    if (typeof_() != o->typeof_()) return false;
+    auto* ptr = create_heap_object();
 
-    auto other = std::static_pointer_cast<array>(o);
+    array_sequence array_seq = { elems };
+    sequence seq             = { span, sequence_type_array, array_seq };
+    new (ptr) heap_object { .as_sequence = seq };
 
-    if (elems.size() != other->elems.size()) return false;
+    auto o = create_object(object_type_sequence, span);
+    o.box  = nanbox_from_pointer(ptr);
 
-    for (size_t i = 0; i < elems.size(); i++)
-    {
-        if (!elems[i]->equals(other->elems[i]))
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return o;
 }
 
-bool array::is_sequence() const noexcept
+object create_string_sequence(span span, const std::string& string) noexcept
 {
-    return true;
+    auto* ptr = create_heap_object();
+
+    string_sequence string_seq = { string };
+    sequence seq               = { span, sequence_type_string, string_seq };
+    new (ptr) heap_object { .as_sequence = seq };
+
+    auto o = create_object(object_type_sequence, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
 }
 
-sequence_ptr array::to_sequence() noexcept
+object create_number_sequence(span span, double number) noexcept
 {
-    return std::make_shared<array_sequence>(span_, elems);
+    auto* ptr = create_heap_object();
+
+    number_sequence number_seq = { number };
+    sequence seq               = { span, sequence_type_number, number_seq };
+    new (ptr) heap_object { .as_sequence = seq };
+
+    auto o = create_object(object_type_sequence, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
 }
 
-std::string number::to_string() noexcept
+object
+create_user_sequence(span span, interpreter& interp, object next_func) noexcept
 {
-    // https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
-    double intval;
-    auto has_decimals = std::modf(value, &intval) != 0.0;
-    return has_decimals ? fmt::format("{}", value)
-                        : fmt::format("{:.0f}", value);
-}
+    auto* ptr = create_heap_object();
 
-bool number::is_callable() const noexcept
-{
-    return false;
-}
+    user_defined_sequence user_seq = { interp, next_func };
+    sequence seq                   = { span, sequence_type_user, user_seq };
+    new (ptr) heap_object { .as_sequence = seq };
 
-bool number::is_comparable() const noexcept
-{
-    return true;
-}
+    auto o = create_object(object_type_sequence, span);
+    o.box  = nanbox_from_pointer(ptr);
 
-std::string number::typeof_() const noexcept
-{
-    return "number";
-}
-
-bool number::is_truthy() const noexcept
-{
-    return value != 0.0;
-}
-
-std::optional<int> number::cmp(object_ptr other) const noexcept
-{
-    if (other->typeof_() != typeof_()) return std::nullopt;
-    auto other_value = std::static_pointer_cast<number>(other)->value;
-    return (value < other_value) ? -1 : ((value == other_value) ? 0 : 1);
-}
-
-bool number::equals(object_ptr o) const noexcept
-{
-    if (typeof_() != o->typeof_()) return false;
-    auto other = std::static_pointer_cast<number>(o);
-    return value == other->value;
-}
-
-bool number::is_sequence() const noexcept
-{
-    return true;
-}
-
-sequence_ptr number::to_sequence() noexcept
-{
-    return std::make_shared<number_sequence>(_span, value);
-}
-
-std::string string::to_string() noexcept
-{
-    return '"' + value + '"';
-}
-
-std::string string::typeof_() const noexcept
-{
-    return "string";
-}
-
-bool string::is_truthy() const noexcept
-{
-    return !value.empty();
-}
-
-bool string::is_comparable() const noexcept
-{
-    return true;
-}
-
-bool string::is_callable() const noexcept
-{
-    return true;
-}
-
-size_t string::arity() const noexcept
-{
-    return 1;
-}
-
-object_ptr string::call(
-    interpreter& interp,
-    span span,
-    std::vector<object_ptr> args) noexcept
-{
-    auto i = args[0];
-    if (i->typeof_() != "number")
-    {
-        interp.interp_error(span, "Can only index strings with numbers");
-        return nullptr;
-    }
-
-    auto n = std::static_pointer_cast<eval::object::number>(i)->value;
-    if (n < 0 || n >= value.size())
-    {
-        interp.interp_error(
-            span,
-            fmt::format(
-                "Invalid index for string of size {}: {}",
-                value.size(),
-                n));
-        return nullptr;
-    }
-
-    return std::make_shared<eval::object::string>(
-        span,
-        std::string { value[n] });
-}
-
-std::optional<int> string::cmp(object_ptr other) const noexcept
-{
-    if (other->typeof_() != typeof_()) return std::nullopt;
-    auto cmp = value <=> std::static_pointer_cast<string>(other)->value;
-    return (cmp < 0) ? -1 : ((cmp == 0) ? 0 : 1);
-}
-
-bool string::equals(object_ptr o) const noexcept
-{
-    if (typeof_() != o->typeof_()) return false;
-    auto other = std::static_pointer_cast<string>(o);
-    return value == other->value;
-}
-
-bool string::is_sequence() const noexcept
-{
-    return true;
-}
-
-sequence_ptr string::to_sequence() noexcept
-{
-    return std::make_shared<string_sequence>(_span, value);
-}
-
-std::string unit::to_string() noexcept
-{
-    return "unit";
-}
-
-bool unit::is_callable() const noexcept
-{
-    return false;
-}
-
-std::string unit::typeof_() const noexcept
-{
-    return "unit";
-}
-
-bool unit::is_truthy() const noexcept
-{
-    return false;
-}
-
-bool unit::is_comparable() const noexcept
-{
-    return true;
-}
-
-std::optional<int> unit::cmp(object_ptr other) const noexcept
-{
-    if (other->typeof_() != typeof_()) return std::nullopt;
-    return 0;
-}
-
-bool unit::equals(object_ptr o) const noexcept
-{
-    return typeof_() == o->typeof_();
+    return o;
 }
 
 }

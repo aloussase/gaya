@@ -28,18 +28,18 @@ env::env(parent_ptr p)
 {
 }
 
-void env::set(const key& k, object::object_ptr v) noexcept
+void env::set(const key& k, value_type v) noexcept
 {
     _bindings.insert_or_assign(k, v);
 }
 
-object::object_ptr env::get(const std::string& k) const noexcept
+object::maybe_object env::get(const std::string& k) const noexcept
 {
     // NOTE: We don't really care about the metadata here.
     return get(key::global(k));
 }
 
-object::object_ptr env::get(const key& k) const noexcept
+object::maybe_object env::get(const key& k) const noexcept
 {
     if (_bindings.contains(k))
     {
@@ -51,15 +51,15 @@ object::object_ptr env::get(const key& k) const noexcept
         return _parent->get(k);
     }
 
-    return nullptr;
+    return std::nullopt;
 }
 
-bool env::update_at(const std::string& k, object::object_ptr new_val) noexcept
+bool env::update_at(const std::string& k, value_type new_val) noexcept
 {
     return update_at(key::local(k), new_val);
 }
 
-bool env::update_at(const key& k, object::object_ptr new_val) noexcept
+bool env::update_at(const key& k, value_type new_val) noexcept
 {
     if (auto it = _bindings.find(k); it != _bindings.end())
     {

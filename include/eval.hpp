@@ -8,22 +8,18 @@
 #include <object.hpp>
 #include <span.hpp>
 
-#define STATIC_NUMBER_CACHE_SIZE 10'000
-
 namespace gaya::eval
 {
-
-namespace o = object;
 
 class interpreter final : public ast::ast_visitor
 {
 public:
     interpreter(const std::string& filename, const char* source);
 
-    [[nodiscard]] object::object_ptr eval() noexcept;
+    [[nodiscard]] object::maybe_object eval() noexcept;
 
     /// This one is useful for REPLs.
-    [[nodiscard]] object::object_ptr eval(env, ast::node_ptr) noexcept;
+    [[nodiscard]] object::maybe_object eval(env, ast::node_ptr) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
@@ -38,7 +34,7 @@ public:
     [[nodiscard]] const env& get_env() const noexcept;
 
     /// Define a new symbol in the current scope.
-    void define(const key&, object::object_ptr) noexcept;
+    void define(const key&, object::object) noexcept;
 
     /// Begin a new scope.
     void begin_scope(env new_scope) noexcept;
@@ -58,46 +54,38 @@ public:
     /// Whether the interpreter had an error.
     [[nodiscard]] bool had_error() const noexcept;
 
-    o::object_ptr visit_program(ast::program&) override;
-    o::object_ptr visit_declaration_stmt(ast::declaration_stmt&) override;
-    o::object_ptr visit_expression_stmt(ast::expression_stmt&) override;
-    o::object_ptr visit_assignment_stmt(ast::assignment_stmt&) override;
-    o::object_ptr visit_while_stmt(ast::while_stmt&) override;
-    o::object_ptr visit_do_expression(ast::do_expression&) override;
-    o::object_ptr visit_case_expression(ast::case_expression&) override;
-    o::object_ptr visit_unary_expression(ast::unary_expression&) override;
-    o::object_ptr visit_binary_expression(ast::binary_expression&) override;
-    o::object_ptr visit_call_expression(ast::call_expression&) override;
-    o::object_ptr visit_function_expression(ast::function_expression&) override;
-    o::object_ptr visit_let_expression(ast::let_expression&) override;
-    o::object_ptr visit_array(ast::array&) override;
-    o::object_ptr visit_number(ast::number&) override;
-    o::object_ptr visit_string(ast::string&) override;
-    o::object_ptr visit_identifier(ast::identifier&) override;
-    o::object_ptr visit_unit(ast::unit&) override;
-    o::object_ptr visit_placeholder(ast::placeholder&) override;
+    /* Visitor pattern */
 
-    [[nodiscard]] std::shared_ptr<o::number>& true_object(span) noexcept;
-    [[nodiscard]] std::shared_ptr<o::number>& false_object(span) noexcept;
-    [[nodiscard]] std::shared_ptr<o::unit>& unit_object(span) noexcept;
-
-    [[nodiscard]] std::shared_ptr<o::number> make_number(span, double) noexcept;
+    object::maybe_object visit_program(ast::program&) override;
+    object::maybe_object
+    visit_declaration_stmt(ast::declaration_stmt&) override;
+    object::maybe_object visit_expression_stmt(ast::expression_stmt&) override;
+    object::maybe_object visit_assignment_stmt(ast::assignment_stmt&) override;
+    object::maybe_object visit_while_stmt(ast::while_stmt&) override;
+    object::maybe_object visit_do_expression(ast::do_expression&) override;
+    object::maybe_object visit_case_expression(ast::case_expression&) override;
+    object::maybe_object
+    visit_unary_expression(ast::unary_expression&) override;
+    object::maybe_object
+    visit_binary_expression(ast::binary_expression&) override;
+    object::maybe_object visit_call_expression(ast::call_expression&) override;
+    object::maybe_object
+    visit_function_expression(ast::function_expression&) override;
+    object::maybe_object visit_let_expression(ast::let_expression&) override;
+    object::maybe_object visit_array(ast::array&) override;
+    object::maybe_object visit_number(ast::number&) override;
+    object::maybe_object visit_string(ast::string&) override;
+    object::maybe_object visit_identifier(ast::identifier&) override;
+    object::maybe_object visit_unit(ast::unit&) override;
+    object::maybe_object visit_placeholder(ast::placeholder&) override;
 
 private:
     [[nodiscard]] env& current_env() noexcept;
-
-    /* Optimization for booleans and unit. */
-    std::shared_ptr<o::number> _true_object;
-    std::shared_ptr<o::number> _false_object;
-    std::shared_ptr<o::unit> _unit_object;
 
     std::string _filename;
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;
     std::stack<env> _scopes;
-
-    std::shared_ptr<o::number> _static_number_cache[STATIC_NUMBER_CACHE_SIZE];
-    std::unordered_map<int, std::shared_ptr<o::number>> _dynamic_number_cache;
 };
 
 }

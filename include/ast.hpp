@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <lexer.hpp>
+#include <object.hpp>
 #include <span.hpp>
 
 namespace gaya::eval
@@ -11,16 +12,10 @@ namespace gaya::eval
 class interpreter;
 }
 
-namespace gaya::eval::object
-{
-
-struct object;
-using object_ptr = std::shared_ptr<object>;
-
-}
-
 namespace gaya::ast
 {
+
+using maybe_object = gaya::eval::object::maybe_object;
 
 struct ast_node;
 struct stmt;
@@ -42,8 +37,8 @@ class ast_visitor;
 struct ast_node
 {
     virtual ~ast_node() {};
-    virtual std::string to_string() const noexcept              = 0;
-    virtual gaya::eval::object::object_ptr accept(ast_visitor&) = 0;
+    virtual std::string to_string() const noexcept = 0;
+    virtual maybe_object accept(ast_visitor&)      = 0;
 };
 
 struct program final : public ast_node
@@ -52,7 +47,7 @@ struct program final : public ast_node
 
     std::string to_string() const noexcept override;
 
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 };
 
 /* Statements */
@@ -71,7 +66,7 @@ struct declaration_stmt final : public stmt
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     std::unique_ptr<identifier> ident;
     expression_ptr expr;
@@ -85,7 +80,7 @@ struct expression_stmt final : public stmt
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     expression_ptr expr;
 };
@@ -99,7 +94,7 @@ struct assignment_stmt final : public stmt
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     std::unique_ptr<identifier> ident;
     expression_ptr expr;
@@ -120,7 +115,7 @@ struct while_stmt final : public stmt
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span span_;
     expression_ptr condition;
@@ -144,7 +139,7 @@ struct do_expression final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     // All but the last node in a do block body must be stmts.
     // The value of a do block is the value of its last expression.
@@ -179,7 +174,7 @@ struct case_expression final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span span_;
     std::vector<case_branch> branches;
@@ -196,7 +191,7 @@ struct call_expression final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span span_;
     expression_ptr target;
@@ -214,7 +209,7 @@ struct function_expression final : public expression
 
     std::string to_string() const noexcept override;
 
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span _span;
     std::vector<identifier> params;
@@ -243,7 +238,7 @@ struct let_expression final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     std::vector<let_binding> bindings;
     expression_ptr expr;
@@ -261,9 +256,9 @@ struct binary_expression : public expression
     }
 
     virtual ~binary_expression() { }
-    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
+    virtual maybe_object execute(eval::interpreter&) = 0;
 
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
     std::string to_string() const noexcept override;
 
     expression_ptr lhs;
@@ -278,7 +273,7 @@ struct logical_expression final : public binary_expression
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    maybe_object execute(eval::interpreter&) override;
 };
 
 struct cmp_expression final : public binary_expression
@@ -288,7 +283,7 @@ struct cmp_expression final : public binary_expression
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    maybe_object execute(eval::interpreter&) override;
 };
 
 struct arithmetic_expression final : public binary_expression
@@ -298,7 +293,7 @@ struct arithmetic_expression final : public binary_expression
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    maybe_object execute(eval::interpreter&) override;
 };
 
 struct pipe_expression final : public binary_expression
@@ -308,16 +303,17 @@ struct pipe_expression final : public binary_expression
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    maybe_object execute(eval::interpreter&) override;
 };
 
 /* Unary expressions */
+
 struct unary_expression : public expression
 {
     virtual ~unary_expression() { }
-    virtual gaya::eval::object::object_ptr execute(eval::interpreter&) = 0;
+    virtual maybe_object execute(eval::interpreter&) = 0;
 
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 };
 
 struct not_expression final : public unary_expression
@@ -328,7 +324,7 @@ struct not_expression final : public unary_expression
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    maybe_object execute(eval::interpreter&) override;
     std::string to_string() const noexcept override;
 
     token op;
@@ -343,7 +339,7 @@ struct perform_expression final : public unary_expression
     {
     }
 
-    gaya::eval::object::object_ptr execute(eval::interpreter&) override;
+    maybe_object execute(eval::interpreter&) override;
     std::string to_string() const noexcept override;
 
     token op;
@@ -361,7 +357,7 @@ struct array final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span span_;
     std::vector<expression_ptr> elems;
@@ -376,7 +372,7 @@ struct number final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span _span;
     double value;
@@ -391,7 +387,7 @@ struct string final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span _span;
     std::string value;
@@ -406,7 +402,7 @@ struct identifier final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span _span;
     std::string value;
@@ -420,7 +416,7 @@ struct unit final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span _span;
 };
@@ -433,7 +429,7 @@ struct placeholder final : public expression
     }
 
     std::string to_string() const noexcept override;
-    gaya::eval::object::object_ptr accept(ast_visitor&) override;
+    maybe_object accept(ast_visitor&) override;
 
     span span_;
 };

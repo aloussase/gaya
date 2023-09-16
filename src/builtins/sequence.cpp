@@ -2,97 +2,41 @@
 
 #include <builtins/sequence.hpp>
 #include <eval.hpp>
-#include <sequence.hpp>
 
 namespace gaya::eval::object::builtin::sequence
 {
 
 /* seq.next */
 
-size_t next::arity() const noexcept
+gaya::eval::object::maybe_object
+next(interpreter& interp, span span, std::vector<object> args) noexcept
 {
-    return 1;
-}
-
-object_ptr next::call(
-    interpreter& interp,
-    span span,
-    std::vector<object_ptr> args) noexcept
-{
-    if (args[0]->typeof_() != "sequence")
+    if (args[0].type != object_type_sequence)
     {
-        interp.interp_error(
-            span,
-            fmt::format("Expected {} to be sequence", args[0]->typeof_()));
-        return nullptr;
+        auto t = typeof_(args[0]);
+        interp.interp_error(span, fmt::format("Expected {} to be sequence", t));
+        return {};
     }
 
-    auto seq = std::static_pointer_cast<gaya::eval::object::sequence>(args[0]);
-    return seq->next();
-}
-
-/* seq.map */
-
-size_t map::arity() const noexcept
-{
-    return 2;
-}
-
-object_ptr
-map::call(interpreter& interp, span span, std::vector<object_ptr> args) noexcept
-{
-    auto seq  = args[0];
-    auto func = args[1];
-
-    if (!seq->is_sequence())
-    {
-        interp.interp_error(
-            span,
-            fmt::format("Expected {} to be a sequence", seq->to_string()));
-        return nullptr;
-    }
-
-    if (!func->is_callable())
-    {
-        interp.interp_error(
-            span,
-            fmt::format("Expected {} to be a callabel", func->to_string()));
-        return nullptr;
-    }
-
-    return std::make_shared<mapper_sequence>(
-        interp,
-        span,
-        seq->to_sequence(),
-        std::dynamic_pointer_cast<callable>(func));
+    return gaya::eval::object::next(AS_SEQUENCE(args[0]));
 }
 
 /* seq.make */
 
-size_t make::arity() const noexcept
-{
-    return 1;
-}
-
-object_ptr make::call(
-    interpreter& interp,
-    span span,
-    std::vector<object_ptr> args) noexcept
+gaya::eval::object::maybe_object
+make(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     auto next = args[0];
 
-    if (!next->is_callable())
+    if (!is_callable(next))
     {
         interp.interp_error(
             span,
-            fmt::format("Expected {} to callable", next->to_string()));
-        return nullptr;
+            fmt::format("Expected {} to callable", to_string(next)));
+        return {};
     }
 
-    return std::make_shared<user_defined_sequence>(
-        span,
-        interp,
-        std::dynamic_pointer_cast<callable>(next));
+    return create_user_sequence(span, interp, next);
 }
 
 }

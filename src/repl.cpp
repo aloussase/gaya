@@ -104,7 +104,7 @@ void run() noexcept
 
         if (auto result = interp.eval(interp.get_env(), std::move(ast)); result)
         {
-            fmt::print("= {}\n", result->to_string());
+            fmt::print("= {}\n", gaya::eval::object::to_string(result.value()));
         }
 
         for (const auto& diag : interp.diagnostics())

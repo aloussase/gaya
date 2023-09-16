@@ -6,89 +6,60 @@
 namespace gaya::eval::object::builtin::array
 {
 
-size_t length::arity() const noexcept
-{
-    return 1;
-}
-
-object_ptr length::call(
-    interpreter& interp,
-    span span,
-    std::vector<object_ptr> args) noexcept
+gaya::eval::object::maybe_object
+length(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     auto o = args[0];
 
-    if (o->typeof_() != "array")
+    if (o.type != object_type_array)
     {
-        interp.interp_error(
-            span,
-            fmt::format("{} expected its argument to be an array", name));
-        return nullptr;
+        interp.interp_error(span, "Expected its argument to be an array");
+        return {};
     }
 
-    auto a = std::static_pointer_cast<gaya::eval::object::array>(o);
-    auto n = a->elems.size();
-
-    return std::make_shared<number>(span, n);
+    return create_number(span, AS_ARRAY(o).size());
 }
 
-size_t concat::arity() const noexcept
+gaya::eval::object::maybe_object
+concat(interpreter& interp, span span, std::vector<object> args) noexcept
 {
-    return 2;
-}
-
-object_ptr concat::call(
-    interpreter& interp,
-    span span,
-    std::vector<object_ptr> args) noexcept
-{
-    if (args[0]->typeof_() != "array" || args[1]->typeof_() != "array")
+    if (args[0].type != object_type_array || args[1].type != object_type_array)
     {
+        auto t1 = typeof_(args[0]);
+        auto t2 = typeof_(args[1]);
         interp.interp_error(
             span,
-            fmt::format(
-                "Expected {} and {} to be both arrays",
-                args[0]->typeof_(),
-                args[1]->typeof_()));
-        return nullptr;
+            fmt::format("Expected {} and {} to be both arrays", t1, t2));
+        return {};
     }
 
-    auto a1 = std::static_pointer_cast<gaya::eval::object::array>(args[0]);
-    auto a2 = std::static_pointer_cast<gaya::eval::object::array>(args[1]);
+    auto a1 = AS_ARRAY(args[0]);
+    auto a2 = AS_ARRAY(args[1]);
 
-    std::vector<object_ptr> new_elems;
+    std::vector<object> new_elems;
 
-    new_elems.insert(new_elems.cbegin(), a1->elems.begin(), a1->elems.end());
+    new_elems.insert(new_elems.cbegin(), a1.begin(), a1.end());
     new_elems.insert(
-        new_elems.cbegin() + std::distance(a1->elems.begin(), a1->elems.end()),
-        a2->elems.begin(),
-        a2->elems.end());
+        new_elems.cbegin() + std::distance(a1.begin(), a1.end()),
+        a2.begin(),
+        a2.end());
 
-    return std::make_shared<gaya::eval::object::array>(span, new_elems);
+    return create_array(span, new_elems);
 }
 
-size_t push::arity() const noexcept
+gaya::eval::object::maybe_object
+push(interpreter& interp, span span, std::vector<object> args) noexcept
 {
-    return 2;
-}
-
-object_ptr push::call(
-    interpreter& interp,
-    span span,
-    std::vector<object_ptr> args) noexcept
-{
-    if (args[0]->typeof_() != "array")
+    if (args[0].type != object_type_array)
     {
         interp.interp_error(span, "Expected first argument to be an array");
-        return nullptr;
+        return {};
     }
 
-    auto a = std::static_pointer_cast<gaya::eval::object::array>(args[0]);
-
-    auto new_elems = std::vector { a->elems };
+    auto new_elems = std::vector { AS_ARRAY(args[0]) };
     new_elems.push_back(args[1]);
 
-    return std::make_shared<gaya::eval::object::array>(span, new_elems);
+    return create_array(span, new_elems);
 }
 
 }

@@ -5,40 +5,12 @@
 namespace gaya::eval::object::builtin::sequence
 {
 
-struct next final : public builtin_function
-{
-    next()
-        : builtin_function { "seq.next" }
-    {
-    }
+/* TODO: Document these. */
 
-    size_t arity() const noexcept override;
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
-};
+gaya::eval::object::maybe_object
+next(interpreter&, span, std::vector<object>) noexcept;
 
-struct map final : public builtin_function
-{
-    map()
-        : builtin_function { "seq.map" }
-    {
-    }
-
-    size_t arity() const noexcept override;
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
-};
-
-struct make final : public builtin_function
-{
-    make()
-        : builtin_function { "seq.make" }
-    {
-    }
-
-    size_t arity() const noexcept override;
-    object_ptr
-    call(interpreter&, span, std::vector<object_ptr>) noexcept override;
-};
+gaya::eval::object::maybe_object
+make(interpreter&, span, std::vector<object>) noexcept;
 
 }

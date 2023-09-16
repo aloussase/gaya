@@ -9,9 +9,19 @@ add_executable(gaya main.cpp
     object.cpp
     repl.cpp
     file_reader.cpp
-    sequence.cpp
+    object/arity.cpp
+    object/call.cpp
+    object/cmp.cpp
+    object/equals.cpp
+    object/is_callable.cpp
+    object/is_comparable.cpp
+    object/is_sequence.cpp
+    object/is_truthy.cpp
+    object/to_sequence.cpp
+    object/to_string.cpp
+    object/typeof.cpp
+    object/next.cpp
     builtins/io.cpp
-    builtins/math.cpp
     builtins/core.cpp
     builtins/string.cpp
     builtins/array.cpp
