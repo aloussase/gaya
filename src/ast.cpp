@@ -189,9 +189,9 @@ object binary_expression::accept(ast_visitor& v)
 std::string binary_expression::to_string() const noexcept
 {
     std::stringstream ss;
-    ss << R"({"type": "binary_expression", "op": ")"
-       << op.get_span().to_string() << R"(", "lhs": )" << lhs->to_string()
-       << R"(, "rhs": )" << rhs->to_string() << "}";
+    ss << R"({"type": "binary_expression", "op": ")" << op.span.to_string()
+       << R"(", "lhs": )" << lhs->to_string() << R"(, "rhs": )"
+       << rhs->to_string() << "}";
     return ss.str();
 }
 

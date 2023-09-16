@@ -28,6 +28,11 @@ const env::bindings& env::get_bindings() const noexcept
     return _bindings;
 }
 
+const std::list<object::object*> env::objects() const noexcept
+{
+    return _objects;
+}
+
 const env::parent_ptr env::parent() const noexcept
 {
     return _parent;
@@ -40,6 +45,7 @@ env::env(parent_ptr p)
 
 void env::set(key&& k, value_type v) noexcept
 {
+    _objects.push_front(&v);
     _bindings.insert_or_assign(std::move(k), v);
 }
 
@@ -75,6 +81,14 @@ bool env::update_at(const key& k, value_type new_val) noexcept
     {
         if (auto k_ = it->first; k_.is_assignment_target())
         {
+            /*
+             * NOTE:
+             *
+             * We don't need to update the pointer in _objects beacuse the
+             * GC works for heap allocated objects. The means an update here
+             * will reflect in the object in the heap and it will be correctly
+             * marked, or not, during the GC run.
+             */
             it->second = new_val;
             return true;
         }

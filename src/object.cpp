@@ -71,11 +71,11 @@ static void mark(heap_object* o)
 
 static void mark_bindings(const env& env)
 {
-    for (auto& [key, o] : env.get_bindings())
+    for (auto* o : env.objects())
     {
-        if (IS_HEAP_OBJECT(o))
+        if (nanbox_is_pointer(o->box))
         {
-            mark(AS_HEAP_OBJECT(o));
+            mark(static_cast<heap_object*>(nanbox_to_pointer(o->box)));
         }
     }
 

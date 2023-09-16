@@ -40,14 +40,14 @@ void parser::merge_diagnostics() noexcept
 
 bool parser::match(std::optional<token> t, token_type tt) const noexcept
 {
-    return t && t->type() == tt;
+    return t && t->type == tt;
 }
 
 bool parser::is_local_stmt(token token)
 {
-    if (token.type() == token_type::discard) return true;
-    if (token.type() == token_type::while_) return true;
-    if (token.type() != token_type::identifier) return false;
+    if (token.type == token_type::discard) return true;
+    if (token.type == token_type::while_) return true;
+    if (token.type != token_type::identifier) return false;
 
     auto lookahead = _lexer.next_token();
     auto ret       = false;
@@ -121,14 +121,14 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     auto token = _lexer.next_token();
     if (!token) return nullptr;
 
-    switch (token->type())
+    switch (token->type)
     {
     case token_type::identifier: return declaration_stmt(token.value());
     case token_type::discard: return expression_stmt(token.value());
     default:
-        parser_error(token->get_span(), "Invalid start of top-level statement");
+        parser_error(token->span, "Invalid start of top-level statement");
         parser_hint(
-            token->get_span(),
+            token->span,
             "Only definitions and discard are valid top-level statements");
         return nullptr;
     }
@@ -136,13 +136,13 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
 
 ast::stmt_ptr parser::local_stmt(token token) noexcept
 {
-    switch (token.type())
+    switch (token.type)
     {
     case token_type::discard: return expression_stmt(token);
     case token_type::identifier: return assignment_stmt(token);
     case token_type::while_: return while_stmt(token);
     default:
-        parser_error(token.get_span(), "Invalid start of local statement");
+        parser_error(token.span, "Invalid start of local statement");
         return nullptr;
     }
 }
@@ -153,7 +153,7 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
         !match(back_arrow, token_type::back_arrow))
     {
         parser_error(
-            identifier.get_span(),
+            identifier.span,
             "Expected '<-' after identifier in assignment");
         return nullptr;
     }
@@ -162,7 +162,7 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
     if (!token)
     {
         parser_error(
-            identifier.get_span(),
+            identifier.span,
             "Expected expression after '<-' in assignment");
         return nullptr;
     }
@@ -171,15 +171,15 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
     if (!expr) return nullptr;
 
     auto ident = std::make_unique<ast::identifier>(
-        identifier.get_span(),
-        identifier.get_span().to_string());
+        identifier.span,
+        identifier.span.to_string());
 
     return ast::make_node<ast::assignment_stmt>(std::move(ident), expr);
 }
 
 ast::stmt_ptr parser::while_stmt(token while_) noexcept
 {
-    auto span  = while_.get_span();
+    auto span  = while_.span;
     auto token = _lexer.next_token();
     if (!token)
     {
@@ -196,7 +196,7 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         if (!stmt_token || !is_local_stmt(stmt_token.value()))
         {
             parser_error(
-                while_.get_span(),
+                while_.span,
                 "Expected a statement after ':' in while");
             return nullptr;
         }
@@ -246,23 +246,21 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 ast::stmt_ptr parser::declaration_stmt(token identifier)
 {
     auto colon_colon = _lexer.next_token();
-    if (!colon_colon || colon_colon->type() != token_type::colon_colon)
+    if (!colon_colon || colon_colon->type != token_type::colon_colon)
     {
-        parser_error(identifier.get_span(), "Expected a '::' after identifier");
-        parser_hint(identifier.get_span(), "Maybe you meant to use discard?");
+        parser_error(identifier.span, "Expected a '::' after identifier");
+        parser_hint(identifier.span, "Maybe you meant to use discard?");
         return nullptr;
     }
 
     auto ident = std::make_unique<ast::identifier>(
-        identifier.get_span(),
-        identifier.get_span().to_string());
+        identifier.span,
+        identifier.span.to_string());
 
     auto token = _lexer.next_token();
     if (!token)
     {
-        parser_error(
-            colon_colon->get_span(),
-            "Expected an expression after '::'");
+        parser_error(colon_colon->span, "Expected an expression after '::'");
         return nullptr;
     }
 
@@ -277,9 +275,7 @@ ast::stmt_ptr parser::expression_stmt(token discard)
     auto token = _lexer.next_token();
     if (!token)
     {
-        parser_error(
-            discard.get_span(),
-            "Expected an expression after discard");
+        parser_error(discard.span, "Expected an expression after discard");
         return nullptr;
     }
 
@@ -296,7 +292,7 @@ ast::expression_ptr parser::expression(token token)
      NOTE: Might want to move these to primary expression or allow then in
      grouping expressions.
      */
-    switch (token.type())
+    switch (token.type)
     {
     case token_type::do_: return do_expression(token);
     case token_type::cases: return case_expression(token);
@@ -319,9 +315,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
             break;
         }
 
-        params.emplace_back(
-            identifier->get_span(),
-            identifier->get_span().to_string());
+        params.emplace_back(identifier->span, identifier->span.to_string());
 
         auto comma = _lexer.next_token();
         if (!comma) break;
@@ -336,21 +330,21 @@ ast::expression_ptr parser::function_expression(token lcurly)
     auto arrow = _lexer.next_token();
     if (!match(arrow, token_type::arrow))
     {
-        parser_error(lcurly.get_span(), "Expected '=>' after function params");
+        parser_error(lcurly.span, "Expected '=>' after function params");
         return nullptr;
     }
 
     auto token = _lexer.next_token();
     if (!token)
     {
-        parser_error(lcurly.get_span(), "Expected a '}' after function body");
+        parser_error(lcurly.span, "Expected a '}' after function body");
         return nullptr;
     }
 
     auto expr = ([&]() -> ast::expression_ptr {
         if (match(token, token_type::rcurly))
         {
-            return ast::make_node<ast::unit>(token->get_span());
+            return ast::make_node<ast::unit>(token->span);
         }
         else
         {
@@ -358,9 +352,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
             if (auto rcurly = _lexer.next_token();
                 !match(rcurly, token_type::rcurly))
             {
-                parser_error(
-                    lcurly.get_span(),
-                    "Expected a '}' after function body");
+                parser_error(lcurly.span, "Expected a '}' after function body");
                 return nullptr;
             }
             return expr;
@@ -370,7 +362,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
     if (!expr) return nullptr;
 
     return ast::make_node<ast::function_expression>(
-        lcurly.get_span(),
+        lcurly.span,
         std::move(params),
         expr);
 }
@@ -386,7 +378,7 @@ ast::expression_ptr parser::logical_expression(token token) noexcept
         auto t = _lexer.next_token();
         if (!t) break;
 
-        switch (t->type())
+        switch (t->type)
         {
         case token_type::or_:
         case token_type::and_:
@@ -397,10 +389,10 @@ ast::expression_ptr parser::logical_expression(token token) noexcept
             if (!t)
             {
                 parser_error(
-                    op.get_span(),
+                    op.span,
                     fmt::format(
                         "Expected an expression after {}",
-                        op.get_span().to_string()));
+                        op.span.to_string()));
                 return nullptr;
             }
 
@@ -437,7 +429,7 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
     if (!lhs) return nullptr;
 
     auto is_comparison_op = [](auto t) {
-        switch (t.type())
+        switch (t.type)
         {
         case token_type::less_than:
         case token_type::less_than_eq:
@@ -464,10 +456,10 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
         if (!expr_token)
         {
             parser_error(
-                token.get_span(),
+                token.span,
                 fmt::format(
                     "Expected an expression after {}",
-                    token.get_span().to_string()));
+                    token.span.to_string()));
             return nullptr;
         }
 
@@ -504,7 +496,7 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
         if (!expr_token)
         {
             parser_error(
-                token.get_span(),
+                token.span,
                 "Expected an expression after pipe operator");
             return nullptr;
         }
@@ -536,7 +528,7 @@ ast::expression_ptr parser::term_expression(token token) noexcept
         auto t = _lexer.next_token();
         if (!t) break;
 
-        switch (t->type())
+        switch (t->type)
         {
         case token_type::plus:
         case token_type::dash:
@@ -547,10 +539,10 @@ ast::expression_ptr parser::term_expression(token token) noexcept
             if (!t)
             {
                 parser_error(
-                    op.get_span(),
+                    op.span,
                     fmt::format(
                         "Expected an expression after {}",
-                        op.get_span().to_string()));
+                        op.span.to_string()));
                 return nullptr;
             }
 
@@ -590,7 +582,7 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
         auto t = _lexer.next_token();
         if (!t) break;
 
-        switch (t->type())
+        switch (t->type)
         {
         case token_type::star:
         case token_type::slash:
@@ -601,10 +593,10 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
             if (!t)
             {
                 parser_error(
-                    op.get_span(),
+                    op.span,
                     fmt::format(
                         "Expected an expression after {}",
-                        op.get_span().to_string()));
+                        op.span.to_string()));
                 return nullptr;
             }
 
@@ -632,7 +624,7 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
  */
 ast::expression_ptr parser::unary_expression(token op) noexcept
 {
-    switch (op.type())
+    switch (op.type)
     {
     case token_type::perform: return perform_expression(op);
     case token_type::not_: return not_expression(op);
@@ -646,10 +638,10 @@ ast::expression_ptr parser::not_expression(token op) noexcept
     if (!token)
     {
         parser_error(
-            op.get_span(),
+            op.span,
             fmt::format(
                 "Expected expression after 'not'",
-                op.get_span().to_string()));
+                op.span.to_string()));
         return nullptr;
     }
 
@@ -664,7 +656,7 @@ ast::expression_ptr parser::perform_expression(token op) noexcept
     auto token = _lexer.next_token();
     if (!token)
     {
-        parser_error(op.get_span(), "Expected a statement after 'perform'");
+        parser_error(op.span, "Expected a statement after 'perform'");
         return nullptr;
     }
 
@@ -738,14 +730,12 @@ ast::expression_ptr parser::call_expression(token starttoken)
         if (auto rparen = _lexer.next_token();
             !match(rparen, token_type::rparen))
         {
-            parser_error(
-                starttoken.get_span(),
-                "Missing ')' after function call");
+            parser_error(starttoken.span, "Missing ')' after function call");
             return nullptr;
         }
 
         expr = ast::make_node<ast::call_expression>(
-            starttoken.get_span(),
+            starttoken.span,
             expr,
             std::move(args));
     }
@@ -760,7 +750,7 @@ ast::expression_ptr parser::let_expression(token let)
             !match(equal_sign, token_type::equal))
         {
             parser_error(
-                ident.get_span(),
+                ident.span,
                 "Expected '=' after identifier in let expression");
             return std::nullopt;
         }
@@ -768,7 +758,7 @@ ast::expression_ptr parser::let_expression(token let)
         auto expr_token = _lexer.next_token();
         if (!expr_token)
         {
-            parser_error(ident.get_span(), "Expected an expression after '='");
+            parser_error(ident.span, "Expected an expression after '='");
             return std::nullopt;
         }
 
@@ -776,8 +766,8 @@ ast::expression_ptr parser::let_expression(token let)
         if (!value) return std::nullopt;
 
         auto identifier = std::make_unique<ast::identifier>(
-            ident.get_span(),
-            ident.get_span().to_string());
+            ident.span,
+            ident.span.to_string());
 
         return ast::let_binding { std::move(identifier), std::move(value) };
     };
@@ -812,7 +802,7 @@ ast::expression_ptr parser::let_expression(token let)
     if (bindings.empty())
     {
         parser_error(
-            let.get_span(),
+            let.span,
             "Expected at least one binding in let expression");
         return nullptr;
     }
@@ -820,7 +810,7 @@ ast::expression_ptr parser::let_expression(token let)
     if (auto in = _lexer.next_token(); !match(in, token_type::in))
     {
         parser_error(
-            let.get_span(),
+            let.span,
             "Expected 'in' after expression in let expression");
         return nullptr;
     }
@@ -828,7 +818,7 @@ ast::expression_ptr parser::let_expression(token let)
     auto expr_token = _lexer.next_token();
     if (!expr_token)
     {
-        parser_error(let.get_span(), "Expected an expression after 'in'");
+        parser_error(let.span, "Expected an expression after 'in'");
         return nullptr;
     }
 
@@ -862,9 +852,7 @@ ast::expression_ptr parser::case_expression(token cases)
         token = _lexer.next_token();
         if (!match(token, token_type::arrow))
         {
-            parser_error(
-                cases.get_span(),
-                "Expected a '=>' after condition in case");
+            parser_error(cases.span, "Expected a '=>' after condition in case");
             return nullptr;
         }
 
@@ -872,7 +860,7 @@ ast::expression_ptr parser::case_expression(token cases)
         if (!token)
         {
             parser_error(
-                cases.get_span(),
+                cases.span,
                 "Expected an expression after condition in case");
             return nullptr;
         }
@@ -895,16 +883,14 @@ ast::expression_ptr parser::case_expression(token cases)
         token = _lexer.next_token();
         if (!match(token, token_type::arrow))
         {
-            parser_error(cases.get_span(), "Expected '=>' after otherwise");
+            parser_error(cases.span, "Expected '=>' after otherwise");
             return nullptr;
         }
 
         token = _lexer.next_token();
         if (!token)
         {
-            parser_error(
-                cases.get_span(),
-                "Expected and expression after otherwise");
+            parser_error(cases.span, "Expected and expression after otherwise");
             return nullptr;
         }
 
@@ -919,12 +905,12 @@ ast::expression_ptr parser::case_expression(token cases)
     token = _lexer.next_token();
     if (!match(token, token_type::end))
     {
-        parser_error(cases.get_span(), "Expected 'end' after case");
+        parser_error(cases.span, "Expected 'end' after case");
         return nullptr;
     }
 
     return ast::make_node<ast::case_expression>(
-        cases.get_span(),
+        cases.span,
         std::move(branches),
         otherwise);
 }
@@ -965,23 +951,21 @@ ast::expression_ptr parser::do_expression(token token)
 
     if (!parsed_final_expression)
     {
-        body.push_back(ast::make_node<ast::unit>(token.get_span()));
+        body.push_back(ast::make_node<ast::unit>(token.span));
     }
 
     if (auto tk = _lexer.next_token(); !match(tk, token_type::end))
     {
         parser_error(
-            token.get_span(),
+            token.span,
             "Expected 'end' after last expression in do block");
         parser_hint(
-            token.get_span(),
+            token.span,
             "Check that you don't have leftover expressions in the do block");
         return nullptr;
     }
 
-    return ast::make_node<ast::do_expression>(
-        token.get_span(),
-        std::move(body));
+    return ast::make_node<ast::do_expression>(token.span, std::move(body));
 }
 
 /*
@@ -992,13 +976,13 @@ ast::expression_ptr parser::do_expression(token token)
  */
 ast::expression_ptr parser::primary_expression(token token)
 {
-    switch (token.type())
+    switch (token.type)
     {
     case token_type::number:
     {
         return ast::make_node<ast::number>(
-            token.get_span(),
-            std::stod(token.get_span().to_string()));
+            token.span,
+            std::stod(token.span.to_string()));
     }
     case token_type::string:
     {
@@ -1007,12 +991,12 @@ ast::expression_ptr parser::primary_expression(token token)
     case token_type::identifier:
     {
         return ast::make_node<ast::identifier>(
-            token.get_span(),
-            token.get_span().to_string());
+            token.span,
+            token.span.to_string());
     }
     case token_type::unit:
     {
-        return ast::make_node<ast::unit>(token.get_span());
+        return ast::make_node<ast::unit>(token.span);
     }
     case token_type::lcurly:
     {
@@ -1028,10 +1012,10 @@ ast::expression_ptr parser::primary_expression(token token)
     }
     case token_type::underscore:
     {
-        return ast::make_node<ast::placeholder>(token.get_span());
+        return ast::make_node<ast::placeholder>(token.span);
     }
     default:
-        parser_error(token.get_span(), "Invalid start of primary expression");
+        parser_error(token.span, "Invalid start of primary expression");
         return nullptr;
     }
 }
@@ -1104,7 +1088,7 @@ ast::expression_ptr parser::string(token token) noexcept
             }
             default:
             {
-                parser_error(token.get_span(), "Invalid escape character");
+                parser_error(token.span, "Invalid escape character");
             }
             }
         }
@@ -1113,8 +1097,8 @@ ast::expression_ptr parser::string(token token) noexcept
     };
 
     return ast::make_node<ast::string>(
-        token.get_span(),
-        unescape(token.get_span().to_string()));
+        token.span,
+        unescape(token.span.to_string()));
 }
 
 ast::expression_ptr parser::array(token lparen) noexcept
@@ -1146,11 +1130,11 @@ ast::expression_ptr parser::array(token lparen) noexcept
 
     if (auto rparen = _lexer.next_token(); !match(rparen, token_type::rparen))
     {
-        parser_error(lparen.get_span(), "Missing ')' after array literal");
+        parser_error(lparen.span, "Missing ')' after array literal");
         return nullptr;
     }
 
-    return ast::make_node<ast::array>(lparen.get_span(), std::move(elems));
+    return ast::make_node<ast::array>(lparen.span, std::move(elems));
 }
 
 }

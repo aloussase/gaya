@@ -50,33 +50,21 @@ enum class token_type {
     while_,
 };
 
-class token
+struct token
 {
-  public:
-    constexpr token(token_type type, span span)
-        : _type { type }
-        , _span { span }
+    constexpr token(token_type type, class span span)
+        : type { type }
+        , span { span }
     {
     }
 
-    [[nodiscard]] constexpr token_type type() const noexcept
-    {
-        return _type;
-    }
-
-    [[nodiscard]] constexpr span get_span() const noexcept
-    {
-        return _span;
-    }
-
-  private:
-    token_type _type;
-    span _span;
+    token_type type;
+    class span span;
 };
 
 class lexer
 {
-  public:
+public:
     lexer(const char* source);
 
     [[nodiscard]] std::optional<token> next_token() noexcept;
@@ -97,7 +85,7 @@ class lexer
         }
     }
 
-  private:
+private:
     std::optional<char> advance() noexcept;
 
     std::optional<char> peek() const noexcept;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <list>
 #include <memory>
 #include <unordered_map>
 
@@ -71,7 +72,7 @@ public:
     using parent_ptr = std::shared_ptr<env>;
     using value_type = object::object;
     using key_type   = key;
-    using bindings   = robin_hood::unordered_node_map<key, object::object>;
+    using bindings   = robin_hood::unordered_flat_map<key, object::object>;
 
     explicit env(parent_ptr p = nullptr);
 
@@ -97,6 +98,11 @@ public:
     [[nodiscard]] const bindings& get_bindings() const noexcept;
 
     /**
+     * Return the list of objects in the environment.
+     */
+    [[nodiscard]] const std::list<object::object*> objects() const noexcept;
+
+    /**
      * Get this env's parent.
      * @return The env's parent or nullptr if it doesn't have one.
      */
@@ -105,6 +111,7 @@ public:
 private:
     bindings _bindings;
     parent_ptr _parent = nullptr;
+    std::list<object::object*> _objects;
 };
 
 }

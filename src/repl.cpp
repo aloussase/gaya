@@ -21,9 +21,9 @@ std::string stringify_tokens(const std::vector<token>& tokens)
     return std::transform_reduce(
         more_than_one ? begin + 1 : begin,
         tokens.cend(),
-        more_than_one ? tokens[0].get_span().to_string() : std::string(),
+        more_than_one ? tokens[0].span.to_string() : std::string(),
         [](auto acc, auto c) { return acc + " " + c; },
-        [](auto token) { return token.get_span().to_string(); });
+        [](auto token) { return token.span.to_string(); });
 }
 
 ast::node_ptr parse_line(const char* line)

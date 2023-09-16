@@ -319,10 +319,10 @@ static inline object::object interpret_arithmetic_expression(
     if (!IS_NUMBER(l) || !IS_NUMBER(r))
     {
         interp.interp_error(
-            expr.op.get_span(),
+            expr.op.span,
             fmt::format(
                 "{} expected {} and {} to be both numbers",
-                expr.op.get_span().to_string(),
+                expr.op.span.to_string(),
                 object::typeof_(l),
                 object::typeof_(r)));
         return object::invalid;
@@ -333,7 +333,7 @@ static inline object::object interpret_arithmetic_expression(
 
     double result = 0;
 
-    switch (expr.op.type())
+    switch (expr.op.type)
     {
     case token_type::plus: result = fst + snd; break;
     case token_type::dash: result = fst - snd; break;
@@ -342,7 +342,7 @@ static inline object::object interpret_arithmetic_expression(
     {
         if (snd == 0)
         {
-            return object::create_unit(expr.op.get_span());
+            return object::create_unit(expr.op.span);
         }
         result = fst / snd;
         break;
@@ -350,7 +350,7 @@ static inline object::object interpret_arithmetic_expression(
     default: assert(false && "should not happen");
     }
 
-    return object::create_number(expr.op.get_span(), result);
+    return object::create_number(expr.op.span, result);
 }
 
 static inline object::object interpret_pipe_expression(
@@ -384,7 +384,7 @@ static inline object::object interpret_comparison_expression(
 
     int result;
 
-    switch (expr.op.type())
+    switch (expr.op.type)
     {
     case token_type::equal_equal:
     {
@@ -401,7 +401,7 @@ static inline object::object interpret_comparison_expression(
         if (!object::is_comparable(l) || !object::is_comparable(r))
         {
             interp.interp_error(
-                expr.op.get_span(),
+                expr.op.span,
                 fmt::format(
                     "{} and {} are not both comparable",
                     object::typeof_(l),
@@ -415,7 +415,7 @@ static inline object::object interpret_comparison_expression(
             return object::invalid;
         }
 
-        switch (expr.op.type())
+        switch (expr.op.type)
         {
         case token_type::less_than: result = cmp < 0 ? 1 : 0; break;
         case token_type::less_than_eq: result = cmp <= 0 ? 1 : 0; break;
@@ -426,7 +426,7 @@ static inline object::object interpret_comparison_expression(
     }
     }
 
-    return object::create_number(expr.op.get_span(), result);
+    return object::create_number(expr.op.span, result);
 }
 
 static inline object::object interpret_logical_expression(
@@ -437,7 +437,7 @@ static inline object::object interpret_logical_expression(
     auto l = expr.lhs->accept(interp);
     RETURN_IF_INVALID(l);
 
-    if (expr.op.type() == token_type::and_)
+    if (expr.op.type == token_type::and_)
     {
         if (object::is_truthy(l))
         {
@@ -449,7 +449,7 @@ static inline object::object interpret_logical_expression(
         }
     }
 
-    if (expr.op.type() == token_type::or_)
+    if (expr.op.type == token_type::or_)
     {
         if (object::is_truthy(l))
         {
@@ -467,7 +467,7 @@ static inline object::object interpret_logical_expression(
 object::object
 interpreter::visit_binary_expression(ast::binary_expression& binop)
 {
-    switch (binop.op.type())
+    switch (binop.op.type)
     {
     case token_type::less_than:
     case token_type::less_than_eq:
@@ -510,7 +510,7 @@ object::object interpreter::visit_not_expression(ast::not_expression& expr)
     RETURN_IF_INVALID(value);
 
     return gaya::eval::object::create_number(
-        expr.op.get_span(),
+        expr.op.span,
         !gaya::eval::object::is_truthy(value));
 }
 
@@ -520,7 +520,7 @@ interpreter::visit_perform_expression(ast::perform_expression& expr)
     expr.stmt->accept(*this);
     if (had_error()) return object::invalid;
 
-    return gaya::eval::object::create_unit(expr.op.get_span());
+    return gaya::eval::object::create_unit(expr.op.span);
 }
 
 object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
