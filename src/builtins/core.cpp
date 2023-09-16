@@ -7,7 +7,7 @@
 namespace gaya::eval::object::builtin::core
 {
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 typeof_(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     auto& o   = args[0];
@@ -15,7 +15,7 @@ typeof_(interpreter& interp, span span, std::vector<object> args) noexcept
     return create_string(interp, span, type);
 }
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 assert_(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     using namespace gaya::eval::object;
@@ -33,11 +33,11 @@ assert_(interpreter& interp, span span, std::vector<object> args) noexcept
                 interp.current_filename(),
                 span.lineno(),
                 to_string(interp, args[0])));
-        return {};
+        return gaya::eval::object::invalid;
     }
 }
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 tostring(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     if (args[0].type == gaya::eval::object::object_type_string)
@@ -52,7 +52,7 @@ tostring(interpreter& interp, span span, std::vector<object> args) noexcept
 
 /* issequence */
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 issequence(interpreter&, span span, std::vector<object> args) noexcept
 {
     return create_number(span, gaya::eval::object::is_sequence(args[0]));
@@ -60,7 +60,7 @@ issequence(interpreter&, span span, std::vector<object> args) noexcept
 
 /* tosequence */
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 tosequence(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     using namespace gaya::eval::object;

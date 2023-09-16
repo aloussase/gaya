@@ -40,17 +40,17 @@ std::string sequence_to_string(interpreter& interp, sequence& seq) noexcept
     ss << "(";
 
     auto o = next(interp, seq);
-    if (o)
+    if (gaya::eval::object::is_valid(o))
     {
-        ss << to_string(interp, o.value());
+        ss << to_string(interp, o);
     }
 
     for (;;)
     {
         auto o = next(interp, seq);
-        if (!o) break;
+        if (!gaya::eval::object::is_valid(o)) break;
 
-        ss << ", " << to_string(interp, o.value());
+        ss << ", " << to_string(interp, o);
     }
 
     ss << ")";
@@ -90,6 +90,10 @@ std::string to_string(interpreter& interp, object o) noexcept
     case object_type_sequence:
     {
         return sequence_to_string(interp, AS_SEQUENCE(o));
+    }
+    case object_type_invalid:
+    {
+        assert(0 && "to_string of invalid object");
     }
     }
 

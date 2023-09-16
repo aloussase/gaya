@@ -32,6 +32,10 @@ std::string typeof_(object o) noexcept
     {
         return "sequence";
     }
+    case object_type_invalid:
+    {
+        assert(0 && "typeof invalid object");
+    }
     }
 
     assert(0 && "unhandled case in typeof_");

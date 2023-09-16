@@ -7,10 +7,9 @@
 namespace gaya::eval::object
 {
 
-maybe_object call_function(
+object call_function(
     function& func,
     interpreter& interp,
-    span span,
     std::vector<object> args) noexcept
 {
     interp.begin_scope(*func.closed_over_env);
@@ -23,7 +22,7 @@ maybe_object call_function(
     return ret;
 }
 
-maybe_object call_array(
+object call_array(
     std::vector<object>& elems,
     interpreter& interp,
     span span,
@@ -32,7 +31,7 @@ maybe_object call_array(
     if (!IS_NUMBER(args[0]))
     {
         interp.interp_error(span, "Can only index arrays with numbers");
-        return std::nullopt;
+        return invalid;
     }
 
     auto i = AS_NUMBER(args[0]);
@@ -44,13 +43,13 @@ maybe_object call_array(
                 "Invalid index for array of size {}: {}",
                 elems.size(),
                 i));
-        return std::nullopt;
+        return invalid;
     }
 
     return elems[i];
 }
 
-maybe_object call_string(
+object call_string(
     const std::string& string,
     interpreter& interp,
     span span,
@@ -59,7 +58,7 @@ maybe_object call_string(
     if (!IS_NUMBER(args[0]))
     {
         interp.interp_error(span, "Can only index strings with numbers");
-        return std::nullopt;
+        return invalid;
     }
 
     auto i = AS_NUMBER(args[0]);
@@ -71,13 +70,13 @@ maybe_object call_string(
                 "Invalid index for string of size {}: {}",
                 string.size(),
                 i));
-        return std::nullopt;
+        return invalid;
     }
 
     return create_string(interp, span, std::string { string[i] });
 }
 
-std::optional<object> call(
+object call(
     object o,
     interpreter& interp,
     span span,
@@ -95,7 +94,7 @@ std::optional<object> call(
     }
     case object_type_function:
     {
-        return call_function(AS_FUNCTION(o), interp, span, args);
+        return call_function(AS_FUNCTION(o), interp, args);
     }
     case object_type_builtin_function:
     {
@@ -104,6 +103,7 @@ std::optional<object> call(
     case object_type_number:
     case object_type_unit:
     case object_type_sequence:
+    case object_type_invalid:
     {
         assert(0 && "Should not happen");
     }

@@ -15,10 +15,11 @@ class interpreter final : public ast::ast_visitor
 public:
     interpreter(const std::string& filename, const char* source);
 
-    [[nodiscard]] object::maybe_object eval() noexcept;
+    [[nodiscard]] std::optional<object::object> eval() noexcept;
 
     /// This one is useful for REPLs.
-    [[nodiscard]] object::maybe_object eval(env, ast::node_ptr) noexcept;
+    [[nodiscard]] std::optional<object::object>
+        eval(env, ast::node_ptr) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
@@ -60,28 +61,26 @@ public:
 
     /* Visitor pattern */
 
-    object::maybe_object visit_program(ast::program&) override;
-    object::maybe_object
-    visit_declaration_stmt(ast::declaration_stmt&) override;
-    object::maybe_object visit_expression_stmt(ast::expression_stmt&) override;
-    object::maybe_object visit_assignment_stmt(ast::assignment_stmt&) override;
-    object::maybe_object visit_while_stmt(ast::while_stmt&) override;
-    object::maybe_object visit_do_expression(ast::do_expression&) override;
-    object::maybe_object visit_case_expression(ast::case_expression&) override;
-    object::maybe_object
-    visit_unary_expression(ast::unary_expression&) override;
-    object::maybe_object
-    visit_binary_expression(ast::binary_expression&) override;
-    object::maybe_object visit_call_expression(ast::call_expression&) override;
-    object::maybe_object
+    object::object visit_program(ast::program&) override;
+    object::object visit_declaration_stmt(ast::declaration_stmt&) override;
+    object::object visit_expression_stmt(ast::expression_stmt&) override;
+    object::object visit_assignment_stmt(ast::assignment_stmt&) override;
+    object::object visit_while_stmt(ast::while_stmt&) override;
+    object::object visit_do_expression(ast::do_expression&) override;
+    object::object visit_case_expression(ast::case_expression&) override;
+    object::object visit_not_expression(ast::not_expression&) override;
+    object::object visit_perform_expression(ast::perform_expression&) override;
+    object::object visit_binary_expression(ast::binary_expression&) override;
+    object::object visit_call_expression(ast::call_expression&) override;
+    object::object
     visit_function_expression(ast::function_expression&) override;
-    object::maybe_object visit_let_expression(ast::let_expression&) override;
-    object::maybe_object visit_array(ast::array&) override;
-    object::maybe_object visit_number(ast::number&) override;
-    object::maybe_object visit_string(ast::string&) override;
-    object::maybe_object visit_identifier(ast::identifier&) override;
-    object::maybe_object visit_unit(ast::unit&) override;
-    object::maybe_object visit_placeholder(ast::placeholder&) override;
+    object::object visit_let_expression(ast::let_expression&) override;
+    object::object visit_array(ast::array&) override;
+    object::object visit_number(ast::number&) override;
+    object::object visit_string(ast::string&) override;
+    object::object visit_identifier(ast::identifier&) override;
+    object::object visit_unit(ast::unit&) override;
+    object::object visit_placeholder(ast::placeholder&) override;
 
 private:
     [[nodiscard]] env& current_env() noexcept;

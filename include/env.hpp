@@ -79,8 +79,8 @@ public:
     void set(key&&, value_type) noexcept;
 
     /// Get a binding from the environment.
-    [[nodiscard]] object::maybe_object get(const key_type&) const noexcept;
-    [[nodiscard]] object::maybe_object get(const std::string&) const noexcept;
+    [[nodiscard]] object::object get(const key_type&) const noexcept;
+    [[nodiscard]] object::object get(const std::string&) const noexcept;
 
     /// Try to update a value in the environment and return false if the value
     /// was not found.

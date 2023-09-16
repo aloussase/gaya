@@ -34,6 +34,11 @@ bool is_truthy(object o) noexcept
     {
         return false;
     }
+
+    case object_type_invalid:
+    {
+        assert(0 && "is_truthy of invalid object");
+    }
     }
 
     assert(0 && "uhandled case in is_truthy");

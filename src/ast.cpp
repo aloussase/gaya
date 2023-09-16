@@ -33,7 +33,7 @@ std::string program::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object program::accept(ast_visitor& v)
+object program::accept(ast_visitor& v)
 {
     return v.visit_program(*this);
 }
@@ -46,7 +46,7 @@ std::string declaration_stmt::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object declaration_stmt::accept(ast_visitor& v)
+object declaration_stmt::accept(ast_visitor& v)
 {
     return v.visit_declaration_stmt(*this);
 }
@@ -59,7 +59,7 @@ std::string expression_stmt::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object expression_stmt::accept(ast_visitor& v)
+object expression_stmt::accept(ast_visitor& v)
 {
     return v.visit_expression_stmt(*this);
 }
@@ -72,7 +72,7 @@ std::string assignment_stmt::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object assignment_stmt::accept(ast_visitor& v)
+object assignment_stmt::accept(ast_visitor& v)
 {
     return v.visit_assignment_stmt(*this);
 }
@@ -86,7 +86,7 @@ std::string while_stmt::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object while_stmt::accept(ast_visitor& v)
+object while_stmt::accept(ast_visitor& v)
 {
     return v.visit_while_stmt(*this);
 }
@@ -99,7 +99,7 @@ std::string do_expression::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object do_expression::accept(ast_visitor& v)
+object do_expression::accept(ast_visitor& v)
 {
     return v.visit_do_expression(*this);
 }
@@ -126,7 +126,7 @@ std::string case_expression::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object case_expression::accept(ast_visitor& v)
+object case_expression::accept(ast_visitor& v)
 {
     return v.visit_case_expression(*this);
 }
@@ -140,7 +140,7 @@ std::string call_expression::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object call_expression::accept(ast_visitor& v)
+object call_expression::accept(ast_visitor& v)
 {
     return v.visit_call_expression(*this);
 }
@@ -154,7 +154,7 @@ std::string function_expression::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object function_expression::accept(ast_visitor& v)
+object function_expression::accept(ast_visitor& v)
 {
     return v.visit_function_expression(*this);
 }
@@ -176,12 +176,12 @@ std::string let_expression::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object let_expression::accept(ast_visitor& v)
+object let_expression::accept(ast_visitor& v)
 {
     return v.visit_let_expression(*this);
 }
 
-maybe_object binary_expression::accept(ast_visitor& v)
+object binary_expression::accept(ast_visitor& v)
 {
     return v.visit_binary_expression(*this);
 }
@@ -197,11 +197,6 @@ std::string binary_expression::to_string() const noexcept
 
 /* Unary expressions */
 
-maybe_object unary_expression::accept(ast_visitor& v)
-{
-    return v.visit_unary_expression(*this);
-}
-
 std::string not_expression::to_string() const noexcept
 {
     std::stringstream ss;
@@ -210,22 +205,9 @@ std::string not_expression::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object not_expression::execute(eval::interpreter& interp)
+object not_expression::accept(ast_visitor& v)
 {
-    auto value = operand->accept(interp);
-    if (!value) return {};
-
-    return gaya::eval::object::create_number(
-        op.get_span(),
-        !gaya::eval::object::is_truthy(*value));
-}
-
-maybe_object perform_expression::execute(eval::interpreter& interp)
-{
-    stmt->accept(interp);
-    if (interp.had_error()) return {};
-
-    return gaya::eval::object::create_unit(op.get_span());
+    return v.visit_not_expression(*this);
 }
 
 std::string perform_expression::to_string() const noexcept
@@ -234,6 +216,11 @@ std::string perform_expression::to_string() const noexcept
     ss << R"({"type": "perform_expression", "stmt": )" << stmt->to_string()
        << "}";
     return ss.str();
+}
+
+object perform_expression::accept(ast_visitor& v)
+{
+    return v.visit_perform_expression(*this);
 }
 
 /* Primary expressions */
@@ -246,7 +233,7 @@ std::string array::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object array::accept(ast_visitor& v)
+object array::accept(ast_visitor& v)
 {
     return v.visit_array(*this);
 }
@@ -258,7 +245,7 @@ std::string number::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object number::accept(ast_visitor& v)
+object number::accept(ast_visitor& v)
 {
     return v.visit_number(*this);
 }
@@ -283,7 +270,7 @@ std::string string::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object string::accept(ast_visitor& v)
+object string::accept(ast_visitor& v)
 {
     return v.visit_string(*this);
 }
@@ -295,7 +282,7 @@ std::string identifier::to_string() const noexcept
     return ss.str();
 }
 
-maybe_object identifier::accept(ast_visitor& v)
+object identifier::accept(ast_visitor& v)
 {
     return v.visit_identifier(*this);
 }
@@ -305,7 +292,7 @@ std::string unit::to_string() const noexcept
     return R"({"type": "unit"})";
 }
 
-maybe_object unit::accept(ast_visitor& v)
+object unit::accept(ast_visitor& v)
 {
     return v.visit_unit(*this);
 }
@@ -315,7 +302,7 @@ std::string placeholder::to_string() const noexcept
     return R"({"type": "placeholder"})";
 }
 
-maybe_object placeholder::accept(ast_visitor& v)
+object placeholder::accept(ast_visitor& v)
 {
     return v.visit_placeholder(*this);
 }

@@ -43,13 +43,13 @@ void env::set(key&& k, value_type v) noexcept
     _bindings.insert_or_assign(std::move(k), v);
 }
 
-object::maybe_object env::get(const std::string& k) const noexcept
+object::object env::get(const std::string& k) const noexcept
 {
     // NOTE: We don't really care about the metadata here.
     return get(key::global(k));
 }
 
-object::maybe_object env::get(const key& k) const noexcept
+object::object env::get(const key& k) const noexcept
 {
     if (auto it = _bindings.find(k); it != _bindings.end())
     {
@@ -61,7 +61,7 @@ object::maybe_object env::get(const key& k) const noexcept
         return _parent->get(k);
     }
 
-    return std::nullopt;
+    return gaya::eval::object::invalid;
 }
 
 bool env::update_at(const std::string& k, value_type new_val) noexcept

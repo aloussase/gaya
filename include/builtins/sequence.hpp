@@ -7,10 +7,10 @@ namespace gaya::eval::object::builtin::sequence
 
 /* TODO: Document these. */
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 next(interpreter&, span, std::vector<object>) noexcept;
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 make(interpreter&, span, std::vector<object>) noexcept;
 
 }

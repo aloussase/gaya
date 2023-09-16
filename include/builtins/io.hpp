@@ -5,7 +5,7 @@
 namespace gaya::eval::object::builtin::io
 {
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 println(interpreter&, span, std::vector<object>) noexcept;
 
 }

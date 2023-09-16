@@ -7,7 +7,7 @@
 namespace gaya::eval::object
 {
 
-maybe_object string_sequence_next(
+object string_sequence_next(
     interpreter& interp,
     span span,
     string_sequence& seq) noexcept
@@ -23,7 +23,7 @@ maybe_object string_sequence_next(
     }
 }
 
-maybe_object array_sequence_next(span span, array_sequence& seq) noexcept
+object array_sequence_next(span span, array_sequence& seq) noexcept
 {
     if (seq.index < seq.elems.size())
     {
@@ -35,7 +35,7 @@ maybe_object array_sequence_next(span span, array_sequence& seq) noexcept
     }
 }
 
-maybe_object number_sequence_next(span span, number_sequence& seq) noexcept
+object number_sequence_next(span span, number_sequence& seq) noexcept
 {
     if (seq.i < seq.upto)
     {
@@ -47,12 +47,12 @@ maybe_object number_sequence_next(span span, number_sequence& seq) noexcept
     }
 }
 
-maybe_object user_sequence_next(span span, user_defined_sequence& seq) noexcept
+object user_sequence_next(span span, user_defined_sequence& seq) noexcept
 {
     return call(seq.next_func, seq.interp, span, {});
 }
 
-maybe_object next(interpreter& interp, sequence& seq) noexcept
+object next(interpreter& interp, sequence& seq) noexcept
 {
     switch (seq.type)
     {

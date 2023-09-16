@@ -21,6 +21,10 @@ bool is_callable(object o) noexcept
     {
         return true;
     }
+    case object_type_invalid:
+    {
+        assert(0 && "is_callable of invalid object");
+    }
     }
 
     assert(0 && "unhandled case in is_callable");

@@ -13,6 +13,9 @@
 #include <parser.hpp>
 #include <span.hpp>
 
+#define RETURN_IF_INVALID(o) \
+    if (!object::is_valid(o)) return o;
+
 namespace gaya::eval
 {
 
@@ -55,7 +58,7 @@ interpreter::interpreter(const std::string& filename, const char* source)
 #undef BUILTIN
 }
 
-object::maybe_object interpreter::eval() noexcept
+std::optional<object::object> interpreter::eval() noexcept
 {
     auto p   = parser(_source);
     auto ast = p.parse();
@@ -67,7 +70,8 @@ object::maybe_object interpreter::eval() noexcept
     return eval(current_env(), std::move(ast));
 }
 
-object::maybe_object interpreter::eval(env env, ast::node_ptr ast) noexcept
+std::optional<object::object>
+interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
     // NOTE: We don't pop the scope because the repl needs it to keep state.
     current_env() = env;
@@ -172,40 +176,44 @@ void interpreter::end_scope() noexcept
     _scopes.pop_back();
 }
 
-object::maybe_object interpreter::visit_program(ast::program& program)
+object::object interpreter::visit_program(ast::program& program)
 {
     for (const auto& stmt : program.stmts)
     {
         stmt->accept(*this);
-        if (had_error()) return {};
+        if (had_error()) return object::invalid;
     }
-    return {};
+    return object::invalid;
 }
 
-object::maybe_object
+object::object
 interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
 {
     auto value = declaration_stmt.expr->accept(*this);
-    if (value)
+    if (object::is_valid(value))
     {
-        define(key::global(declaration_stmt.ident->value), *value);
+        define(key::global(declaration_stmt.ident->value), value);
     }
 
-    return {};
+    return object::invalid;
 }
 
-object::maybe_object
+object::object
 interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
 {
     expression_stmt.expr->accept(*this);
-    return {};
+    /*
+     * NOTE: For statements I may want to return object::none or something like
+     * that
+     */
+    return object::invalid;
 }
 
-object::maybe_object
+object::object
 interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 {
     auto new_val = assignment.expr->accept(*this);
-    if (!new_val) return {};
+    if (!object::is_valid(new_val)) return object::invalid;
 
     auto key = assignment.ident->key;
     key.kind = identifier_kind::local;
@@ -218,10 +226,10 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
         interp_hint(
             assignment.ident->_span,
             fmt::format("for example: let {} = ...", assignment.ident->value));
-        return {};
+        return object::invalid;
     }
 
-    if (!current_env().update_at(std::move(key), new_val.value()))
+    if (!current_env().update_at(std::move(key), new_val))
     {
         interp_error(
             assignment.ident->_span,
@@ -230,60 +238,58 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
                 assignment.ident->value));
     }
 
-    return {};
+    return object::invalid;
 }
 
-object::maybe_object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
+object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
 {
     begin_scope(env { std::make_shared<env>(current_env()) });
     for (;;)
     {
         auto test = while_stmt.condition->accept(*this);
-        if (!test) return {};
-        if (!object::is_truthy(test.value())) break;
+        if (!object::is_valid(test)) return object::invalid;
+        if (!object::is_truthy(test)) break;
 
         for (auto& stmt : while_stmt.body)
         {
             stmt->accept(*this);
-            if (had_error()) return {};
+            if (had_error()) return object::invalid;
         }
 
         if (while_stmt.continuation)
         {
             while_stmt.continuation->accept(*this);
-            if (had_error()) return {};
+            if (had_error()) return object::invalid;
         }
     }
     end_scope();
-    return {};
+    return object::invalid;
 }
 
-object::maybe_object
-interpreter::visit_do_expression(ast::do_expression& do_expr)
+object::object interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
     begin_scope(env { std::make_shared<env>(current_env()) });
     for (size_t i = 0; i < do_expr.body.size() - 1; i++)
     {
         do_expr.body[i]->accept(*this);
-        if (had_error()) return {};
+        if (had_error()) return object::invalid;
     }
     auto result = do_expr.body.back()->accept(*this);
     end_scope();
     return result;
 }
 
-object::maybe_object
-interpreter::visit_case_expression(ast::case_expression& cases)
+object::object interpreter::visit_case_expression(ast::case_expression& cases)
 {
     for (const auto& branch : cases.branches)
     {
         auto condition = branch.condition->accept(*this);
-        if (!condition) return {};
+        if (!object::is_valid(condition)) return object::invalid;
 
-        if (object::is_truthy(condition.value()))
+        if (object::is_truthy(condition))
         {
             auto result = branch.body->accept(*this);
-            if (!result) return {};
+            if (!object::is_valid(result)) return object::invalid;
 
             return result;
         }
@@ -292,7 +298,7 @@ interpreter::visit_case_expression(ast::case_expression& cases)
     if (cases.otherwise)
     {
         auto result = cases.otherwise->accept(*this);
-        if (!result) return {};
+        if (!object::is_valid(result)) return object::invalid;
 
         return result;
     }
@@ -300,31 +306,30 @@ interpreter::visit_case_expression(ast::case_expression& cases)
     return object::create_unit(cases.span_);
 }
 
-static inline object::maybe_object interpret_arithmetic_expression(
+static inline object::object interpret_arithmetic_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept
 {
     auto l = expr.lhs->accept(interp);
-    if (!l) return {};
+    RETURN_IF_INVALID(l);
 
     auto r = expr.rhs->accept(interp);
-    if (!r) return {};
+    RETURN_IF_INVALID(r)
 
-    if (l->type != object::object_type_number
-        || r->type != object::object_type_number)
+    if (!IS_NUMBER(l) || !IS_NUMBER(r))
     {
         interp.interp_error(
             expr.op.get_span(),
             fmt::format(
                 "{} expected {} and {} to be both numbers",
                 expr.op.get_span().to_string(),
-                object::typeof_(*l),
-                object::typeof_(*r)));
-        return {};
+                object::typeof_(l),
+                object::typeof_(r)));
+        return object::invalid;
     }
 
-    auto fst = AS_NUMBER(*l);
-    auto snd = AS_NUMBER(*r);
+    auto fst = AS_NUMBER(l);
+    auto snd = AS_NUMBER(r);
 
     double result = 0;
 
@@ -348,34 +353,34 @@ static inline object::maybe_object interpret_arithmetic_expression(
     return object::create_number(expr.op.get_span(), result);
 }
 
-static inline object::maybe_object interpret_pipe_expression(
+static inline object::object interpret_pipe_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept
 {
     auto replacement = expr.lhs->accept(interp);
-    if (!replacement) return {};
+    if (!object::is_valid(replacement)) return object::invalid;
 
     interp.begin_scope(env { std::make_shared<env>(interp.get_env()) });
     static std::string underscore = "_";
-    interp.define(underscore, *replacement);
+    interp.define(underscore, replacement);
 
     auto result = expr.rhs->accept(interp);
-    if (!result) return {};
+    if (!object::is_valid(result)) return object::invalid;
 
     interp.end_scope();
 
     return result;
 }
 
-static inline object::maybe_object interpret_comparison_expression(
+static inline object::object interpret_comparison_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept
 {
     auto l = expr.lhs->accept(interp);
-    if (!l) return {};
+    RETURN_IF_INVALID(l);
 
     auto r = expr.rhs->accept(interp);
-    if (!r) return {};
+    RETURN_IF_INVALID(r);
 
     int result;
 
@@ -383,31 +388,31 @@ static inline object::maybe_object interpret_comparison_expression(
     {
     case token_type::equal_equal:
     {
-        result = object::equals(*l, *r) ? 1 : 0;
+        result = object::equals(l, r) ? 1 : 0;
         break;
     }
     case token_type::not_equals:
     {
-        result = !object::equals(*l, *r) ? 1 : 0;
+        result = !object::equals(l, r) ? 1 : 0;
         break;
     }
     default:
     {
-        if (!object::is_comparable(*l) || !object::is_comparable(*r))
+        if (!object::is_comparable(l) || !object::is_comparable(r))
         {
             interp.interp_error(
                 expr.op.get_span(),
                 fmt::format(
                     "{} and {} are not both comparable",
-                    object::typeof_(*l),
-                    object::typeof_(*r)));
-            return std::nullopt;
+                    object::typeof_(l),
+                    object::typeof_(r)));
+            return object::invalid;
         }
 
         int cmp;
-        if (!object::cmp(*l, *r, &cmp))
+        if (!object::cmp(l, r, &cmp))
         {
-            return std::nullopt;
+            return object::invalid;
         }
 
         switch (expr.op.type())
@@ -424,17 +429,17 @@ static inline object::maybe_object interpret_comparison_expression(
     return object::create_number(expr.op.get_span(), result);
 }
 
-static inline object::maybe_object interpret_logical_expression(
+static inline object::object interpret_logical_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept
 {
 
     auto l = expr.lhs->accept(interp);
-    if (!l) return {};
+    RETURN_IF_INVALID(l);
 
     if (expr.op.type() == token_type::and_)
     {
-        if (object::is_truthy(l.value()))
+        if (object::is_truthy(l))
         {
             return expr.rhs->accept(interp);
         }
@@ -446,7 +451,7 @@ static inline object::maybe_object interpret_logical_expression(
 
     if (expr.op.type() == token_type::or_)
     {
-        if (object::is_truthy(l.value()))
+        if (object::is_truthy(l))
         {
             return l;
         }
@@ -459,7 +464,7 @@ static inline object::maybe_object interpret_logical_expression(
     assert(false && "unreachable");
 }
 
-object::maybe_object
+object::object
 interpreter::visit_binary_expression(ast::binary_expression& binop)
 {
     switch (binop.op.type())
@@ -499,28 +504,40 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
     assert(0 && "unhandled case in visit_binary_expression");
 }
 
-object::maybe_object
-interpreter::visit_unary_expression(ast::unary_expression& unary_op)
+object::object interpreter::visit_not_expression(ast::not_expression& expr)
 {
-    return unary_op.execute(*this);
+    auto value = expr.operand->accept(*this);
+    RETURN_IF_INVALID(value);
+
+    return gaya::eval::object::create_number(
+        expr.op.get_span(),
+        !gaya::eval::object::is_truthy(value));
 }
 
-object::maybe_object
-interpreter::visit_call_expression(ast::call_expression& cexpr)
+object::object
+interpreter::visit_perform_expression(ast::perform_expression& expr)
+{
+    expr.stmt->accept(*this);
+    if (had_error()) return object::invalid;
+
+    return gaya::eval::object::create_unit(expr.op.get_span());
+}
+
+object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
     auto o = cexpr.target->accept(*this);
-    if (!o) return {};
+    RETURN_IF_INVALID(o);
 
-    if (!object::is_callable(o.value()))
+    if (!object::is_callable(o))
     {
         interp_error(cexpr.span_, "Tried to call non-callable");
         interp_hint(
             cexpr.span_,
             "To define a function, do f :: { <args> => <expr> }");
-        return {};
+        return object::invalid;
     }
 
-    auto arity = object::arity(o.value());
+    auto arity = object::arity(o);
 
     if (arity != cexpr.args.size())
     {
@@ -531,22 +548,22 @@ interpreter::visit_call_expression(ast::call_expression& cexpr)
                 "expected",
                 arity,
                 arity == 1 ? "was" : "were"));
-        return {};
+        return object::invalid;
     }
 
     std::vector<object::object> args;
     for (auto& arg : cexpr.args)
     {
         auto result = arg->accept(*this);
-        if (!result) return {};
+        RETURN_IF_INVALID(result);
 
-        args.push_back(result.value());
+        args.push_back(result);
     }
 
-    return object::call(o.value(), *this, cexpr.span_, args);
+    return object::call(o, *this, cexpr.span_, args);
 }
 
-object::maybe_object
+object::object
 interpreter::visit_function_expression(ast::function_expression& fexpr)
 {
     std::vector<key> params;
@@ -564,7 +581,7 @@ interpreter::visit_function_expression(ast::function_expression& fexpr)
         fexpr.body);
 }
 
-object::maybe_object
+object::object
 interpreter::visit_let_expression(ast::let_expression& let_expression)
 {
     begin_scope(env { std::make_shared<env>(current_env()) });
@@ -572,9 +589,9 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
     for (auto& binding : let_expression.bindings)
     {
         auto value = binding.value->accept(*this);
-        if (!value) return {};
+        RETURN_IF_INVALID(value);
 
-        define(key::local(binding.ident->value), *value);
+        define(key::local(binding.ident->value), value);
     }
 
     auto result = let_expression.expr->accept(*this);
@@ -584,34 +601,34 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
     return result;
 }
 
-object::maybe_object interpreter::visit_array(ast::array& ary)
+object::object interpreter::visit_array(ast::array& ary)
 {
     std::vector<object::object> elems;
 
     for (auto& elem : ary.elems)
     {
         auto o = elem->accept(*this);
-        if (!o) return {};
+        RETURN_IF_INVALID(o);
 
-        elems.push_back(o.value());
+        elems.push_back(o);
     }
 
     return object::create_array(*this, ary.span_, elems);
 }
 
-object::maybe_object interpreter::visit_number(ast::number& n)
+object::object interpreter::visit_number(ast::number& n)
 {
     return object::create_number(n._span, n.value);
 }
 
-object::maybe_object interpreter::visit_string(ast::string& s)
+object::object interpreter::visit_string(ast::string& s)
 {
     return object::create_string(*this, s._span, s.value);
 }
 
-object::maybe_object interpreter::visit_identifier(ast::identifier& identifier)
+object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    if (auto value = current_env().get(identifier.key); value)
+    if (auto value = current_env().get(identifier.key); object::is_valid(value))
     {
         return value;
     }
@@ -625,18 +642,18 @@ object::maybe_object interpreter::visit_identifier(ast::identifier& identifier)
             "Maybe you forgot to declare it? For example: {} :: \"someshit\"",
             identifier.value));
 
-    return {};
+    return object::invalid;
 }
 
-object::maybe_object interpreter::visit_unit(ast::unit& u)
+object::object interpreter::visit_unit(ast::unit& u)
 {
     return object::create_unit(u._span);
 }
 
-object::maybe_object interpreter::visit_placeholder(ast::placeholder& p)
+object::object interpreter::visit_placeholder(ast::placeholder& p)
 {
     static std::string underscore = "_";
-    if (auto value = current_env().get(underscore); value)
+    if (auto value = current_env().get(underscore); object::is_valid(value))
     {
         return value;
     }
@@ -644,7 +661,7 @@ object::maybe_object interpreter::visit_placeholder(ast::placeholder& p)
     {
         interp_error(p.span_, "Failed to replace placeholder");
         interp_hint(p.span_, "Placeholders can only be used in pipelines");
-        return {};
+        return object::invalid;
     }
 }
 

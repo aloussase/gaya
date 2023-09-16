@@ -8,14 +8,14 @@ namespace gaya::eval::object::builtin::sequence
 
 /* seq.next */
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 next(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     if (args[0].type != object_type_sequence)
     {
         auto t = typeof_(args[0]);
         interp.interp_error(span, fmt::format("Expected {} to be sequence", t));
-        return {};
+        return gaya::eval::object::invalid;
     }
 
     return gaya::eval::object::next(interp, AS_SEQUENCE(args[0]));
@@ -23,7 +23,7 @@ next(interpreter& interp, span span, std::vector<object> args) noexcept
 
 /* seq.make */
 
-gaya::eval::object::maybe_object
+gaya::eval::object::object
 make(interpreter& interp, span span, std::vector<object> args) noexcept
 {
     auto next = args[0];
@@ -33,7 +33,7 @@ make(interpreter& interp, span span, std::vector<object> args) noexcept
         interp.interp_error(
             span,
             fmt::format("Expected {} to callable", to_string(interp, next)));
-        return {};
+        return gaya::eval::object::invalid;
     }
 
     return create_user_sequence(span, interp, next);

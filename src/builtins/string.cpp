@@ -6,7 +6,7 @@
 namespace gaya::eval::object::builtin::string
 {
 
-gaya::eval::object::maybe_object length(
+gaya::eval::object::object length(
     interpreter& interp,
     span span,
     std::vector<gaya::eval::object::object> args) noexcept
@@ -16,13 +16,13 @@ gaya::eval::object::maybe_object length(
     if (o.type != object_type_string)
     {
         interp.interp_error(span, "Expected argument to be a string");
-        return {};
+        return gaya::eval::object::invalid;
     }
 
     return create_number(span, AS_STRING(o).size());
 }
 
-gaya::eval::object::maybe_object concat(
+gaya::eval::object::object concat(
     interpreter& interp,
     span span,
     std::vector<gaya::eval::object::object> args) noexcept
@@ -35,7 +35,7 @@ gaya::eval::object::maybe_object concat(
         interp.interp_error(
             span,
             fmt::format("Expected {} and {} to be both string", t1, t2));
-        return {};
+        return gaya::eval::object::invalid;
     }
 
     return create_string(interp, span, AS_STRING(args[0]) + AS_STRING(args[1]));

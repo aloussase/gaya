@@ -10,8 +10,8 @@
 
 #include <span.hpp>
 
-#define IS_NUMBER(o)      ((o).type == object_type_number)
-#define IS_STRING(o)      ((o).type == object_type_string)
+#define IS_NUMBER(o)      ((o).type == gaya::eval::object::object_type_number)
+#define IS_STRING(o)      ((o).type == gaya::eval::object::object_type_string)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
 
 #define AS_NUMBER(o)           nanbox_to_double((o).box)
@@ -38,6 +38,7 @@ namespace gaya::eval::object
 {
 
 enum object_type {
+    object_type_invalid,
     object_type_number,
     object_type_unit,
     object_type_string,
@@ -54,7 +55,20 @@ struct object
     nanbox_t box;
 };
 
-using maybe_object = std::optional<object>;
+/*
+ * Special object to signal an error return
+ * in the interpreter.
+ */
+static object invalid = object {
+    .type = object_type_invalid,
+    .span = { 1, nullptr, nullptr },
+    .box  = { nanbox_empty() },
+};
+
+static inline bool is_valid(object& o)
+{
+    return o.type != object_type_invalid;
+}
 
 /* Heap objects */
 
@@ -71,7 +85,7 @@ struct function final
 struct builtin_function
 {
     using invoke_t
-        = std::function<maybe_object(interpreter&, span, std::vector<object>)>;
+        = std::function<object(interpreter&, span, std::vector<object>)>;
 
     size_t arity;
     std::string name;
@@ -250,7 +264,7 @@ create_number_sequence(interpreter&, span, double) noexcept;
 /**
  * For callables, invoke the callable.
  */
-[[nodiscard]] maybe_object
+[[nodiscard]] object
 call(object, interpreter&, span, std::vector<object>) noexcept;
 
 /**
@@ -267,6 +281,6 @@ call(object, interpreter&, span, std::vector<object>) noexcept;
  * Should return the next element in the sequence, or an empty optional if there
  * are none.
  */
-[[nodiscard]] maybe_object next(interpreter&, sequence&) noexcept;
+[[nodiscard]] object next(interpreter&, sequence&) noexcept;
 
 }

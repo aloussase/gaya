@@ -20,6 +20,10 @@ bool is_sequence(object o) noexcept
     {
         return false;
     }
+    case object_type_invalid:
+    {
+        assert(0 && "is_sequence of invalid object");
+    }
     }
 
     assert(0 && "unhandled case in is_sequence");

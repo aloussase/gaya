@@ -33,6 +33,7 @@ bool cmp(object o1, object o2, int* result) noexcept
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:
+    case object_type_invalid:
     {
         assert(0 && "Should not happen");
     }

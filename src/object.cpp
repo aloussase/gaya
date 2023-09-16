@@ -62,6 +62,7 @@ static void mark(heap_object* o)
     case object_type_string:
     case object_type_unit:
     case object_type_number:
+    case object_type_invalid:
     {
         break;
     }

@@ -44,6 +44,7 @@ bool equals(object o1, object o2) noexcept
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:
+    case object_type_invalid:
     {
         return false;
     }
