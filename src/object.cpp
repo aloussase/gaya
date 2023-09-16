@@ -16,6 +16,7 @@ static object create_object(object_type type, span span)
 
 static heap_object* create_heap_object()
 {
+    /* TODO: Run GC */
     static heap_object* heap_objects = nullptr;
     auto* o = static_cast<heap_object*>(malloc(sizeof(heap_object)));
     assert(o);
