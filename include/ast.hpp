@@ -247,7 +247,7 @@ struct let_expression final : public expression
 
 /* Binary expressions */
 
-struct binary_expression : public expression
+struct binary_expression final : public expression
 {
     binary_expression(expression_ptr l, token o, expression_ptr r)
         : lhs { std::move(l) }
@@ -256,55 +256,12 @@ struct binary_expression : public expression
     {
     }
 
-    virtual ~binary_expression() { }
-    virtual maybe_object execute(eval::interpreter&) = 0;
-
     maybe_object accept(ast_visitor&) override;
     std::string to_string() const noexcept override;
 
     expression_ptr lhs;
     token op;
     expression_ptr rhs;
-};
-
-struct logical_expression final : public binary_expression
-{
-    logical_expression(expression_ptr l, token o, expression_ptr r)
-        : binary_expression { std::move(l), o, std::move(r) }
-    {
-    }
-
-    maybe_object execute(eval::interpreter&) override;
-};
-
-struct cmp_expression final : public binary_expression
-{
-    cmp_expression(expression_ptr l, token o, expression_ptr r)
-        : binary_expression { std::move(l), o, std::move(r) }
-    {
-    }
-
-    maybe_object execute(eval::interpreter&) override;
-};
-
-struct arithmetic_expression final : public binary_expression
-{
-    arithmetic_expression(expression_ptr l, token o, expression_ptr r)
-        : binary_expression { std::move(l), o, std::move(r) }
-    {
-    }
-
-    maybe_object execute(eval::interpreter&) override;
-};
-
-struct pipe_expression final : public binary_expression
-{
-    pipe_expression(expression_ptr l, token o, expression_ptr r)
-        : binary_expression { std::move(l), o, std::move(r) }
-    {
-    }
-
-    maybe_object execute(eval::interpreter&) override;
 };
 
 /* Unary expressions */

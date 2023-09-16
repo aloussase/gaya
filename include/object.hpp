@@ -14,7 +14,7 @@
 #define IS_STRING(o)      ((o).type == object_type_string)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
 
-#define AS_NUMBER(o)           nanbox_to_number((o).box)
+#define AS_NUMBER(o)           nanbox_to_double((o).box)
 #define AS_HEAP_OBJECT(o)      static_cast<heap_object*>(nanbox_to_pointer((o).box))
 #define AS_STRING(o)           AS_HEAP_OBJECT(o)->as_string
 #define AS_ARRAY(o)            AS_HEAP_OBJECT(o)->as_array
@@ -230,7 +230,7 @@ create_number_sequence(interpreter&, span, double) noexcept;
 /**
  * Compare two objects.
  */
-[[nodiscard]] std::optional<int> cmp(object, object) noexcept;
+[[nodiscard]] bool cmp(object, object, int*) noexcept;
 
 /**
  * Return whether two objects are equal to each other.

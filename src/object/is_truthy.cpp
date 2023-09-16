@@ -11,7 +11,7 @@ bool is_truthy(object o) noexcept
     {
     case object_type_number:
     {
-        return nanbox_to_number(o.box) != 0.0;
+        return nanbox_to_double(o.box) != 0.0;
     }
     case object_type_unit:
     {

@@ -300,10 +300,203 @@ interpreter::visit_case_expression(ast::case_expression& cases)
     return object::create_unit(cases.span_);
 }
 
+static inline object::maybe_object interpret_arithmetic_expression(
+    interpreter& interp,
+    ast::binary_expression& expr) noexcept
+{
+    auto l = expr.lhs->accept(interp);
+    if (!l) return {};
+
+    auto r = expr.rhs->accept(interp);
+    if (!r) return {};
+
+    if (l->type != object::object_type_number
+        || r->type != object::object_type_number)
+    {
+        interp.interp_error(
+            expr.op.get_span(),
+            fmt::format(
+                "{} expected {} and {} to be both numbers",
+                expr.op.get_span().to_string(),
+                object::typeof_(*l),
+                object::typeof_(*r)));
+        return {};
+    }
+
+    auto fst = AS_NUMBER(*l);
+    auto snd = AS_NUMBER(*r);
+
+    double result = 0;
+
+    switch (expr.op.type())
+    {
+    case token_type::plus: result = fst + snd; break;
+    case token_type::dash: result = fst - snd; break;
+    case token_type::star: result = fst * snd; break;
+    case token_type::slash:
+    {
+        if (snd == 0)
+        {
+            return object::create_unit(expr.op.get_span());
+        }
+        result = fst / snd;
+        break;
+    }
+    default: assert(false && "should not happen");
+    }
+
+    return object::create_number(expr.op.get_span(), result);
+}
+
+static inline object::maybe_object interpret_pipe_expression(
+    interpreter& interp,
+    ast::binary_expression& expr) noexcept
+{
+    auto replacement = expr.lhs->accept(interp);
+    if (!replacement) return {};
+
+    interp.begin_scope(env { std::make_shared<env>(interp.get_env()) });
+    static std::string underscore = "_";
+    interp.define(underscore, *replacement);
+
+    auto result = expr.rhs->accept(interp);
+    if (!result) return {};
+
+    interp.end_scope();
+
+    return result;
+}
+
+static inline object::maybe_object interpret_comparison_expression(
+    interpreter& interp,
+    ast::binary_expression& expr) noexcept
+{
+    auto l = expr.lhs->accept(interp);
+    if (!l) return {};
+
+    auto r = expr.rhs->accept(interp);
+    if (!r) return {};
+
+    int result;
+
+    switch (expr.op.type())
+    {
+    case token_type::equal_equal:
+    {
+        result = object::equals(*l, *r) ? 1 : 0;
+        break;
+    }
+    case token_type::not_equals:
+    {
+        result = !object::equals(*l, *r) ? 1 : 0;
+        break;
+    }
+    default:
+    {
+        if (!object::is_comparable(*l) || !object::is_comparable(*r))
+        {
+            interp.interp_error(
+                expr.op.get_span(),
+                fmt::format(
+                    "{} and {} are not both comparable",
+                    object::typeof_(*l),
+                    object::typeof_(*r)));
+            return std::nullopt;
+        }
+
+        int cmp;
+        if (!object::cmp(*l, *r, &cmp))
+        {
+            return std::nullopt;
+        }
+
+        switch (expr.op.type())
+        {
+        case token_type::less_than: result = cmp < 0 ? 1 : 0; break;
+        case token_type::less_than_eq: result = cmp <= 0 ? 1 : 0; break;
+        case token_type::greater_than: result = cmp > 0 ? 1 : 0; break;
+        case token_type::greater_than_eq: result = cmp >= 0 ? 1 : 0; break;
+        default: assert(false && "unreachable");
+        }
+    }
+    }
+
+    return object::create_number(expr.op.get_span(), result);
+}
+
+static inline object::maybe_object interpret_logical_expression(
+    interpreter& interp,
+    ast::binary_expression& expr) noexcept
+{
+
+    auto l = expr.lhs->accept(interp);
+    if (!l) return {};
+
+    if (expr.op.type() == token_type::and_)
+    {
+        if (object::is_truthy(l.value()))
+        {
+            return expr.rhs->accept(interp);
+        }
+        else
+        {
+            return l;
+        }
+    }
+
+    if (expr.op.type() == token_type::or_)
+    {
+        if (object::is_truthy(l.value()))
+        {
+            return l;
+        }
+        else
+        {
+            return expr.rhs->accept(interp);
+        }
+    }
+
+    assert(false && "unreachable");
+}
+
 object::maybe_object
 interpreter::visit_binary_expression(ast::binary_expression& binop)
 {
-    return binop.execute(*this);
+    switch (binop.op.type())
+    {
+    case token_type::less_than:
+    case token_type::less_than_eq:
+    case token_type::greater_than:
+    case token_type::greater_than_eq:
+    case token_type::equal_equal:
+    case token_type::not_equals:
+    {
+        return interpret_comparison_expression(*this, binop);
+    }
+    case token_type::plus:
+    case token_type::star:
+    case token_type::dash:
+    case token_type::slash:
+    {
+        return interpret_arithmetic_expression(*this, binop);
+    }
+    case token_type::pipe:
+    {
+        return interpret_pipe_expression(*this, binop);
+    }
+    case token_type::and_:
+    case token_type::or_:
+    {
+        return interpret_logical_expression(*this, binop);
+    }
+    default:
+    {
+
+        assert(0 && "unhandled case in visit_binary_expression");
+    }
+    }
+
+    assert(0 && "unhandled case in visit_binary_expression");
 }
 
 object::maybe_object

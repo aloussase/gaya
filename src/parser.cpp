@@ -407,7 +407,7 @@ ast::expression_ptr parser::logical_expression(token token) noexcept
             auto rhs = comparison_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = ast::make_node<ast::logical_expression>(lhs, op, rhs);
+            lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
 
             break;
         }
@@ -474,7 +474,7 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
         auto rhs = pipe_expression(expr_token.value());
         if (!rhs) return nullptr;
 
-        lhs = ast::make_node<ast::cmp_expression>(lhs, op.value(), rhs);
+        lhs = ast::make_node<ast::binary_expression>(lhs, op.value(), rhs);
     }
 
     return lhs;
@@ -514,7 +514,7 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
 
         assert(lhs && rhs);
 
-        lhs = ast::make_node<ast::pipe_expression>(lhs, pipe.value(), rhs);
+        lhs = ast::make_node<ast::binary_expression>(lhs, pipe.value(), rhs);
     }
 
     return lhs;
@@ -557,7 +557,7 @@ ast::expression_ptr parser::term_expression(token token) noexcept
             auto rhs = factor_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = ast::make_node<ast::arithmetic_expression>(lhs, op, rhs);
+            lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
 
             break;
         }
@@ -611,7 +611,7 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
             auto rhs = unary_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = ast::make_node<ast::arithmetic_expression>(lhs, op, rhs);
+            lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
 
             break;
         }
