@@ -250,7 +250,7 @@ seq.filter :: { xs, func => do
     discard xs |> issequence(_) |> assert(_)
     let xs = tosequence(xs) in seq.make({ => 
       let x = seq.next(xs) in do
-        while not func(x) and x /= unit
+        while x /= unit and not func(x)
           x <- seq.next(xs)
         end
 

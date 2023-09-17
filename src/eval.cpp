@@ -256,7 +256,8 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
     for (;;)
     {
         auto test = while_stmt.condition->accept(*this);
-        if (!object::is_valid(test)) return object::invalid;
+        RETURN_IF_INVALID(test);
+
         if (!object::is_truthy(test)) break;
 
         for (auto& stmt : while_stmt.body)
@@ -293,12 +294,12 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     for (const auto& branch : cases.branches)
     {
         auto condition = branch.condition->accept(*this);
-        if (!object::is_valid(condition)) return object::invalid;
+        RETURN_IF_INVALID(condition);
 
         if (object::is_truthy(condition))
         {
             auto result = branch.body->accept(*this);
-            if (!object::is_valid(result)) return object::invalid;
+            RETURN_IF_INVALID(result);
 
             return result;
         }
@@ -307,7 +308,7 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     if (cases.otherwise)
     {
         auto result = cases.otherwise->accept(*this);
-        if (!object::is_valid(result)) return object::invalid;
+        RETURN_IF_INVALID(result);
 
         return result;
     }
@@ -402,6 +403,12 @@ static inline object::object interpret_comparison_expression(
         int cmp;
         if (!object::cmp(l, r, &cmp))
         {
+            interp.interp_error(
+                expr.op.span,
+                fmt::format(
+                    "cant' compare {} and {}",
+                    object::typeof_(l),
+                    object::typeof_(r)));
             return object::invalid;
         }
 
@@ -579,7 +586,7 @@ interpreter::visit_function_expression(ast::function_expression& fexpr)
     return object::create_function(
         *this,
         fexpr._span,
-        std::make_unique<env>(std::make_shared<env>(current_env())),
+        std::make_unique<env>(current_env()),
         std::move(params),
         fexpr.body);
 }
@@ -631,13 +638,9 @@ object::object interpreter::visit_string(ast::string& s)
 
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    for (int i = _scopes.size() - 1; i >= 0; i--)
+    if (auto value = current_env().get(identifier.key); object::is_valid(value))
     {
-        if (auto value = _scopes[i].get(identifier.key);
-            object::is_valid(value))
-        {
-            return value;
-        }
+        return value;
     }
 
     interp_error(

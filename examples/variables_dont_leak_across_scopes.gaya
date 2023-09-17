@@ -1,0 +1,5 @@
+(* Expect error *)
+
+f :: { => io.println(x) }
+
+discard let x = 42 in f()
