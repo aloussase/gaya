@@ -78,28 +78,35 @@ public:
     /// Set a binding in the environment.
     void set(key&&, value_type) noexcept;
 
-    /// Get a binding from the environment.
+    /**
+     * Get an object from this environment, recursively traversing the
+     * environment chain.
+     */
     [[nodiscard]] object::object get(const key_type&) const noexcept;
-    [[nodiscard]] object::object get(const std::string&) const noexcept;
 
-    /// Try to update a value in the environment and return false if the value
-    /// was not found.
-    [[nodiscard]] bool update_at(const key_type&, value_type) noexcept;
-    [[nodiscard]] bool update_at(const std::string&, value_type) noexcept;
+    /**
+     * Get an identifier at the specified depth in the environment chain.
+     */
+    [[nodiscard]] object::object get_at(const key_type&, size_t) const noexcept;
+
+    /*
+     * Update a value at the specified depth in the environment.
+     */
+    [[nodiscard]] bool update_at(const key_type&, value_type, size_t) noexcept;
 
     /// Check whether the provided identifier is a valid assignment target.
-    [[nodiscard]] bool can_assign_to(const key&) noexcept;
-    [[nodiscard]] bool can_assign_to(const std::string&) noexcept;
+    [[nodiscard]] bool can_assign_at(const key&, size_t) const noexcept;
 
     /**
      * Return the underlying bindings map.
      */
     [[nodiscard]] const bindings& get_bindings() const noexcept;
+    [[nodiscard]] bindings& get_bindings() noexcept;
 
     /**
      * Return the list of objects in the environment.
      */
-    [[nodiscard]] const std::list<object::object*> objects() const noexcept;
+    [[nodiscard]] const std::list<object::object*>& objects() const noexcept;
 
     /**
      * Get this env's parent.
@@ -108,6 +115,9 @@ public:
     [[nodiscard]] const parent_ptr parent() const noexcept;
 
 private:
+    [[nodiscard]] const env& nth_parent(size_t) const noexcept;
+    [[nodiscard]] env& nth_parent(size_t) noexcept;
+
     bindings _bindings;
     parent_ptr _parent = nullptr;
     std::list<object::object*> _objects;

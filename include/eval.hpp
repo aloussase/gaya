@@ -1,10 +1,12 @@
 #pragma once
 
 #include <array>
+
 #include <ast_visitor.hpp>
 #include <diagnostic.hpp>
 #include <env.hpp>
 #include <object.hpp>
+#include <parser.hpp>
 #include <span.hpp>
 
 namespace gaya::eval
@@ -13,13 +15,10 @@ namespace gaya::eval
 class interpreter final : public ast::ast_visitor
 {
 public:
-    interpreter(const std::string& filename, const char* source);
+    interpreter();
 
-    [[nodiscard]] std::optional<object::object> eval() noexcept;
-
-    /// This one is useful for REPLs.
     [[nodiscard]] std::optional<object::object>
-        eval(env, ast::node_ptr) noexcept;
+    eval(const std::string& filename, const char* source) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
@@ -48,9 +47,6 @@ public:
     /// Add an interpreter hint.
     void interp_hint(span, const std::string& hint);
 
-    /// Evaluate the given file in the context of this interpreter.
-    [[nodiscard]] bool loadfile(const std::string&) noexcept;
-
     /// Whether the interpreter had an error.
     [[nodiscard]] bool had_error() const noexcept;
 
@@ -58,6 +54,11 @@ public:
      * @return The stack of scopes of this interpreter.
      */
     [[nodiscard]] const std::vector<env>& scopes() const noexcept;
+
+    /**
+     * @return The parser that the interpreter uses.
+     */
+    [[nodiscard]] parser& get_parser() noexcept;
 
     /* Visitor pattern */
 
@@ -84,7 +85,7 @@ public:
 
 private:
     std::string _filename;
-    const char* _source = nullptr;
+    parser _parser;
     std::vector<diagnostic::diagnostic> _diagnostics;
     std::vector<env> _scopes;
 };

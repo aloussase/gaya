@@ -358,6 +358,7 @@ struct identifier final : public expression
     span _span;
     std::string value;
     gaya::eval::key key;
+    size_t depth = 0;
 };
 
 struct unit final : public expression

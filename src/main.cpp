@@ -23,33 +23,36 @@ static void eval_file(char* filename)
     }
 
     auto* contents = fr.slurp();
+    auto interp    = gaya::eval::interpreter {};
+
     if (print_ast)
     {
-        gaya::parser parser { contents };
-        if (auto ast = parser.parse(); ast)
+        if (auto ast = interp.get_parser().parse(contents); ast)
         {
             fmt::println("{}", ast->to_string());
         }
         else
         {
-            for (const auto& diag : parser.diagnostics())
+            for (const auto& diag : interp.get_parser().diagnostics())
             {
                 fmt::println("{}", diag.to_string());
             }
+
             free(contents);
             exit(EXIT_FAILURE);
         }
     }
     else
     {
-        auto interp  = gaya::eval::interpreter { filename, contents };
-        auto _result = interp.eval();
+        (void)interp.eval(filename, contents);
+
         if (!interp.diagnostics().empty())
         {
-            for (const auto& diag : interp.diagnostics())
+            for (const auto& diagnostic : interp.diagnostics())
             {
-                fmt::print("{}", diag.to_string());
+                fmt::print("{}", diagnostic.to_string());
             }
+
             free(contents);
             exit(EXIT_FAILURE);
         }

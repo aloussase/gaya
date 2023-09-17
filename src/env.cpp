@@ -31,7 +31,12 @@ const env::bindings& env::get_bindings() const noexcept
     return _bindings;
 }
 
-const std::list<object::object*> env::objects() const noexcept
+env::bindings& env::get_bindings() noexcept
+{
+    return _bindings;
+}
+
+const std::list<object::object*>& env::objects() const noexcept
 {
     return _objects;
 }
@@ -52,13 +57,20 @@ void env::set(key&& k, value_type v) noexcept
     _bindings.insert_or_assign(std::move(k), v);
 }
 
-object::object env::get(const std::string& k) const noexcept
+bool env::can_assign_at(const key& k, size_t depth) const noexcept
 {
-    // NOTE: We don't really care about the metadata here.
-    return get(key::global(k));
+    const auto& environment = nth_parent(depth);
+    const auto& bindings    = environment.get_bindings();
+
+    if (auto it = bindings.find(k); it != bindings.end())
+    {
+        return it->first.is_assignment_target();
+    }
+
+    return false;
 }
 
-object::object env::get(const key& k) const noexcept
+object::object env::get(const key_type& k) const noexcept
 {
     if (auto it = _bindings.find(k); it != _bindings.end())
     {
@@ -70,53 +82,57 @@ object::object env::get(const key& k) const noexcept
         return _parent->get(k);
     }
 
-    return gaya::eval::object::invalid;
+    return object::invalid;
 }
 
-bool env::update_at(const std::string& k, value_type new_val) noexcept
+const env& env::nth_parent(size_t n) const noexcept
 {
-    return update_at(key::local(k), new_val);
-}
+    auto* environment = this;
 
-bool env::update_at(const key& k, value_type new_val) noexcept
-{
-    if (auto it = _bindings.find(k); it != _bindings.end())
+    for (size_t i = 0; i < n; i++)
     {
-        /*
-         * NOTE:
-         *
-         * We don't need to update the pointer in _objects beacuse the
-         * GC works for heap allocated objects. The means an update here
-         * will reflect in the object in the heap and it will be correctly
-         * marked, or not, during the GC run.
-         */
-        it->second = new_val;
+        assert(environment);
+        environment = environment->parent().get();
+    }
+
+    return *environment;
+}
+
+env& env::nth_parent(size_t n) noexcept
+{
+    auto* environment = this;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        assert(environment);
+        environment = environment->parent().get();
+    }
+
+    return *environment;
+}
+
+object::object env::get_at(const key_type& k, size_t depth) const noexcept
+{
+    const auto& environment = nth_parent(depth);
+    const auto& bindings    = environment.get_bindings();
+
+    if (auto it = bindings.find(k); it != bindings.end())
+    {
+        return it->second;
+    }
+
+    return object::invalid;
+}
+
+bool env::update_at(const key_type& k, value_type v, size_t depth) noexcept
+{
+    auto& environment = nth_parent(depth);
+    auto& bindings    = environment.get_bindings();
+
+    if (auto it = bindings.find(k); it != bindings.end())
+    {
+        it->second = v;
         return true;
-    }
-
-    if (_parent != nullptr)
-    {
-        return _parent->update_at(k, new_val);
-    }
-
-    return false;
-}
-
-bool env::can_assign_to(const std::string& ident) noexcept
-{
-    return can_assign_to(key::local(ident));
-}
-
-bool env::can_assign_to(const key& k) noexcept
-{
-    if (auto it = _bindings.find(k); it != _bindings.end())
-    {
-        return it->first.is_assignment_target();
-    }
-
-    if (_parent != nullptr)
-    {
-        return _parent->can_assign_to(k);
     }
 
     return false;

@@ -26,32 +26,11 @@ std::string stringify_tokens(const std::vector<token>& tokens)
         [](auto token) { return token.span.to_string(); });
 }
 
-ast::node_ptr parse_line(const char* line)
-{
-    auto parser_      = parser { line };
-    ast::node_ptr ast = parser_.parse_stmt();
-
-    if (!ast)
-    {
-        parser_ = parser { line };
-        ast     = parser_.parse_expression();
-    }
-
-    parser_.merge_diagnostics();
-
-    for (const auto& diag : parser_.diagnostics())
-    {
-        fmt::print("{}", diag.to_string());
-    }
-
-    return ast;
-}
-
 void run() noexcept
 {
     /* Interpreter state */
     eval::env repl_env;
-    eval::interpreter interp { "<interactive>", nullptr };
+    eval::interpreter interp {};
 
     const auto* prompt          = "\x1b[35mgaya> \x1b[m";
     const auto* multiline_begin = ":{";
@@ -93,29 +72,29 @@ void run() noexcept
             free(line);
             break;
         }
-        auto ast = parse_line(line);
 
-        if (!ast)
+        auto result = interp.eval("<interactive>", line);
+
+        if (interp.had_error())
         {
+            for (auto& diagnostic : interp.diagnostics())
+            {
+                fmt::print("{}", diagnostic.to_string());
+            }
+
+            interp.clear_diagnostics();
             add_history(line);
             free(line);
             continue;
         }
 
-        if (auto result = interp.eval(interp.environment(), std::move(ast));
-            result)
+        if (result)
         {
             fmt::print(
                 "= {}\n",
                 gaya::eval::object::to_string(interp, result.value()));
         }
 
-        for (const auto& diag : interp.diagnostics())
-        {
-            fmt::print("{}", diag.to_string());
-        }
-
-        interp.clear_diagnostics();
         add_history(line);
         free(line);
     }

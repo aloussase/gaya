@@ -21,14 +21,12 @@ namespace gaya::eval
 
 using namespace std::string_literals;
 
-interpreter::interpreter(const std::string& filename, const char* source)
-    : _filename { filename }
-    , _source { source }
+interpreter::interpreter()
 {
 #define BUILTIN(name, arity, func) \
     define(name, create_builtin_function(*this, name, arity, func))
 
-    _scopes.push_back(env {});
+    begin_scope(env {});
 
     using namespace object::builtin;
 
@@ -50,79 +48,51 @@ interpreter::interpreter(const std::string& filename, const char* source)
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
 
-    if (!loadfile(GAYA_STDLIB_PATH))
+    file_reader reader { GAYA_STDLIB_PATH };
+    assert(reader && "failed to load stdlib");
+
+    auto* stdlib = reader.slurp();
+    assert(stdlib && "failed to load stdlib");
+
+    (void)eval(GAYA_STDLIB_PATH, stdlib);
+
+    if (!_diagnostics.empty())
     {
-        fprintf(stderr, "warning: stdlib could not be loaded\n");
+        for (const auto& diagnostic : _diagnostics)
+        {
+            fmt::println("{}", diagnostic.to_string());
+        }
+
+        exit(EXIT_FAILURE);
     }
 
 #undef BUILTIN
 }
 
-std::optional<object::object> interpreter::eval() noexcept
+parser& interpreter::get_parser() noexcept
 {
-    auto p   = parser(_source);
-    auto ast = p.parse();
-    if (!p.diagnostics().empty())
-    {
-        _diagnostics = p.diagnostics();
-        return {};
-    }
-    return eval(environment(), std::move(ast));
+    return _parser;
 }
 
 std::optional<object::object>
-interpreter::eval(env env, ast::node_ptr ast) noexcept
+interpreter::eval(const std::string& filename, const char* source) noexcept
 {
-    environment() = env;
-    auto result   = ast->accept(*this);
+    auto ast  = _parser.parse(source);
+    _filename = filename;
 
-    if (object::is_valid(result))
+    if (!_parser.diagnostics().empty())
+    {
+        _diagnostics = _parser.diagnostics();
+        return {};
+    }
+
+    if (auto result = ast->accept(*this); object::is_valid(result))
     {
         return result;
     }
     else
     {
         return {};
-    }
-}
-
-bool interpreter::loadfile(const std::string& file_to_load) noexcept
-{
-    auto filename = _filename;
-    _filename     = file_to_load;
-
-    file_reader reader { file_to_load };
-    if (!reader) return false;
-
-    auto* contents = reader.slurp();
-    if (strlen(contents) == 0)
-    {
-        free(contents);
-        return true;
-    }
-
-    assert(contents);
-
-    auto p   = parser(contents);
-    auto ast = p.parse();
-
-    if (ast && p.diagnostics().empty())
-    {
-        // NOTE: We are leaking contents on purpose here.
-        // FIXME: Implement some way to avoid leaking.
-        (void)eval(environment(), std::move(ast));
-        _filename = filename;
-        return !had_error();
-    }
-    else
-    {
-        for (const auto& diag : p.diagnostics())
-        {
-            _diagnostics.push_back(diag);
-        }
-        free(contents);
-        _filename = filename;
-        return false;
     }
 }
 
@@ -138,6 +108,7 @@ const std::string& interpreter::current_filename() const noexcept
 
 void interpreter::clear_diagnostics() noexcept
 {
+    _parser.diagnostics().clear();
     _diagnostics.clear();
 }
 
@@ -178,6 +149,7 @@ void interpreter::begin_scope(env new_scope) noexcept
 
 void interpreter::end_scope() noexcept
 {
+    assert(_scopes.size() > 0);
     _scopes.pop_back();
 }
 
@@ -219,10 +191,10 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     auto new_val = assignment.expr->accept(*this);
     RETURN_IF_INVALID(new_val);
 
-    key key  = assignment.ident->key;
-    key.kind = identifier_kind::local;
+    auto depth = assignment.ident->depth;
+    auto& key  = assignment.ident->key;
 
-    if (!environment().can_assign_to(key))
+    if (!environment().can_assign_at(key, depth))
     {
         interp_error(
             assignment.ident->_span,
@@ -235,7 +207,7 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
         return object::invalid;
     }
 
-    if (!environment().update_at(std::move(key), new_val))
+    if (!environment().update_at(std::move(key), new_val, depth))
     {
         interp_error(
             assignment.ident->_span,
@@ -635,7 +607,8 @@ object::object interpreter::visit_string(ast::string& s)
 
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    if (auto value = environment().get(identifier.key); object::is_valid(value))
+    if (auto value = environment().get_at(identifier.key, identifier.depth);
+        object::is_valid(value))
     {
         return value;
     }

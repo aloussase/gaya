@@ -3,6 +3,8 @@
 #include <exception>
 #include <vector>
 
+#include <robin_hood.h>
+
 #include <ast.hpp>
 #include <diagnostic.hpp>
 #include <lexer.hpp>
@@ -12,14 +14,10 @@ namespace gaya
 
 class parser
 {
-  public:
-    parser(const char* source);
+public:
+    parser();
 
-    [[nodiscard]] ast::node_ptr parse() noexcept;
-
-    [[nodiscard]] ast::expression_ptr parse_expression() noexcept;
-
-    [[nodiscard]] ast::stmt_ptr parse_stmt() noexcept;
+    [[nodiscard]] ast::node_ptr parse(const char* source) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
@@ -30,7 +28,7 @@ class parser
     /// Merge the lexer and parser diagnostics.
     void merge_diagnostics() noexcept;
 
-  private:
+private:
     std::vector<ast::stmt_ptr> stmts() noexcept;
 
     [[nodiscard]] ast::stmt_ptr toplevel_stmt() noexcept;
@@ -65,11 +63,25 @@ class parser
 
     void parser_error(span, const std::string&);
     void parser_hint(span, const std::string&);
+
     [[nodiscard]] bool match(std::optional<token>, token_type) const noexcept;
     [[nodiscard]] bool is_local_stmt(token);
 
+    /* Resolving identifier locations */
+    void begin_scope() noexcept;
+    void end_scope() noexcept;
+
+    void define(ast::identifier&) noexcept;
+    void define(eval::key) noexcept;
+
+    [[nodiscard]] bool assign_scope(std::shared_ptr<ast::identifier>&) noexcept;
+    [[nodiscard]] bool assign_scope(std::unique_ptr<ast::identifier>&) noexcept;
+
     lexer _lexer;
     std::vector<diagnostic::diagnostic> _diagnostics;
+
+    using scope = robin_hood::unordered_set<size_t>;
+    std::vector<scope> _scopes;
 };
 
 }

@@ -5,14 +5,32 @@
 #include <fmt/core.h>
 
 #include <ast.hpp>
+#include <file_reader.hpp>
 #include <parser.hpp>
 
 namespace gaya
 {
 
-parser::parser(const char* source)
-    : _lexer { source }
+parser::parser()
+    : _lexer { nullptr }
 {
+    using namespace std::string_literals;
+
+    begin_scope();
+
+    define("typeof"s);
+    define("assert"s);
+    define("tostring"s);
+    define("tosequence"s);
+    define("issequence"s);
+    define("io.println"s);
+    define("string.length"s);
+    define("string.concat"s);
+    define("array.length"s);
+    define("array.concat"s);
+    define("array.push"s);
+    define("seq.next"s);
+    define("seq.make"s);
 }
 
 std::vector<diagnostic::diagnostic> parser::diagnostics() const noexcept
@@ -74,27 +92,65 @@ std::vector<token> parser::remaining_tokens() noexcept
     return tokens;
 }
 
-ast::node_ptr parser::parse() noexcept
+void parser::begin_scope() noexcept
 {
+    _scopes.push_back({});
+}
+
+void parser::end_scope() noexcept
+{
+    assert(_scopes.size() > 0);
+    _scopes.pop_back();
+}
+
+void parser::define(eval::key key) noexcept
+{
+    assert(_scopes.size() > 0);
+    _scopes.back().insert(key.hash);
+}
+
+void parser::define(ast::identifier& ident) noexcept
+{
+    define(ident.key);
+}
+
+bool parser::assign_scope(std::shared_ptr<ast::identifier>& ident) noexcept
+{
+    assert(_scopes.size() > 0);
+
+    for (int i = _scopes.size() - 1; i >= 0; i--)
+    {
+        if (_scopes[i].contains(ident->key.hash))
+        {
+            ident->depth = _scopes.size() - 1 - i;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool parser::assign_scope(std::unique_ptr<ast::identifier>& ident) noexcept
+{
+    assert(_scopes.size() > 0);
+
+    for (int i = _scopes.size() - 1; i >= 0; i--)
+    {
+        if (_scopes[i].contains(ident->key.hash))
+        {
+            ident->depth = _scopes.size() - 1 - i;
+            return true;
+        }
+    }
+    return false;
+}
+
+ast::node_ptr parser::parse(const char* source) noexcept
+{
+    _lexer         = lexer { source };
     auto program   = ast::make_node<ast::program>();
     program->stmts = stmts();
     merge_diagnostics();
     return program;
-}
-
-ast::expression_ptr parser::parse_expression() noexcept
-{
-    auto token = _lexer.next_token();
-    if (token)
-    {
-        return expression(token.value());
-    }
-    return nullptr;
-}
-
-ast::stmt_ptr parser::parse_stmt() noexcept
-{
-    return toplevel_stmt();
 }
 
 std::vector<ast::stmt_ptr> parser::stmts() noexcept
@@ -174,16 +230,33 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
         identifier.span,
         identifier.span.to_string());
 
+    if (!assign_scope(ident))
+    {
+        parser_error(
+            identifier.span,
+            fmt::format(
+                "Undeclared identifier in assignment: {}",
+                identifier.span.to_string()));
+        parser_hint(
+            identifier.span,
+            "Assignment targets can only be local variables introduced with "
+            "let");
+        return nullptr;
+    }
+
     return ast::make_node<ast::assignment_stmt>(std::move(ident), expr);
 }
 
 ast::stmt_ptr parser::while_stmt(token while_) noexcept
 {
+    begin_scope();
+
     auto span  = while_.span;
     auto token = _lexer.next_token();
     if (!token)
     {
         parser_error(span, "Expected a condition after 'while'");
+        end_scope();
         return nullptr;
     }
 
@@ -198,6 +271,7 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
             parser_error(
                 while_.span,
                 "Expected a statement after ':' in while");
+            end_scope();
             return nullptr;
         }
 
@@ -218,7 +292,11 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         if (is_local_stmt(token.value()))
         {
             auto stmt = local_stmt(token.value());
-            if (!stmt) return nullptr;
+            if (!stmt)
+            {
+                end_scope();
+                return nullptr;
+            }
 
             body.push_back(std::move(stmt));
         }
@@ -228,6 +306,8 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
             break;
         }
     }
+
+    end_scope();
 
     if (auto end = _lexer.next_token(); !match(end, token_type::end))
     {
@@ -256,6 +336,14 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
     auto ident = std::make_unique<ast::identifier>(
         identifier.span,
         identifier.span.to_string());
+
+    /*
+     * NOTE:
+     *
+     * Here we are defining the identifier before evaluating its expression,
+     * which means that we do support top level recursive declarations.
+     */
+    define(*ident);
 
     auto token = _lexer.next_token();
     if (!token)
@@ -302,6 +390,8 @@ ast::expression_ptr parser::expression(token token)
 
 ast::expression_ptr parser::function_expression(token lcurly)
 {
+    begin_scope();
+
     std::vector<ast::identifier> params;
 
     for (;;)
@@ -315,7 +405,12 @@ ast::expression_ptr parser::function_expression(token lcurly)
             break;
         }
 
-        params.emplace_back(identifier->span, identifier->span.to_string());
+        auto span             = identifier->span;
+        ast::identifier ident = { span, span.to_string() };
+
+        define(ident);
+
+        params.push_back(std::move(ident));
 
         auto comma = _lexer.next_token();
         if (!comma) break;
@@ -331,6 +426,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
     if (!match(arrow, token_type::arrow))
     {
         parser_error(lcurly.span, "Expected '=>' after function params");
+        end_scope();
         return nullptr;
     }
 
@@ -338,6 +434,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
     if (!token)
     {
         parser_error(lcurly.span, "Expected a '}' after function body");
+        end_scope();
         return nullptr;
     }
 
@@ -358,6 +455,8 @@ ast::expression_ptr parser::function_expression(token lcurly)
             return expr;
         }
     })();
+
+    end_scope();
 
     if (!expr) return nullptr;
 
@@ -464,6 +563,7 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
         }
 
         auto rhs = pipe_expression(expr_token.value());
+
         if (!rhs) return nullptr;
 
         lhs = ast::make_node<ast::binary_expression>(lhs, op.value(), rhs);
@@ -501,7 +601,10 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
             return nullptr;
         }
 
+        begin_scope();
         auto rhs = term_expression(expr_token.value());
+        end_scope();
+
         if (!rhs) return nullptr;
 
         assert(lhs && rhs);
@@ -745,6 +848,8 @@ ast::expression_ptr parser::call_expression(token starttoken)
 
 ast::expression_ptr parser::let_expression(token let)
 {
+    begin_scope();
+
     auto let_binding = [&](token ident) -> std::optional<ast::let_binding> {
         if (auto equal_sign = _lexer.next_token();
             !match(equal_sign, token_type::equal))
@@ -768,6 +873,12 @@ ast::expression_ptr parser::let_expression(token let)
         auto identifier = std::make_unique<ast::identifier>(
             ident.span,
             ident.span.to_string());
+
+        /*
+         * Since we are defining the identifier after evaluating its
+         * value, that means we don't support recursive definitions
+         */
+        define(*identifier);
 
         return ast::let_binding { std::move(identifier), std::move(value) };
     };
@@ -804,6 +915,7 @@ ast::expression_ptr parser::let_expression(token let)
         parser_error(
             let.span,
             "Expected at least one binding in let expression");
+        end_scope();
         return nullptr;
     }
 
@@ -812,6 +924,7 @@ ast::expression_ptr parser::let_expression(token let)
         parser_error(
             let.span,
             "Expected 'in' after expression in let expression");
+        end_scope();
         return nullptr;
     }
 
@@ -819,11 +932,18 @@ ast::expression_ptr parser::let_expression(token let)
     if (!expr_token)
     {
         parser_error(let.span, "Expected an expression after 'in'");
+        end_scope();
         return nullptr;
     }
 
     auto expr = expression(expr_token.value());
-    if (!expr) return nullptr;
+    if (!expr)
+    {
+        end_scope();
+        return nullptr;
+    }
+
+    end_scope();
 
     return ast::make_node<ast::let_expression>(std::move(bindings), expr);
 }
@@ -917,6 +1037,8 @@ ast::expression_ptr parser::case_expression(token cases)
 
 ast::expression_ptr parser::do_expression(token token)
 {
+    begin_scope();
+
     std::vector<ast::node_ptr> body;
     bool parsed_final_expression = false;
 
@@ -934,14 +1056,22 @@ ast::expression_ptr parser::do_expression(token token)
         if (is_local_stmt(tk.value()))
         {
             auto stmt = local_stmt(tk.value());
-            if (!stmt) return nullptr;
+            if (!stmt)
+            {
+                end_scope();
+                return nullptr;
+            }
 
             body.push_back(std::move(stmt));
         }
         else
         {
             auto expr = expression(tk.value());
-            if (!expr) return nullptr;
+            if (!expr)
+            {
+                end_scope();
+                return nullptr;
+            }
 
             body.push_back(std::move(expr));
             parsed_final_expression = true;
@@ -953,6 +1083,8 @@ ast::expression_ptr parser::do_expression(token token)
     {
         body.push_back(ast::make_node<ast::unit>(token.span));
     }
+
+    end_scope();
 
     if (auto tk = _lexer.next_token(); !match(tk, token_type::end))
     {
@@ -990,9 +1122,21 @@ ast::expression_ptr parser::primary_expression(token token)
     }
     case token_type::identifier:
     {
-        return ast::make_node<ast::identifier>(
+        auto ident = ast::make_node<ast::identifier>(
             token.span,
             token.span.to_string());
+
+        if (!assign_scope(ident))
+        {
+            parser_error(
+                token.span,
+                fmt::format(
+                    "Undefined identifier '{}'",
+                    token.span.to_string()));
+            return nullptr;
+        }
+
+        return ident;
     }
     case token_type::unit:
     {
