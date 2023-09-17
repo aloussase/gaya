@@ -246,6 +246,10 @@ seq.map :: { s, func => do
   end
 }
 
+(*
+  Return a new sequence that filters out elements for which the provided
+  predicate function returns false.
+*)
 seq.filter :: { xs, func => do
     discard xs |> issequence(_) |> assert(_)
     let xs = tosequence(xs) in seq.make({ => 

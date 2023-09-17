@@ -86,9 +86,12 @@ interpreter::eval(env env, ast::node_ptr ast) noexcept
     }
 }
 
-bool interpreter::loadfile(const std::string& filename) noexcept
+bool interpreter::loadfile(const std::string& file_to_load) noexcept
 {
-    file_reader reader { filename };
+    auto filename = _filename;
+    _filename     = file_to_load;
+
+    file_reader reader { file_to_load };
     if (!reader) return false;
 
     auto* contents = reader.slurp();
@@ -106,11 +109,9 @@ bool interpreter::loadfile(const std::string& filename) noexcept
     if (ast && p.diagnostics().empty())
     {
         // NOTE: We are leaking contents on purpose here.
-        // FIXME: Maybe there is a way to avoid leaking?
-        auto old_filename = _filename;
-        _filename         = filename;
+        // FIXME: Implement some way to avoid leaking.
         (void)eval(environment(), std::move(ast));
-        _filename = old_filename;
+        _filename = filename;
         return !had_error();
     }
     else
@@ -120,6 +121,7 @@ bool interpreter::loadfile(const std::string& filename) noexcept
             _diagnostics.push_back(diag);
         }
         free(contents);
+        _filename = filename;
         return false;
     }
 }
