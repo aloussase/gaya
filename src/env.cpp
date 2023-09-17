@@ -1,4 +1,7 @@
+#include <fmt/core.h>
+
 #include "env.hpp"
+#include <object.hpp>
 
 namespace gaya::eval
 {
@@ -79,19 +82,16 @@ bool env::update_at(const key& k, value_type new_val) noexcept
 {
     if (auto it = _bindings.find(k); it != _bindings.end())
     {
-        if (auto k_ = it->first; k_.is_assignment_target())
-        {
-            /*
-             * NOTE:
-             *
-             * We don't need to update the pointer in _objects beacuse the
-             * GC works for heap allocated objects. The means an update here
-             * will reflect in the object in the heap and it will be correctly
-             * marked, or not, during the GC run.
-             */
-            it->second = new_val;
-            return true;
-        }
+        /*
+         * NOTE:
+         *
+         * We don't need to update the pointer in _objects beacuse the
+         * GC works for heap allocated objects. The means an update here
+         * will reflect in the object in the heap and it will be correctly
+         * marked, or not, during the GC run.
+         */
+        it->second = new_val;
+        return true;
     }
 
     if (_parent != nullptr)

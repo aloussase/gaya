@@ -231,12 +231,46 @@ seq.reduce :: { s, init, f => do
   end
 }
 
+(*
+  Return a new sequence that maps the given function over the elements of the
+  provided sequence. 
+*)
 seq.map :: { s, func => do
     discard s |> issequence(_) |> assert(_)
     let xs = tosequence(s) in seq.make({ =>
       let next = seq.next(xs) in
       cases 
         given next /= unit => func(next)
+      end
+    })
+  end
+}
+
+seq.filter :: { xs, func => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs) in seq.make({ => 
+      let x = seq.next(xs) in do
+        while not func(x) and x /= unit
+          x <- seq.next(xs)
+        end
+
+        x
+      end
+    })
+  end
+}
+
+(*
+  Return a new sequence that applies the provided function to the elements of
+  the given sequence in a pairwise manner.
+*)
+seq.zip :: { xs, ys, func => do
+    discard xs |> issequence(_) |> assert(_)
+    discard ys |> issequence(_) |> assert(_)
+    let xs = tosequence(xs), ys = tosequence(ys) in seq.make({ =>
+      let x = seq.next(xs), y = seq.next(ys) in
+      cases 
+        given x /= unit and y /= unit => func(x, y)
       end
     })
   end

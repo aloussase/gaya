@@ -40,17 +40,18 @@ std::string sequence_to_string(interpreter& interp, sequence& seq) noexcept
     ss << "(";
 
     auto o = next(interp, seq);
-    if (gaya::eval::object::is_valid(o))
+    if (gaya::eval::object::is_valid(o) && o.type != object_type_unit)
     {
         ss << to_string(interp, o);
-    }
 
-    for (;;)
-    {
-        auto o = next(interp, seq);
-        if (!gaya::eval::object::is_valid(o)) break;
+        for (;;)
+        {
+            auto o = next(interp, seq);
+            if (!gaya::eval::object::is_valid(o) || o.type == object_type_unit)
+                break;
 
-        ss << ", " << to_string(interp, o);
+            ss << ", " << to_string(interp, o);
+        }
     }
 
     ss << ")";

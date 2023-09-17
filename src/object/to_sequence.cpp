@@ -1,4 +1,6 @@
+#include <fmt/core.h>
 #include <nanbox.h>
+
 #include <object.hpp>
 
 namespace gaya::eval::object

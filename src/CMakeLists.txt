@@ -36,7 +36,8 @@ set(GAYA_RUNTIME_STDLIB
     "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/gaya/runtime/stdlib.gaya")
 
 target_compile_definitions(gaya PRIVATE
-    GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${GAYA_RUNTIME_STDLIB}","runtime/stdlib.gaya">)
+    GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${GAYA_RUNTIME_STDLIB}","runtime/stdlib.gaya">
+    DEBUG=$<IF:$<CONFIG:Debug>,1,0>)
 
 target_link_libraries(gaya PRIVATE fmt::fmt readline)
 

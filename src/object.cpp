@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include <fmt/core.h>
 #include <nanbox.h>
 
 #include <env.hpp>
@@ -98,7 +99,7 @@ static void mark_all(interpreter& interp)
     mark_scopes(interp);
 }
 
-static void sweep(heap_object* heap_objects)
+static void sweep(interpreter& interp, heap_object* heap_objects)
 {
     auto** o = &heap_objects;
     while (*o)
@@ -120,7 +121,7 @@ static void sweep(heap_object* heap_objects)
 static void run_gc(interpreter& interp, heap_object* heap_objects)
 {
     mark_all(interp);
-    sweep(heap_objects);
+    sweep(interp, heap_objects);
 
     next_gc_threshold = bytes_allocated * 2;
 }

@@ -1,0 +1,26 @@
+(* Output: '(5, 7, 9)\n(3)\n(3)\n()' *)
+
+discard
+  (1, 2, 3)
+  |> tosequence(_)
+  |> seq.zip(_, (4, 5, 6), math.add)
+  |> io.println(_)
+
+discard 
+  let xs = (1, 2, 3, 4) in
+  let ss = seq.filter(xs, { x => x < 4 }) in
+  let ss = seq.filter(ss, { x => x > 2 }) in
+  io.println(ss)
+
+discard
+  (1, 2, 3, 4)
+  |> tosequence(_)
+  |> seq.filter(_, { x => x < 4 })
+  |> seq.filter(_, { x => x > 2 })
+  |> io.println(_)
+
+discard 
+  (1, 2, 3, 4)
+  |> tosequence(_)
+  |> seq.filter(_, { x => x < 1 })
+  |> io.println(_)

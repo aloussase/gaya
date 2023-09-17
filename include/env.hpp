@@ -46,7 +46,6 @@ struct key
     identifier_kind kind;
     size_t hash;
 };
-
 }
 
 namespace robin_hood

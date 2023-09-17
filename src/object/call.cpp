@@ -12,7 +12,7 @@ object call_function(
     interpreter& interp,
     std::vector<object> args) noexcept
 {
-    interp.begin_scope(*func.closed_over_env);
+    interp.begin_scope(env { func.closed_over_env });
     for (size_t i = 0; i < args.size(); i++)
     {
         interp.define(func.params[i], args[i]);

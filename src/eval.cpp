@@ -73,9 +73,17 @@ std::optional<object::object> interpreter::eval() noexcept
 std::optional<object::object>
 interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
-    // NOTE: We don't pop the scope because the repl needs it to keep state.
     current_env() = env;
-    return ast->accept(*this);
+    auto result   = ast->accept(*this);
+
+    if (object::is_valid(result))
+    {
+        return result;
+    }
+    else
+    {
+        return {};
+    }
 }
 
 bool interpreter::loadfile(const std::string& filename) noexcept
@@ -190,10 +198,9 @@ object::object
 interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
 {
     auto value = declaration_stmt.expr->accept(*this);
-    if (object::is_valid(value))
-    {
-        define(key::global(declaration_stmt.ident->value), value);
-    }
+    RETURN_IF_INVALID(value);
+
+    define(key::global(declaration_stmt.ident->value), value);
 
     return object::invalid;
 }
@@ -213,9 +220,9 @@ object::object
 interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 {
     auto new_val = assignment.expr->accept(*this);
-    if (!object::is_valid(new_val)) return object::invalid;
+    RETURN_IF_INVALID(new_val);
 
-    auto key = assignment.ident->key;
+    key key  = assignment.ident->key;
     key.kind = identifier_kind::local;
 
     if (!current_env().can_assign_to(key))
@@ -223,9 +230,11 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
         interp_error(
             assignment.ident->_span,
             "Can only assign to local variables");
+
         interp_hint(
             assignment.ident->_span,
             fmt::format("for example: let {} = ...", assignment.ident->value));
+
         return object::invalid;
     }
 
@@ -353,25 +362,6 @@ static inline object::object interpret_arithmetic_expression(
     return object::create_number(expr.op.span, result);
 }
 
-static inline object::object interpret_pipe_expression(
-    interpreter& interp,
-    ast::binary_expression& expr) noexcept
-{
-    auto replacement = expr.lhs->accept(interp);
-    if (!object::is_valid(replacement)) return object::invalid;
-
-    interp.begin_scope(env { std::make_shared<env>(interp.get_env()) });
-    static std::string underscore = "_";
-    interp.define(underscore, replacement);
-
-    auto result = expr.rhs->accept(interp);
-    if (!object::is_valid(result)) return object::invalid;
-
-    interp.end_scope();
-
-    return result;
-}
-
 static inline object::object interpret_comparison_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept
@@ -487,7 +477,20 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
     }
     case token_type::pipe:
     {
-        return interpret_pipe_expression(*this, binop);
+        auto replacement = binop.lhs->accept(*this);
+        RETURN_IF_INVALID(replacement);
+
+        begin_scope(env { std::make_shared<env>(current_env()) });
+
+        static key underscore = key::local("_");
+        define(underscore, replacement);
+
+        auto result = binop.rhs->accept(*this);
+        RETURN_IF_INVALID(result);
+
+        end_scope();
+
+        return result;
     }
     case token_type::and_:
     case token_type::or_:
@@ -628,14 +631,19 @@ object::object interpreter::visit_string(ast::string& s)
 
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    if (auto value = current_env().get(identifier.key); object::is_valid(value))
+    for (int i = _scopes.size() - 1; i >= 0; i--)
     {
-        return value;
+        if (auto value = _scopes[i].get(identifier.key);
+            object::is_valid(value))
+        {
+            return value;
+        }
     }
 
     interp_error(
         identifier._span,
         fmt::format("undefined identifier: {}", identifier.value));
+
     interp_hint(
         identifier._span,
         fmt::format(
@@ -652,7 +660,7 @@ object::object interpreter::visit_unit(ast::unit& u)
 
 object::object interpreter::visit_placeholder(ast::placeholder& p)
 {
-    static std::string underscore = "_";
+    static key underscore = key::local("_");
     if (auto value = current_env().get(underscore); object::is_valid(value))
     {
         return value;
