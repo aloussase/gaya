@@ -31,7 +31,7 @@ public:
     void clear_diagnostics() noexcept;
 
     /// Get the interpreter's environment.
-    [[nodiscard]] const env& get_env() const noexcept;
+    [[nodiscard]] env& environment() noexcept;
 
     /// Define a new symbol in the current scope.
     void define(key, object::object) noexcept;
@@ -83,8 +83,6 @@ public:
     object::object visit_placeholder(ast::placeholder&) override;
 
 private:
-    [[nodiscard]] env& current_env() noexcept;
-
     std::string _filename;
     const char* _source = nullptr;
     std::vector<diagnostic::diagnostic> _diagnostics;

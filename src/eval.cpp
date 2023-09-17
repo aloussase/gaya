@@ -67,13 +67,13 @@ std::optional<object::object> interpreter::eval() noexcept
         _diagnostics = p.diagnostics();
         return {};
     }
-    return eval(current_env(), std::move(ast));
+    return eval(environment(), std::move(ast));
 }
 
 std::optional<object::object>
 interpreter::eval(env env, ast::node_ptr ast) noexcept
 {
-    current_env() = env;
+    environment() = env;
     auto result   = ast->accept(*this);
 
     if (object::is_valid(result))
@@ -109,7 +109,7 @@ bool interpreter::loadfile(const std::string& filename) noexcept
         // FIXME: Maybe there is a way to avoid leaking?
         auto old_filename = _filename;
         _filename         = filename;
-        (void)eval(current_env(), std::move(ast));
+        (void)eval(environment(), std::move(ast));
         _filename = old_filename;
         return !had_error();
     }
@@ -159,19 +159,14 @@ const std::vector<env>& interpreter::scopes() const noexcept
     return _scopes;
 }
 
-const env& interpreter::get_env() const noexcept
-{
-    return _scopes.back();
-}
-
-env& interpreter::current_env() noexcept
+env& interpreter::environment() noexcept
 {
     return _scopes.back();
 }
 
 void interpreter::define(key k, object::object v) noexcept
 {
-    current_env().set(std::move(k), v);
+    environment().set(std::move(k), v);
 }
 
 void interpreter::begin_scope(env new_scope) noexcept
@@ -225,7 +220,7 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     key key  = assignment.ident->key;
     key.kind = identifier_kind::local;
 
-    if (!current_env().can_assign_to(key))
+    if (!environment().can_assign_to(key))
     {
         interp_error(
             assignment.ident->_span,
@@ -238,7 +233,7 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
         return object::invalid;
     }
 
-    if (!current_env().update_at(std::move(key), new_val))
+    if (!environment().update_at(std::move(key), new_val))
     {
         interp_error(
             assignment.ident->_span,
@@ -252,7 +247,7 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 
 object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
 {
-    begin_scope(env { std::make_shared<env>(current_env()) });
+    begin_scope(env { std::make_shared<env>(environment()) });
     for (;;)
     {
         auto test = while_stmt.condition->accept(*this);
@@ -278,7 +273,7 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
 
 object::object interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
-    begin_scope(env { std::make_shared<env>(current_env()) });
+    begin_scope(env { std::make_shared<env>(environment()) });
     for (size_t i = 0; i < do_expr.body.size() - 1; i++)
     {
         do_expr.body[i]->accept(*this);
@@ -487,7 +482,7 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
         auto replacement = binop.lhs->accept(*this);
         RETURN_IF_INVALID(replacement);
 
-        begin_scope(env { std::make_shared<env>(current_env()) });
+        begin_scope(env { std::make_shared<env>(environment()) });
 
         static key underscore = key::local("_");
         define(underscore, replacement);
@@ -586,7 +581,7 @@ interpreter::visit_function_expression(ast::function_expression& fexpr)
     return object::create_function(
         *this,
         fexpr._span,
-        std::make_unique<env>(current_env()),
+        std::make_unique<env>(environment()),
         std::move(params),
         fexpr.body);
 }
@@ -594,7 +589,7 @@ interpreter::visit_function_expression(ast::function_expression& fexpr)
 object::object
 interpreter::visit_let_expression(ast::let_expression& let_expression)
 {
-    begin_scope(env { std::make_shared<env>(current_env()) });
+    begin_scope(env { std::make_shared<env>(environment()) });
 
     for (auto& binding : let_expression.bindings)
     {
@@ -638,7 +633,7 @@ object::object interpreter::visit_string(ast::string& s)
 
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    if (auto value = current_env().get(identifier.key); object::is_valid(value))
+    if (auto value = environment().get(identifier.key); object::is_valid(value))
     {
         return value;
     }
@@ -664,7 +659,7 @@ object::object interpreter::visit_unit(ast::unit& u)
 object::object interpreter::visit_placeholder(ast::placeholder& p)
 {
     static key underscore = key::local("_");
-    if (auto value = current_env().get(underscore); object::is_valid(value))
+    if (auto value = environment().get(underscore); object::is_valid(value))
     {
         return value;
     }

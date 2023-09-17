@@ -102,7 +102,8 @@ void run() noexcept
             continue;
         }
 
-        if (auto result = interp.eval(interp.get_env(), std::move(ast)); result)
+        if (auto result = interp.eval(interp.environment(), std::move(ast));
+            result)
         {
             fmt::print(
                 "= {}\n",
