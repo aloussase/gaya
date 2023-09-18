@@ -1,0 +1,7 @@
+(* Output: '' *)
+
+(* dict.length *)
+discard dict.length((->)) |> assert(_ == 0)
+discard dict.length((1 -> 2)) |> assert(_ == 1)
+discard dict.length((1 -> 2, 1 -> 2)) |> assert(_ == 1)
+

@@ -5,6 +5,7 @@
 
 #include <builtins/array.hpp>
 #include <builtins/core.hpp>
+#include <builtins/dict.hpp>
 #include <builtins/io.hpp>
 #include <builtins/sequence.hpp>
 #include <builtins/string.hpp>
@@ -47,6 +48,8 @@ interpreter::interpreter()
     BUILTIN("array.concat"s, 2, array::concat);
     BUILTIN("array.push"s, 2, array::push);
     BUILTIN("array.pop"s, 1, array::pop);
+
+    BUILTIN("dict.length"s, 1, dict::length);
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);

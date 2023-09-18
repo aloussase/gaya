@@ -9,8 +9,9 @@
     |> string.split(_, " ")
 ```
 
-Gaya is a scripting language I made for solving [AoC](https://adventofcode.com/)
-problems in 2023. The name comes from my favourite cat.
+Gaya is a toy scripting language I made for solving
+[AoC](https://adventofcode.com/) problems in 2023. The name comes from my
+favourite cat.
 
 I wanted to make something that makes me feel pleasure every time I use it. I
 hope this way I can give pleasure to you too.
@@ -25,6 +26,8 @@ hope this way I can give pleasure to you too.
   - Uses an efficient hash table for the environment
   - Hash keys are precomputed in AST nodes
   - Resolving identifiers statically
+
+  To see the results of some benchmarks, have a look [here](./docs/bench.md).
 
 - Elegance: The language is mostly based on expressions. Every expression that
   is not used needs to be explicitely discarded. This may be tedious at first,
