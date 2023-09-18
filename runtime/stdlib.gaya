@@ -280,6 +280,38 @@ seq.zip :: { xs, ys, func => do
   end
 }
 
+(*
+  Return a sequence that takes elements from the input sequences as long as
+  they satisfy the given predicate.
+*)
+seq.takewhile :: { xs, pred => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs) in seq.make({ =>
+      let x = seq.next(xs) in
+      cases
+        given pred(x) => x
+      end
+    })
+  end
+}
+
+(*
+  Return a sequence that drops elements from the input sequence as long as they
+  satisfy the given predicate.
+*)
+seq.dropwhile :: { xs, pred => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs) in seq.make({ =>
+      let x = seq.next(xs) in do
+        while x /= unit and pred(x) : x <- seq.next(xs)
+        end
+
+        x
+      end
+    })
+  end
+}
+
 (* Return an array with the elements of the provided sequence. *)
 seq.toarray :: { xs => do
     discard xs |> issequence(_) |> assert(_)
