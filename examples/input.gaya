@@ -1,0 +1,5 @@
+discard do
+  discard io.print("Enter your name: ")
+  let name = io.readline() in 
+  io.println(string.concat("Hello, ", name))
+end

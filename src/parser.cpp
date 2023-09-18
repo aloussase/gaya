@@ -25,13 +25,19 @@ parser::parser()
     define("tostring"s);
     define("tosequence"s);
     define("issequence"s);
+
     define("io.println"s);
+    define("io.print"s);
+    define("io.readline"s);
+
     define("string.length"s);
     define("string.concat"s);
+
     define("array.length"s);
     define("array.concat"s);
     define("array.push"s);
     define("array.pop"s);
+
     define("seq.next"s);
     define("seq.make"s);
 }
