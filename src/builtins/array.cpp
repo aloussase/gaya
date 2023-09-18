@@ -56,9 +56,11 @@ push(interpreter& interp, span span, std::vector<object> args) noexcept
         return gaya::eval::object::invalid;
     }
 
-    auto new_elems = std::vector { AS_ARRAY(args[0]) };
-    new_elems.push_back(args[1]);
+    auto& ary  = args[0];
+    auto value = args[1];
 
-    return create_array(interp, span, new_elems);
+    AS_ARRAY(ary).push_back(value);
+
+    return ary;
 }
 }
