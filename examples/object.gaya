@@ -1,7 +1,6 @@
 (* Output: 'Alina\nAlina\nDoes not understand' *)
 
 Person :: { name =>
-  let name = name in
   { msg =>
     cases
       given msg == "getName" => name
@@ -13,9 +12,9 @@ Person :: { name =>
 
 p :: Person("Alina")
 
-discard io.println(p("getName"))
+discard "getName" |> p(_) |> io.println(_)
 
-discard p("print")
+discard "print" |> p(_)
 
-discard p("someOtherMessage")
+discard "someOtherMessage" |> p(_)
 

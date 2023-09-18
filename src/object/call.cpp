@@ -49,6 +49,19 @@ object call_array(
     return elems[i];
 }
 
+object call_dict(
+    robin_hood::unordered_map<object, object>& dict,
+    span span,
+    std::vector<object> args) noexcept
+{
+    if (auto it = dict.find(args[0]); it != dict.end())
+    {
+        return it->second;
+    }
+
+    return create_unit(span);
+}
+
 object call_string(
     const std::string& string,
     interpreter& interp,
@@ -77,7 +90,7 @@ object call_string(
 }
 
 object call(
-    object o,
+    object& o,
     interpreter& interp,
     span span,
     std::vector<object> args) noexcept
@@ -91,6 +104,10 @@ object call(
     case object_type_array:
     {
         return call_array(AS_ARRAY(o), interp, span, args);
+    }
+    case object_type_dictionary:
+    {
+        return call_dict(AS_DICT(o), span, args);
     }
     case object_type_function:
     {

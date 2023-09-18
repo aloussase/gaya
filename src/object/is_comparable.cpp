@@ -4,7 +4,7 @@
 namespace gaya::eval::object
 {
 
-bool is_comparable(object o) noexcept
+bool is_comparable(const object& o) noexcept
 {
     switch (o.type)
     {
@@ -15,6 +15,7 @@ bool is_comparable(object o) noexcept
         return true;
     }
     case object_type_array:
+    case object_type_dictionary:
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:

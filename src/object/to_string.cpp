@@ -17,7 +17,8 @@ std::string number_to_string(double number)
                         : fmt::format("{:.0f}", number);
 }
 
-std::string array_to_string(interpreter& interp, std::vector<object> elems)
+std::string
+array_to_string(interpreter& interp, const std::vector<object>& elems)
 {
     std::stringstream ss;
     ss << "(";
@@ -28,6 +29,34 @@ std::string array_to_string(interpreter& interp, std::vector<object> elems)
         {
             ss << ", ";
         }
+    }
+    ss << ")";
+    return ss.str();
+}
+
+std::string dict_to_string(
+    interpreter& interp,
+    const robin_hood::unordered_map<object, object>& dict)
+{
+    if (dict.empty())
+    {
+        return "(->)";
+    }
+
+    std::stringstream ss;
+    ss << "(";
+    std::size_t i = 0;
+    for (auto& it : dict)
+    {
+        ss << to_string(interp, it.first) << " -> "
+           << to_string(interp, it.second);
+
+        if (i < dict.size() - 1)
+        {
+            ss << ", ";
+        }
+
+        i += 1;
     }
     ss << ")";
     return ss.str();
@@ -78,6 +107,10 @@ std::string to_string(interpreter& interp, object o) noexcept
     case object_type_array:
     {
         return array_to_string(interp, AS_ARRAY(o));
+    }
+    case object_type_dictionary:
+    {
+        return dict_to_string(interp, AS_DICT(o));
     }
     case object_type_function:
     {

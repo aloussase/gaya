@@ -4,7 +4,7 @@
 namespace gaya::eval::object
 {
 
-bool is_callable(object o) noexcept
+bool is_callable(const object& o) noexcept
 {
     switch (o.type)
     {
@@ -16,6 +16,7 @@ bool is_callable(object o) noexcept
     }
     case object_type_string:
     case object_type_array:
+    case object_type_dictionary:
     case object_type_function:
     case object_type_builtin_function:
     {

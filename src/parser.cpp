@@ -1198,7 +1198,18 @@ ast::expression_ptr parser::primary_expression(token token)
     }
     case token_type::lparen:
     {
-        return array(token);
+        if (auto t = _lexer.next_token(); match(t, token_type::thin_arrow))
+        {
+            return dictionary(token, nullptr);
+        }
+        else
+        {
+            if (t)
+            {
+                _lexer.push_back(t.value());
+            }
+            return array(token);
+        }
     }
     case token_type::underscore:
     {
@@ -1307,7 +1318,26 @@ ast::expression_ptr parser::array(token lparen) noexcept
         }
 
         auto expr = expression(token.value());
-        if (!expr) return nullptr;
+        if (!expr)
+        {
+            parser_error(
+                lparen.span,
+                "Expected an expression in array literal");
+            return nullptr;
+        }
+
+        /*
+         * If we see a '->' after the first expression, that means we are
+         * parsing a dictionary literal.
+         */
+        if (auto t = _lexer.next_token(); match(t, token_type::thin_arrow))
+        {
+            return dictionary(lparen, expr);
+        }
+        else
+        {
+            _lexer.push_back(t.value());
+        }
 
         elems.push_back(std::move(expr));
 
@@ -1320,11 +1350,119 @@ ast::expression_ptr parser::array(token lparen) noexcept
 
     if (auto rparen = _lexer.next_token(); !match(rparen, token_type::rparen))
     {
-        parser_error(lparen.span, "Missing ')' after array literal");
+        parser_error(
+            lparen.span,
+            fmt::format(
+                "Expected a ')' after last expression in array literal, but "
+                "got {}",
+                rparen ? '\'' + rparen->span.to_string() + '\'' : "nothing"));
         return nullptr;
     }
 
     return ast::make_node<ast::array>(lparen.span, std::move(elems));
+}
+
+ast::expression_ptr
+parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
+{
+    std::vector<ast::expression_ptr> keys;
+    std::vector<ast::expression_ptr> values;
+
+    if (first_key)
+    {
+        keys.push_back(std::move(first_key));
+    }
+
+    for (;;)
+    {
+        /* Parse the next value */
+
+        auto t = _lexer.next_token();
+        if (!t) break;
+        if (match(t, token_type::rparen))
+        {
+            _lexer.push_back(t.value());
+            break;
+        }
+
+        auto expr = expression(t.value());
+        if (!expr)
+        {
+            parser_error(
+                lparen.span,
+                "Expected an expression in dictionary literal");
+            return nullptr;
+        }
+
+        values.push_back(std::move(expr));
+
+        /* Parse an optional comma */
+
+        if (auto comma = _lexer.next_token(); match(comma, token_type::comma))
+        {
+            /* Parse the next key */
+
+            auto t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(lparen.span, "Unterminated dictionary literal");
+                return nullptr;
+            }
+
+            auto e = expression(t.value());
+            if (!e)
+            {
+                parser_error(
+                    lparen.span,
+                    "Expected an expression after comma in dictionary literal");
+                return nullptr;
+            }
+
+            keys.push_back(std::move(e));
+
+            /* Parse the arrow after the key */
+
+            auto arrow = _lexer.next_token();
+            if (!arrow)
+            {
+                parser_error(
+                    lparen.span,
+                    "Expected a '->' after key in dictionary literal");
+                return nullptr;
+            }
+        }
+        else if (comma)
+        {
+            _lexer.push_back(comma.value());
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    if (keys.size() != values.size())
+    {
+        parser_error(lparen.span, "Unmatched key(s) in dictionary literal");
+        return nullptr;
+    }
+
+    if (auto rparen = _lexer.next_token(); !match(rparen, token_type::rparen))
+    {
+        parser_error(
+            lparen.span,
+            fmt::format(
+                "Expected a ')' after last expression in dictionary literal, "
+                "but got {}",
+                rparen ? '\'' + rparen->span.to_string() + '\'' : "nothing"));
+        return nullptr;
+    }
+
+    return ast::make_node<ast::dictionary>(
+        lparen.span,
+        std::move(keys),
+        std::move(values));
 }
 
 }

@@ -54,6 +54,8 @@ private:
     [[nodiscard]] ast::expression_ptr function_expression(token lcurly);
     [[nodiscard]] ast::expression_ptr string(token) noexcept;
     [[nodiscard]] ast::expression_ptr array(token) noexcept;
+    [[nodiscard]] ast::expression_ptr
+        dictionary(token, ast::expression_ptr) noexcept;
 
     void parser_error(span, const std::string&);
     void parser_hint(span, const std::string&);

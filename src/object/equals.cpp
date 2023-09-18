@@ -4,7 +4,9 @@
 namespace gaya::eval::object
 {
 
-bool array_equals(std::vector<object> xs, std::vector<object> ys) noexcept
+bool array_equals(
+    const std::vector<object>& xs,
+    const std::vector<object>& ys) noexcept
 {
     if (xs.size() != ys.size()) return false;
 
@@ -19,7 +21,29 @@ bool array_equals(std::vector<object> xs, std::vector<object> ys) noexcept
     return true;
 }
 
-bool equals(object o1, object o2) noexcept
+bool dict_equals(
+    const robin_hood::unordered_map<object, object>& d1,
+    const robin_hood::unordered_map<object, object>& d2) noexcept
+{
+    for (auto it1 : d1)
+    {
+        if (auto it2 = d2.find(it1.first); it2 != d2.end())
+        {
+            if (!equals(it1.second, it2->second))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool equals(const object& o1, const object& o2) noexcept
 {
     if (o1.type != o2.type) return false;
 
@@ -40,6 +64,10 @@ bool equals(object o1, object o2) noexcept
     case object_type_array:
     {
         return array_equals(AS_ARRAY(o1), AS_ARRAY(o2));
+    }
+    case object_type_dictionary:
+    {
+        return dict_equals(AS_DICT(o1), AS_DICT(o2));
     }
     case object_type_function:
     case object_type_builtin_function:

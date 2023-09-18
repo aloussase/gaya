@@ -27,6 +27,7 @@ public:
     virtual eval::object::object visit_perform_expression(perform_expression&)
         = 0;
     virtual eval::object::object visit_array(array&)             = 0;
+    virtual eval::object::object visit_dictionary(dictionary&)   = 0;
     virtual eval::object::object visit_number(number&)           = 0;
     virtual eval::object::object visit_string(string&)           = 0;
     virtual eval::object::object visit_identifier(identifier&)   = 0;

@@ -77,6 +77,7 @@ public:
     visit_function_expression(ast::function_expression&) override;
     object::object visit_let_expression(ast::let_expression&) override;
     object::object visit_array(ast::array&) override;
+    object::object visit_dictionary(ast::dictionary&) override;
     object::object visit_number(ast::number&) override;
     object::object visit_string(ast::string&) override;
     object::object visit_identifier(ast::identifier&) override;

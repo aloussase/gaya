@@ -6,7 +6,7 @@
 namespace gaya::eval::object
 {
 
-object to_sequence(interpreter& interp, object o) noexcept
+object to_sequence(interpreter& interp, object& o) noexcept
 {
     switch (o.type)
     {
@@ -27,6 +27,7 @@ object to_sequence(interpreter& interp, object o) noexcept
         return create_array_sequence(interp, o.span, AS_ARRAY(o));
     }
     case object_type_unit:
+    case object_type_dictionary:
     case object_type_function:
     case object_type_builtin_function:
     case object_type_invalid:

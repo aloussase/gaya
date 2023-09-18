@@ -3,7 +3,7 @@
 namespace gaya::eval::object
 {
 
-bool is_sequence(object o) noexcept
+bool is_sequence(const object& o) noexcept
 {
     switch (o.type)
     {
@@ -15,6 +15,7 @@ bool is_sequence(object o) noexcept
         return true;
     }
     case object_type_unit:
+    case object_type_dictionary:
     case object_type_function:
     case object_type_builtin_function:
     {

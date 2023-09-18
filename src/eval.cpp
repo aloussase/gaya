@@ -202,7 +202,8 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
      * The parser already checks that the identifier is found and that it is
      * a valid assignment target.
      */
-    auto ok = environment().update_at(std::move(key), new_val, depth);
+    [[maybe_unused]] auto ok
+        = environment().update_at(std::move(key), new_val, depth);
     assert(ok);
 
     return object::invalid;
@@ -331,7 +332,7 @@ static inline object::object interpret_comparison_expression(
     auto r = expr.rhs->accept(interp);
     RETURN_IF_INVALID(r);
 
-    int result;
+    int result = 0;
 
     switch (expr.op.type)
     {
@@ -528,7 +529,7 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
         args.push_back(result);
     }
 
-    return object::call(o, *this, cexpr.span_, args);
+    return object::call(o, *this, cexpr.span_, std::move(args));
 }
 
 object::object
@@ -581,7 +582,25 @@ object::object interpreter::visit_array(ast::array& ary)
         elems.push_back(o);
     }
 
-    return object::create_array(*this, ary.span_, elems);
+    return object::create_array(*this, ary.span_, std::move(elems));
+}
+
+object::object interpreter::visit_dictionary(ast::dictionary& dict_expr)
+{
+    robin_hood::unordered_map<object::object, object::object> dict;
+
+    for (size_t i = 0; i < dict_expr.keys.size(); i++)
+    {
+        auto key = dict_expr.keys[i]->accept(*this);
+        RETURN_IF_INVALID(key);
+
+        auto value = dict_expr.values[i]->accept(*this);
+        RETURN_IF_INVALID(value);
+
+        dict.insert({ key, value });
+    }
+
+    return object::create_dictionary(*this, dict_expr.span_, std::move(dict));
 }
 
 object::object interpreter::visit_number(ast::number& n)

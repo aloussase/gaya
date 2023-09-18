@@ -41,6 +41,17 @@ static void mark(heap_object* o)
         mark_array(o->as_array);
         break;
     }
+    case object_type_dictionary:
+    {
+        for (auto it : o->as_dictionary)
+        {
+            if (IS_HEAP_OBJECT(it.second))
+            {
+                mark(AS_HEAP_OBJECT(it.second));
+            }
+        }
+        break;
+    }
     case object_type_sequence:
     {
         if (auto* user_seq
@@ -99,7 +110,7 @@ static void mark_all(interpreter& interp)
     mark_scopes(interp);
 }
 
-static void sweep(interpreter& interp, heap_object* heap_objects)
+static void sweep(heap_object* heap_objects)
 {
     auto** o = &heap_objects;
     while (*o)
@@ -121,7 +132,7 @@ static void sweep(interpreter& interp, heap_object* heap_objects)
 static void run_gc(interpreter& interp, heap_object* heap_objects)
 {
     mark_all(interp);
-    sweep(interp, heap_objects);
+    sweep(heap_objects);
 
     next_gc_threshold = bytes_allocated * 2;
 }
@@ -187,6 +198,23 @@ object create_array(
     new (ptr) heap_object { .type = object_type_array, .as_array = elems };
 
     auto o = create_object(object_type_array, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
+}
+
+object create_dictionary(
+    interpreter& interp,
+    span span,
+    const robin_hood::unordered_map<object, object>& dict) noexcept
+{
+    auto* ptr = create_heap_object(interp);
+    new (ptr) heap_object {
+        .type          = object_type_dictionary,
+        .as_dictionary = dict,
+    };
+
+    auto o = create_object(object_type_dictionary, span);
     o.box  = nanbox_from_pointer(ptr);
 
     return o;

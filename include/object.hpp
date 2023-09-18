@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <nanbox.h>
+#include <robin_hood.h>
 
 #include <span.hpp>
 
@@ -18,6 +19,7 @@
 #define AS_HEAP_OBJECT(o)      static_cast<heap_object*>(nanbox_to_pointer((o).box))
 #define AS_STRING(o)           AS_HEAP_OBJECT(o)->as_string
 #define AS_ARRAY(o)            AS_HEAP_OBJECT(o)->as_array
+#define AS_DICT(o)             AS_HEAP_OBJECT(o)->as_dictionary
 #define AS_FUNCTION(o)         AS_HEAP_OBJECT(o)->as_function
 #define AS_BUILTIN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_builtin_function
 #define AS_SEQUENCE(o)         AS_HEAP_OBJECT(o)->as_sequence
@@ -43,6 +45,7 @@ enum object_type {
     object_type_unit,
     object_type_string,
     object_type_array,
+    object_type_dictionary,
     object_type_function,
     object_type_builtin_function,
     object_type_sequence,
@@ -65,7 +68,7 @@ static object invalid = object {
     .box  = { nanbox_empty() },
 };
 
-static inline bool is_valid(object& o)
+[[nodiscard]] static inline bool is_valid(object& o) noexcept
 {
     return o.type != object_type_invalid;
 }
@@ -137,11 +140,45 @@ struct sequence
         seq;
 };
 
+[[nodiscard]] bool equals(const object&, const object&) noexcept;
+[[nodiscard]] size_t hash(const object&) noexcept;
+
+}
+
+namespace std
+{
+
+template <>
+struct hash<gaya::eval::object::object>
+{
+    size_t operator()(const gaya::eval::object::object& o) const
+    {
+        return gaya::eval::object::hash(o);
+    }
+};
+
+template <>
+struct equal_to<gaya::eval::object::object>
+{
+    bool operator()(
+        const gaya::eval::object::object& lhs,
+        const gaya::eval::object::object& rhs) const
+    {
+        return gaya::eval::object::equals(lhs, rhs);
+    }
+};
+
+}
+
+namespace gaya::eval::object
+{
+
 struct heap_object
 {
     object_type type;
     union {
         std::vector<object> as_array;
+        robin_hood::unordered_map<object, object> as_dictionary;
         std::string as_string;
         function as_function;
         builtin_function as_builtin_function;
@@ -176,6 +213,14 @@ create_string(interpreter&, span, const std::string&) noexcept;
  */
 [[nodiscard]] object
 create_array(interpreter&, span, const std::vector<object>&) noexcept;
+
+/**
+ * Create a dictionary object.
+ */
+[[nodiscard]] object create_dictionary(
+    interpreter&,
+    span,
+    const robin_hood::unordered_map<object, object>&) noexcept;
 
 /**
  * Create a function object.
@@ -229,53 +274,58 @@ create_number_sequence(interpreter&, span, double) noexcept;
 /**
  * Return a string representing the type of the object.
  */
-[[nodiscard]] std::string typeof_(object) noexcept;
+[[nodiscard]] std::string typeof_(const object&) noexcept;
 
 /**
  * Return whether the given object is truthy.
  */
-[[nodiscard]] bool is_truthy(object) noexcept;
+[[nodiscard]] bool is_truthy(const object&) noexcept;
 
 /**
  * Return whether the given object can be compared.
  */
-[[nodiscard]] bool is_comparable(object) noexcept;
+[[nodiscard]] bool is_comparable(const object&) noexcept;
 
 /**
  * Compare two objects.
  */
-[[nodiscard]] bool cmp(object, object, int*) noexcept;
+[[nodiscard]] bool cmp(const object&, const object&, int*) noexcept;
 
 /**
  * Return whether two objects are equal to each other.
  */
-[[nodiscard]] bool equals(object, object) noexcept;
+[[nodiscard]] bool equals(const object&, const object&) noexcept;
+
+/**
+ * Return a hash of the given object.
+ */
+[[nodiscard]] size_t hash(const object&) noexcept;
 
 /**
  * Return whether the given object is callable or not.
  */
-[[nodiscard]] bool is_callable(object) noexcept;
+[[nodiscard]] bool is_callable(const object&) noexcept;
 
 /**
  * For callables, return the arity of the callable.
  */
-[[nodiscard]] size_t arity(object) noexcept;
+[[nodiscard]] size_t arity(const object&) noexcept;
 
 /**
  * For callables, invoke the callable.
  */
 [[nodiscard]] object
-call(object, interpreter&, span, std::vector<object>) noexcept;
+call(object&, interpreter&, span, std::vector<object>) noexcept;
 
 /**
  * Return whether a given object participates in the sequence protocol.
  */
-[[nodiscard]] bool is_sequence(object) noexcept;
+[[nodiscard]] bool is_sequence(const object&) noexcept;
 
 /**
  * Return the corresponding sequence.
  */
-[[nodiscard]] object to_sequence(interpreter&, object) noexcept;
+[[nodiscard]] object to_sequence(interpreter&, object&) noexcept;
 
 /**
  * Should return the next element in the sequence, or an empty optional if there

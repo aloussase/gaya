@@ -252,7 +252,9 @@ void run() noexcept
 
     fmt::println("Gaya - version 0.1\n"
                  "Enter '.quit' to exit\n"
-                 "Enter '.help' to show help");
+                 "Enter '.help' to show help\n\n"
+                 "Note: Print mode is enabled. All lines will be wrapped in "
+                 "io.println.");
 
     for (;;)
     {

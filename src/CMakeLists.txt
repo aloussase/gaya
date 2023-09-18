@@ -13,6 +13,7 @@ add_executable(gaya main.cpp
     object/call.cpp
     object/cmp.cpp
     object/equals.cpp
+    object/hash.cpp
     object/is_callable.cpp
     object/is_comparable.cpp
     object/is_sequence.cpp
@@ -28,7 +29,7 @@ add_executable(gaya main.cpp
     builtins/sequence.cpp)
 
 target_compile_options(gaya PRIVATE -Wall -Wextra
-    $<$<CONFIG:Release>:-Os>
+    $<$<CONFIG:Release>:-O2 -Wno-return-type>
     $<$<CONFIG:Debug>:-g>)
 
 

@@ -16,4 +16,4 @@ jobs:
           cmake --build build
 
       - name: Test examples
-        run: ./scripts/test_examples.sh
+        run: ./scripts/test.sh

@@ -1,0 +1,34 @@
+(* Output: '(1 -> "Hello", "Hello" -> 1)\n(->)' *)
+
+(* testing to_string *)
+discard io.println((1 -> "Hello", "Hello" -> 1))
+discard io.println((->))
+
+(* typeof dict is dictionary *)
+discard typeof((->)) |> assert(_ == "dictionary")
+
+(* empty dicts are considered false *)
+discard 
+  cases 
+    given (->) => assert(false)
+  end
+
+(* non-empty dicts are considered true *)
+discard
+  cases 
+    given (1 -> 2) => assert(true)
+    otherwise      => assert(false)
+  end
+
+(* dicts can be compared for equality *)
+discard assert((1 -> 2) == (1 -> 2))
+
+(* strings can be used as keys in dicts *)
+discard ("Hello" -> "World")("Hello") |> assert(_ == "World")
+
+(* dicts can be used as keys in dicts *)
+discard ((42 -> 69) -> "Hello")((42 -> 69)) |> assert(_ == "Hello")
+
+(* arrays can be used as keys in dicts *)
+discard ((1, 2, 3) -> "Hello")(array.range(1, 4)) |> assert(_ == "Hello")
+

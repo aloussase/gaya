@@ -1,11 +1,9 @@
 (* Output: '45' *)
 
 sumFirstN :: { n =>
-  let sum = 0 in
-  let i = 0 in do
-    while i < n
+  let sum = 0, i = 0 in do
+    while i < n : i <- i + 1
       sum <- sum + i
-      i <- i + 1
     end
 
     sum

@@ -238,6 +238,34 @@ object array::accept(ast_visitor& v)
     return v.visit_array(*this);
 }
 
+std::string dictionary::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "dictionary", "elems": [)";
+
+    for (size_t i = 0; i < keys.size(); i++)
+    {
+        auto key   = keys[i];
+        auto value = values[i];
+
+        ss << R"({"key": )" << key->to_string() << R"(, "value": )"
+           << value->to_string() << "}";
+
+        if (i < keys.size() - 1)
+        {
+            ss << ", ";
+        }
+    }
+
+    ss << "]}";
+    return ss.str();
+}
+
+object dictionary::accept(ast_visitor& v)
+{
+    return v.visit_dictionary(*this);
+}
+
 std::string number::to_string() const noexcept
 {
     std::stringstream ss;

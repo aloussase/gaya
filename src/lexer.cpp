@@ -269,6 +269,13 @@ std::optional<token> lexer::dash() noexcept
         advance();
         return number();
     }
+
+    if (auto c = peek(); c && c == '>')
+    {
+        advance();
+        return mk_token(token_type::thin_arrow);
+    }
+
     return mk_token(token_type::dash);
 }
 
@@ -317,7 +324,7 @@ std::optional<token> lexer::number() noexcept
 
 std::optional<token> lexer::string() noexcept
 {
-    char previous;
+    char previous = '\0';
 
     for (;;)
     {

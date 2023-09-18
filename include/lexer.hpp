@@ -45,6 +45,7 @@ enum class token_type {
     slash,
     star,
     string,
+    thin_arrow,
     underscore,
     unit,
     while_,

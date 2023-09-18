@@ -313,6 +313,26 @@ struct array final : public expression
     std::vector<expression_ptr> elems;
 };
 
+struct dictionary final : public expression
+{
+    dictionary(
+        span s,
+        std::vector<expression_ptr> k,
+        std::vector<expression_ptr> v)
+        : span_ { s }
+        , keys { std::move(k) }
+        , values { std::move(v) }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    object accept(ast_visitor&) override;
+
+    span span_;
+    std::vector<expression_ptr> keys;
+    std::vector<expression_ptr> values;
+};
+
 struct number final : public expression
 {
     number(span s, double v)

@@ -19,7 +19,8 @@ print_ast(const char* filename, const char* source) noexcept
     auto interp  = gaya::eval::interpreter {};
     auto& parser = interp.get_parser();
 
-    if (auto ast = parser.parse(filename, source); ast)
+    if (auto ast = parser.parse(filename, source);
+        ast && parser.diagnostics().empty())
     {
         fmt::println("{}", ast->to_string());
         return true;

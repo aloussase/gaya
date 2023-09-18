@@ -5,7 +5,7 @@
 namespace gaya::eval::object
 {
 
-bool cmp(object o1, object o2, int* result) noexcept
+bool cmp(const object& o1, const object& o2, int* result) noexcept
 {
     if (o1.type != o2.type) return false;
 
@@ -30,6 +30,7 @@ bool cmp(object o1, object o2, int* result) noexcept
         return true;
     }
     case object_type_array:
+    case object_type_dictionary:
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:

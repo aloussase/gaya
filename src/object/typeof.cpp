@@ -3,7 +3,7 @@
 namespace gaya::eval::object
 {
 
-std::string typeof_(object o) noexcept
+std::string typeof_(const object& o) noexcept
 {
     switch (o.type)
     {
@@ -22,6 +22,10 @@ std::string typeof_(object o) noexcept
     case object_type_array:
     {
         return "array";
+    }
+    case object_type_dictionary:
+    {
+        return "dictionary";
     }
     case object_type_function:
     case object_type_builtin_function:

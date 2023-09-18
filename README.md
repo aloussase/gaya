@@ -12,18 +12,19 @@
 Gaya is a scripting language I made for solving [AoC](https://adventofcode.com/)
 problems in 2023. The name comes from my favourite cat.
 
-Since its a toy language, its focus is on elegance above anything else. I
-wanted something that makes me feel pleasure every time I use it. I hope this
-way I can give pleasure to you too.
+I wanted to make something that makes me feel pleasure every time I use it. I
+hope this way I can give pleasure to you too.
 
 #### Features
 
-- _Blazingly Fast (for a tree-walk interpreter)_: Gaya implements a number of
-  optimizations, such as:
+- _Blazingly Fast_ (for a tree-walk interpreter): Gaya implements a number of
+  optimizations that make it faster than Python in some benchmarks. Some of
+  these optimizations are:
 
   - NaN Boxing
   - Uses an efficient hash table for the environment
   - Hash keys are precomputed in AST nodes
+  - Resolving identifiers statically
 
 - Elegance: The language is mostly based on expressions. Every expression that
   is not used needs to be explicitely discarded. This may be tedious at first,
@@ -55,14 +56,24 @@ much slower.
 
 You can read the language documentation [here](./docs/toc.md).
 
-For examples, take a look at the `examples` directory of at the standard
-library at `runtime/stdlib.gaya`.
+For examples, take a look at the `examples` directory or at the standard
+library at `runtime/stdlib.gaya`. You can also peek at the tests if you want,
+though they may not use the latest features of the language.
 
 ### Feedback & Contributing
 
 Please feel free to open an issue or PR if you think you can make Gaya better!
 The only prerequisites for contributing is getting familiar with codebase style
 and using a code formatter that respects the project's configuration.
+
+Areas in which you can help are:
+
+- Open issues or PRs about confusing or uninformative diagnostics
+- Open issues or PRs about segfaults (this is C++ after all hehe)
+- Open issues or PRs to add something to the standard library
+
+Of course, if something you thought about isn't on that list, feel free to
+open an issue or PR about is anyway!
 
 #### License
 

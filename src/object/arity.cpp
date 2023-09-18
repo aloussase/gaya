@@ -6,13 +6,14 @@
 namespace gaya::eval::object
 {
 
-size_t arity(object o) noexcept
+size_t arity(const object& o) noexcept
 {
     switch (o.type)
     {
 
     case object_type_string:
     case object_type_array:
+    case object_type_dictionary:
     {
         return 1;
     }

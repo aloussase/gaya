@@ -5,7 +5,7 @@
 namespace gaya::eval::object
 {
 
-bool is_truthy(object o) noexcept
+bool is_truthy(const object& o) noexcept
 {
     switch (o.type)
     {
@@ -24,6 +24,10 @@ bool is_truthy(object o) noexcept
     case object_type_array:
     {
         return !AS_ARRAY(o).empty();
+    }
+    case object_type_dictionary:
+    {
+        return !AS_DICT(o).empty();
     }
     case object_type_function:
     case object_type_builtin_function:

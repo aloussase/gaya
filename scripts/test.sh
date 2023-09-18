@@ -37,7 +37,7 @@ test_error()
     [ $? -ne 0 ] && echo "ok"
 }
 
-for example in examples/*; do
+for example in examples/* tests/*; do
     is_output_test=`cat "$example" | grep 'Output:'`
     is_error_test=`cat "$example" | grep 'Expect error'`
 
