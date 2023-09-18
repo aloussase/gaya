@@ -9,8 +9,10 @@
 namespace gaya::eval::object::builtin::io
 {
 
-gaya::eval::object::object
-println(interpreter& interp, span span, std::vector<object> args) noexcept
+gaya::eval::object::object println(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
 {
     using namespace gaya::eval::object;
 
@@ -29,7 +31,7 @@ println(interpreter& interp, span span, std::vector<object> args) noexcept
 }
 
 gaya::eval::object::object
-print(interpreter& interp, span span, std::vector<object> args) noexcept
+print(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     using namespace gaya::eval::object;
 
@@ -48,7 +50,7 @@ print(interpreter& interp, span span, std::vector<object> args) noexcept
 }
 
 gaya::eval::object::object
-readline(interpreter& interp, span span, std::vector<object>) noexcept
+readline(interpreter& interp, span span, const std::vector<object>&) noexcept
 {
     std::string line;
     std::getline(std::cin, line);

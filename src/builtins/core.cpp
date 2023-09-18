@@ -7,16 +7,20 @@
 namespace gaya::eval::object::builtin::core
 {
 
-gaya::eval::object::object
-typeof_(interpreter& interp, span span, std::vector<object> args) noexcept
+gaya::eval::object::object typeof_(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
 {
     auto& o   = args[0];
     auto type = gaya::eval::object::typeof_(o);
     return create_string(interp, span, type);
 }
 
-gaya::eval::object::object
-assert_(interpreter& interp, span span, std::vector<object> args) noexcept
+gaya::eval::object::object assert_(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
 {
     using namespace gaya::eval::object;
 
@@ -37,8 +41,10 @@ assert_(interpreter& interp, span span, std::vector<object> args) noexcept
     }
 }
 
-gaya::eval::object::object
-tostring(interpreter& interp, span span, std::vector<object> args) noexcept
+gaya::eval::object::object tostring(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
 {
     if (args[0].type == gaya::eval::object::object_type_string)
     {
@@ -53,15 +59,17 @@ tostring(interpreter& interp, span span, std::vector<object> args) noexcept
 /* issequence */
 
 gaya::eval::object::object
-issequence(interpreter&, span span, std::vector<object> args) noexcept
+issequence(interpreter&, span span, const std::vector<object>& args) noexcept
 {
     return create_number(span, gaya::eval::object::is_sequence(args[0]));
 }
 
 /* tosequence */
 
-gaya::eval::object::object
-tosequence(interpreter& interp, span span, std::vector<object> args) noexcept
+gaya::eval::object::object tosequence(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
 {
     using namespace gaya::eval::object;
 
@@ -74,7 +82,9 @@ tosequence(interpreter& interp, span span, std::vector<object> args) noexcept
                 to_string(interp, args[0])));
     }
 
-    auto sequence = to_sequence(interp, args[0]);
+    auto arg      = args[0];
+    auto sequence = to_sequence(interp, arg);
+
     return sequence;
 }
 

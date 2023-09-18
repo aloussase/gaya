@@ -9,7 +9,7 @@ namespace gaya::eval::object::builtin::string
 gaya::eval::object::object length(
     interpreter& interp,
     span span,
-    std::vector<gaya::eval::object::object> args) noexcept
+    const std::vector<gaya::eval::object::object>& args) noexcept
 {
     auto o = args[0];
 
@@ -25,7 +25,7 @@ gaya::eval::object::object length(
 gaya::eval::object::object concat(
     interpreter& interp,
     span span,
-    std::vector<gaya::eval::object::object> args) noexcept
+    const std::vector<gaya::eval::object::object>& args) noexcept
 {
     if (args[0].type != object_type_string
         || args[1].type != object_type_string)

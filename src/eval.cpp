@@ -508,9 +508,10 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
         return object::invalid;
     }
 
-    auto arity = object::arity(o);
+    auto arity   = object::arity(o);
+    size_t nargs = cexpr.args.size();
 
-    if (arity != cexpr.args.size())
+    if (arity != nargs)
     {
         interp_error(
             cexpr.span_,
@@ -522,16 +523,15 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
         return object::invalid;
     }
 
-    std::vector<object::object> args;
-    for (auto& arg : cexpr.args)
+    for (size_t i = 0; i < nargs; i++)
     {
-        auto result = arg->accept(*this);
+        auto result = cexpr.args[i]->accept(*this);
         RETURN_IF_INVALID(result);
 
-        args.push_back(result);
+        cexpr.oargs[i] = std::move(result);
     }
 
-    return object::call(o, *this, cexpr.span_, std::move(args));
+    return object::call(o, *this, cexpr.span_, cexpr.oargs);
 }
 
 object::object

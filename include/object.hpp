@@ -88,7 +88,7 @@ struct function final
 struct builtin_function
 {
     using invoke_t
-        = std::function<object(interpreter&, span, std::vector<object>)>;
+        = std::function<object(interpreter&, span, const std::vector<object>&)>;
 
     size_t arity;
     std::string name;
@@ -315,7 +315,7 @@ create_number_sequence(interpreter&, span, double) noexcept;
  * For callables, invoke the callable.
  */
 [[nodiscard]] object
-call(object&, interpreter&, span, std::vector<object>) noexcept;
+call(object&, interpreter&, span, const std::vector<object>&) noexcept;
 
 /**
  * Return whether a given object participates in the sequence protocol.

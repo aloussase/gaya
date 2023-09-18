@@ -188,6 +188,7 @@ struct call_expression final : public expression
         : span_ { s }
         , target { std::move(t) }
         , args { std::move(a) }
+        , oargs(args.size(), gaya::eval::object::invalid)
     {
     }
 
@@ -197,6 +198,7 @@ struct call_expression final : public expression
     span span_;
     expression_ptr target;
     std::vector<expression_ptr> args;
+    std::vector<gaya::eval::object::object> oargs;
 };
 
 struct function_expression final : public expression

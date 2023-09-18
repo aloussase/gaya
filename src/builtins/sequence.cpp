@@ -9,7 +9,7 @@ namespace gaya::eval::object::builtin::sequence
 /* seq.next */
 
 gaya::eval::object::object
-next(interpreter& interp, span span, std::vector<object> args) noexcept
+next(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     if (args[0].type != object_type_sequence)
     {
@@ -24,7 +24,7 @@ next(interpreter& interp, span span, std::vector<object> args) noexcept
 /* seq.make */
 
 gaya::eval::object::object
-make(interpreter& interp, span span, std::vector<object> args) noexcept
+make(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     auto next = args[0];
 

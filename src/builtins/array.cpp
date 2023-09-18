@@ -7,7 +7,7 @@ namespace gaya::eval::object::builtin::array
 {
 
 gaya::eval::object::object
-length(interpreter& interp, span span, std::vector<object> args) noexcept
+length(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     auto o = args[0];
 
@@ -21,7 +21,7 @@ length(interpreter& interp, span span, std::vector<object> args) noexcept
 }
 
 gaya::eval::object::object
-concat(interpreter& interp, span span, std::vector<object> args) noexcept
+concat(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     if (args[0].type != object_type_array || args[1].type != object_type_array)
     {
@@ -41,7 +41,7 @@ concat(interpreter& interp, span span, std::vector<object> args) noexcept
 }
 
 gaya::eval::object::object
-push(interpreter& interp, span span, std::vector<object> args) noexcept
+push(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     if (args[0].type != object_type_array)
     {
@@ -49,16 +49,13 @@ push(interpreter& interp, span span, std::vector<object> args) noexcept
         return gaya::eval::object::invalid;
     }
 
-    auto& ary  = args[0];
-    auto value = args[1];
+    AS_ARRAY(args[0]).push_back(std::move(args[1]));
 
-    AS_ARRAY(ary).push_back(value);
-
-    return ary;
+    return args[0];
 }
 
 gaya::eval::object::object
-pop(interpreter& interp, span span, std::vector<object> args) noexcept
+pop(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     if (args[0].type != object_type_array)
     {

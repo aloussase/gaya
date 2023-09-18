@@ -2,4 +2,3 @@ build
 compile_commands.json
 callgrind.*
 example.*
-bench

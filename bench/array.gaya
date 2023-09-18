@@ -1,0 +1,7 @@
+
+discard
+  let i = 0, xs = () in perform
+  while i < 1000000 : i <- i + 1
+    discard array.push(xs, i)
+  end
+

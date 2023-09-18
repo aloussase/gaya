@@ -8,9 +8,9 @@ namespace gaya::eval::object::builtin::sequence
 /* TODO: Document these. */
 
 gaya::eval::object::object
-next(interpreter&, span, std::vector<object>) noexcept;
+next(interpreter&, span, const std::vector<object>&) noexcept;
 
 gaya::eval::object::object
-make(interpreter&, span, std::vector<object>) noexcept;
+make(interpreter&, span, const std::vector<object>&) noexcept;
 
 }

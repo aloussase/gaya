@@ -1,5 +1,6 @@
-(* Output: 'Alina\nAlina\nDoes not understand' *)
+(* Output: 'Gaya\nGaya\nDoes not understand\nGaya' *)
 
+(* Take 1: Using a closure. *)
 Person :: { name =>
   { msg =>
     cases
@@ -10,11 +11,23 @@ Person :: { name =>
   }
 }
 
-p :: Person("Alina")
+p :: Person("Gaya")
 
 discard "getName" |> p(_) |> io.println(_)
-
 discard "print" |> p(_)
-
 discard "someOtherMessage" |> p(_)
 
+(* Take 2: Using a dict with functions. *)
+Person :: { name =>
+  (* We can't handle receiving unwanted messages. *)
+  ( "getName" -> name
+  , "print" -> { => io.println(name) }
+  )
+}
+
+
+p :: Person("Gaya")
+
+discard p("getName") |> assert(_ == "Gaya")
+discard p("print")()
+discard p("someOtherMessage") |> assert(_ == unit)

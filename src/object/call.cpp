@@ -10,7 +10,7 @@ namespace gaya::eval::object
 object call_function(
     function& func,
     interpreter& interp,
-    std::vector<object> args) noexcept
+    const std::vector<object>& args) noexcept
 {
     interp.begin_scope(env { func.closed_over_env });
     for (size_t i = 0; i < args.size(); i++)
@@ -26,7 +26,7 @@ object call_array(
     std::vector<object>& elems,
     interpreter& interp,
     span span,
-    std::vector<object> args) noexcept
+    const std::vector<object>& args) noexcept
 {
     if (!IS_NUMBER(args[0]))
     {
@@ -52,7 +52,7 @@ object call_array(
 object call_dict(
     robin_hood::unordered_map<object, object>& dict,
     span span,
-    std::vector<object> args) noexcept
+    const std::vector<object>& args) noexcept
 {
     if (auto it = dict.find(args[0]); it != dict.end())
     {
@@ -66,7 +66,7 @@ object call_string(
     const std::string& string,
     interpreter& interp,
     span span,
-    std::vector<object> args) noexcept
+    const std::vector<object>& args) noexcept
 {
     if (!IS_NUMBER(args[0]))
     {
@@ -93,7 +93,7 @@ object call(
     object& o,
     interpreter& interp,
     span span,
-    std::vector<object> args) noexcept
+    const std::vector<object>& args) noexcept
 {
     switch (o.type)
     {
