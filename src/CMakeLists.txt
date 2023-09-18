@@ -39,7 +39,7 @@ target_compile_definitions(gaya PRIVATE
     GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${GAYA_RUNTIME_STDLIB}","runtime/stdlib.gaya">
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>)
 
-target_link_libraries(gaya PRIVATE fmt::fmt readline)
+target_link_libraries(gaya PRIVATE fmt::fmt)
 
 install(
     TARGETS gaya

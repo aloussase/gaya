@@ -35,7 +35,7 @@ parser::parser()
     define("seq.make"s);
 }
 
-std::vector<diagnostic::diagnostic> parser::diagnostics() const noexcept
+std::vector<diagnostic::diagnostic>& parser::diagnostics() noexcept
 {
     return _diagnostics;
 }

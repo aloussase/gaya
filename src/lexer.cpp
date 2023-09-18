@@ -2,24 +2,25 @@
 
 #include <lexer.hpp>
 
+std::unordered_map<std::string, token_type> lexer::_keywords = {
+    { "discard", token_type::discard }, { "let", token_type::let },
+    { "in", token_type::in },           { "do", token_type::do_ },
+    { "unit", token_type::unit },       { "cases", token_type::cases },
+    { "given", token_type::given },     { "otherwise", token_type::otherwise },
+    { "end", token_type::end },         { "while", token_type::while_ },
+    { "not", token_type::not_ },        { "perform", token_type::perform },
+    { "and", token_type::and_ },        { "or", token_type::or_ },
+};
+
 lexer::lexer(const char* source)
     : _current { const_cast<char*>(source) }
     , _source { source }
 {
-    _keywords.insert({ "discard", token_type::discard });
-    _keywords.insert({ "let", token_type::let });
-    _keywords.insert({ "in", token_type::in });
-    _keywords.insert({ "do", token_type::do_ });
-    _keywords.insert({ "unit", token_type::unit });
-    _keywords.insert({ "cases", token_type::cases });
-    _keywords.insert({ "given", token_type::given });
-    _keywords.insert({ "otherwise", token_type::otherwise });
-    _keywords.insert({ "end", token_type::end });
-    _keywords.insert({ "while", token_type::while_ });
-    _keywords.insert({ "not", token_type::not_ });
-    _keywords.insert({ "perform", token_type::perform });
-    _keywords.insert({ "and", token_type::and_ });
-    _keywords.insert({ "or", token_type::or_ });
+}
+
+bool lexer::is_keyword(const std::string& w) noexcept
+{
+    return _keywords.contains(w);
 }
 
 std::optional<char> lexer::advance() noexcept

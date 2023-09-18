@@ -85,6 +85,8 @@ public:
         }
     }
 
+    [[nodiscard]] static bool is_keyword(const std::string&) noexcept;
+
 private:
     std::optional<char> advance() noexcept;
 
@@ -120,5 +122,5 @@ private:
     const char* _source       = nullptr;
     std::queue<token> _buffer = {};
     std::vector<diagnostic::diagnostic> _diagnostics;
-    std::unordered_map<std::string, token_type> _keywords;
+    static std::unordered_map<std::string, token_type> _keywords;
 };

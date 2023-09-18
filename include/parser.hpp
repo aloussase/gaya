@@ -20,8 +20,7 @@ public:
     [[nodiscard]] ast::node_ptr
     parse(const std::string& filename, const char* source) noexcept;
 
-    [[nodiscard]] std::vector<diagnostic::diagnostic>
-    diagnostics() const noexcept;
+    [[nodiscard]] std::vector<diagnostic::diagnostic>& diagnostics() noexcept;
 
 private:
     std::vector<ast::stmt_ptr> stmts() noexcept;

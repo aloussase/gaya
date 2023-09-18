@@ -201,7 +201,8 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
      * The parser already checks that the identifier is found and that it is
      * a valid assignment target.
      */
-    assert(environment().update_at(std::move(key), new_val, depth));
+    auto ok = environment().update_at(std::move(key), new_val, depth);
+    assert(ok);
 
     return object::invalid;
 }
