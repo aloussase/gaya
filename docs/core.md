@@ -164,6 +164,18 @@ add :: { x, y => x + y }
 discard add(1, 2) (* Output: 3 *)
 ```
 
+Finally, if the last argument to function call is a function, you can put it
+outside the parenthesis:
+
+```ocaml
+discard
+  (1, 2, 3, 4)
+  |> seq.takewhile(_) { x => x < 4 }
+  |> seq.dropwhile(_) { x => x < 2 }
+  |> seq.toarray(_)
+  |> assert(_ == (2, 3))
+```
+
 ## Let Expression <a name="let-expression">
 
 `let` expressions are used to introduce local bindings. Its syntax is:

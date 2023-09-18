@@ -34,7 +34,19 @@ discard
 
 discard 
   (1, 2, 3, 4)
-  |> seq.takewhile(_, { x => x < 4 })
-  |> seq.dropwhile(_, { x => x < 2 })
+  |> seq.takewhile(_) { x => x < 4 }
+  |> seq.dropwhile(_) { x => x < 2 }
   |> seq.toarray(_)
   |> assert(_ == (2, 3))
+
+discard 
+  "  Hello  "
+  |> seq.dropwhile(_, string.iswhitespace)
+  |> seq.tostring(_)
+  |> assert(_ == "Hello  ")
+
+discard 
+  "Hello   world"
+  |> seq.takewhile(_) { c => not string.iswhitespace(c) }
+  |> seq.tostring(_)
+  |> assert(_ == "Hello")

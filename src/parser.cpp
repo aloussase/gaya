@@ -800,11 +800,6 @@ ast::expression_ptr parser::perform_expression(token op) noexcept
  */
 ast::expression_ptr parser::call_expression(token starttoken)
 {
-    auto assert_token = [](auto token) {
-        assert(
-            token && "parser::call_expression: expected token to have a value");
-    };
-
     auto expr = primary_expression(starttoken);
     if (!expr) return nullptr;
 
@@ -813,29 +808,38 @@ ast::expression_ptr parser::call_expression(token starttoken)
         auto lparen = _lexer.next_token();
         if (!lparen) break;
 
+        auto has_argument_list = true;
+        std::vector<ast::expression_ptr> args;
+
         if (!match(lparen, token_type::lparen))
         {
-            // Not a function call.
-            assert_token(lparen);
-            _lexer.push_back(lparen.value());
-            break;
+            if (match(lparen, token_type::lcurly))
+            {
+                auto function = function_expression(lparen.value());
+                if (!function) return nullptr;
+                args.push_back(function);
+                has_argument_list = false;
+            }
+            else
+            {
+                _lexer.push_back(lparen.value());
+                break;
+            }
         }
-
-        std::vector<ast::expression_ptr> args;
 
         for (;;)
         {
+            if (!has_argument_list) break;
+
             auto expr_token = _lexer.next_token();
             if (!expr_token) break;
 
             if (match(expr_token, token_type::rparen))
             {
-                assert_token(expr_token);
                 _lexer.push_back(expr_token.value());
                 break;
             }
 
-            assert_token(expr_token);
             auto arg = expression(expr_token.value());
             if (!arg) return nullptr;
 
@@ -846,7 +850,6 @@ ast::expression_ptr parser::call_expression(token starttoken)
 
             if (!match(comma, token_type::comma))
             {
-                assert_token(comma);
                 _lexer.push_back(comma.value());
                 break;
             }
@@ -855,8 +858,29 @@ ast::expression_ptr parser::call_expression(token starttoken)
         if (auto rparen = _lexer.next_token();
             !match(rparen, token_type::rparen))
         {
-            parser_error(starttoken.span, "Missing ')' after function call");
-            return nullptr;
+            if (has_argument_list)
+            {
+                parser_error(
+                    starttoken.span,
+                    "Missing ')' after function call");
+                return nullptr;
+            }
+            else
+            {
+                _lexer.push_back(rparen.value());
+            }
+        }
+
+        if (auto token = _lexer.next_token();
+            has_argument_list && match(token, token_type::lcurly))
+        {
+            auto function = function_expression(lparen.value());
+            if (!function) return nullptr;
+            args.push_back(function);
+        }
+        else if (token)
+        {
+            _lexer.push_back(token.value());
         }
 
         expr = ast::make_node<ast::call_expression>(
