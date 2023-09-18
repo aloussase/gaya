@@ -279,3 +279,16 @@ seq.zip :: { xs, ys, func => do
     })
   end
 }
+
+(* Return an array with the elements of the provided sequence. *)
+seq.toarray :: { xs => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs), x = seq.next(xs), ary = () in do
+      while x /= unit : x <- seq.next(xs)
+        discard array.push(ary, x)
+      end
+
+      ary
+    end
+  end
+}

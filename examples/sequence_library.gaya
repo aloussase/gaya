@@ -24,3 +24,10 @@ discard
   |> tosequence(_)
   |> seq.filter(_, { x => x < 1 })
   |> io.println(_)
+
+discard
+  (1, 2, 3, 4)
+  |> seq.map(_, { x => x + 1 })
+  |> seq.filter(_, { x => x < 3 })
+  |> seq.toarray(_)
+  |> assert(_ == (2))

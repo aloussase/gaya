@@ -44,6 +44,7 @@ interpreter::interpreter()
     BUILTIN("array.length"s, 1, array::length);
     BUILTIN("array.concat"s, 2, array::concat);
     BUILTIN("array.push"s, 2, array::push);
+    BUILTIN("array.pop"s, 1, array::pop);
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
@@ -82,7 +83,7 @@ interpreter::eval(const std::string& filename, const char* source) noexcept
     _filename = filename;
     auto ast  = _parser.parse(filename, source);
 
-    if (!_parser.diagnostics().empty())
+    if (!ast || !_parser.diagnostics().empty())
     {
         _diagnostics = _parser.diagnostics();
         return {};
@@ -450,9 +451,9 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
         define(underscore, replacement);
 
         auto result = binop.rhs->accept(*this);
-        RETURN_IF_INVALID(result);
-
         end_scope();
+
+        RETURN_IF_INVALID(result);
 
         return result;
     }

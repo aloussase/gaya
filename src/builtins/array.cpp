@@ -56,4 +56,27 @@ push(interpreter& interp, span span, std::vector<object> args) noexcept
 
     return ary;
 }
+
+gaya::eval::object::object
+pop(interpreter& interp, span span, std::vector<object> args) noexcept
+{
+    if (args[0].type != object_type_array)
+    {
+        interp.interp_error(span, "Expected first argument to be an array");
+        return gaya::eval::object::invalid;
+    }
+
+    auto& ary = AS_ARRAY(args[0]);
+
+    if (ary.empty())
+    {
+        return create_unit(span);
+    }
+
+    auto value = ary.back();
+    ary.pop_back();
+
+    return value;
+}
+
 }

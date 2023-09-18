@@ -31,6 +31,7 @@ parser::parser()
     define("array.length"s);
     define("array.concat"s);
     define("array.push"s);
+    define("array.pop"s);
     define("seq.next"s);
     define("seq.make"s);
 }

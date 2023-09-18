@@ -18,3 +18,8 @@ discard array.range(10, 1) |> assert(_ == ())
 discard array.join((), "") |> assert(_ == "")
 discard array.join((1, 2, 3), ", ") |> assert(_ == "1, 2, 3")
 discard array.join(((1, 2, 3)), ", ") |> assert(_ == "(1, 2, 3)")
+
+(* Pop *)
+discard array.pop(()) |> assert(_ == unit)
+discard array.pop((1, 2, 3)) |> assert(_ == 3)
+discard array.pop(("Hello", 12, "World")) |> assert(_ == "World")
