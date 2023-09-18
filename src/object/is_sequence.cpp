@@ -11,11 +11,11 @@ bool is_sequence(const object& o) noexcept
     case object_type_sequence:
     case object_type_string:
     case object_type_array:
+    case object_type_dictionary:
     {
         return true;
     }
     case object_type_unit:
-    case object_type_dictionary:
     case object_type_function:
     case object_type_builtin_function:
     {

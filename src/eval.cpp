@@ -507,10 +507,16 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
 
     if (!object::is_callable(o))
     {
-        interp_error(cexpr.span_, "Tried to call non-callable");
+        interp_error(
+            cexpr.span_,
+            fmt::format(
+                "Expected a callable but got: {}",
+                object::to_string(*this, o)));
+
         interp_hint(
             cexpr.span_,
             "To define a function, do f :: { <args> => <expr> }");
+
         return object::invalid;
     }
 

@@ -27,6 +27,7 @@ syntax match gayaOperator /\v\s+\<-\s+/
 syntax match gayaOperator /\s\+\(==\|>=\|<=\)\s\+/
 syntax match gayaOperator /\v\s+[+-=/*><]\s+/
 syntax match gayaOperator /|>/
+syntax match gayaOperator /->/
 highlight link gayaOperator Operator
 
 " Functions

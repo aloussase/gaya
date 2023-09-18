@@ -26,8 +26,11 @@ object to_sequence(interpreter& interp, object& o) noexcept
     {
         return create_array_sequence(interp, o.span, AS_ARRAY(o));
     }
-    case object_type_unit:
     case object_type_dictionary:
+    {
+        return create_dict_sequence(interp, o.span, AS_DICT(o));
+    }
+    case object_type_unit:
     case object_type_function:
     case object_type_builtin_function:
     case object_type_invalid:

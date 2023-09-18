@@ -346,3 +346,11 @@ seq.tostring :: { xs => do
     end
   end
 }
+
+(* Dictionaries *)
+
+(* Return a sequence over the keys of the provided dictionary. *)
+dict.keys :: { dict => dict |> seq.map(_) { xs => xs(0) } }
+
+(* Return a sequence over the values of the provided dictionary. *)
+dict.values :: { dict => dict |> seq.map(_) { xs => xs(1) } }

@@ -324,4 +324,33 @@ create_user_sequence(span span, interpreter& interp, object next_func) noexcept
     return o;
 }
 
+[[nodiscard]] object create_dict_sequence(
+    interpreter& interp,
+    span span,
+    const robin_hood::unordered_map<object, object>& dict) noexcept
+{
+    auto* ptr = create_heap_object(interp);
+
+    std::vector<object> keys(dict.size(), invalid);
+    std::vector<object> values(dict.size(), invalid);
+
+    size_t i = 0;
+
+    for (const auto& [k, v] : dict)
+    {
+        keys[i]   = k;
+        values[i] = v;
+        i         = i + 1;
+    }
+
+    dict_sequence dict_seq = { keys, values };
+    sequence seq           = { span, sequence_type_dict, dict_seq };
+    new (ptr) heap_object { .type = object_type_sequence, .as_sequence = seq };
+
+    auto o = create_object(object_type_sequence, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
+}
+
 }

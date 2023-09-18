@@ -58,6 +58,39 @@ struct object
     nanbox_t box;
 };
 
+[[nodiscard]] bool equals(const object&, const object&) noexcept;
+[[nodiscard]] size_t hash(const object&) noexcept;
+
+}
+
+namespace std
+{
+
+template <>
+struct hash<gaya::eval::object::object>
+{
+    size_t operator()(const gaya::eval::object::object& o) const
+    {
+        return gaya::eval::object::hash(o);
+    }
+};
+
+template <>
+struct equal_to<gaya::eval::object::object>
+{
+    bool operator()(
+        const gaya::eval::object::object& lhs,
+        const gaya::eval::object::object& rhs) const
+    {
+        return gaya::eval::object::equals(lhs, rhs);
+    }
+};
+
+}
+
+namespace gaya::eval::object
+{
+
 /*
  * Special object to signal an error return
  * in the interpreter.
@@ -121,11 +154,19 @@ struct user_defined_sequence final
     object next_func;
 };
 
+struct dict_sequence final
+{
+    std::vector<object> keys;
+    std::vector<object> values;
+    size_t i = 0;
+};
+
 enum sequence_type {
     sequence_type_string,
     sequence_type_array,
     sequence_type_number,
     sequence_type_user,
+    sequence_type_dict,
 };
 
 struct sequence
@@ -136,42 +177,10 @@ struct sequence
         string_sequence,
         array_sequence,
         number_sequence,
-        user_defined_sequence>
+        user_defined_sequence,
+        dict_sequence>
         seq;
 };
-
-[[nodiscard]] bool equals(const object&, const object&) noexcept;
-[[nodiscard]] size_t hash(const object&) noexcept;
-
-}
-
-namespace std
-{
-
-template <>
-struct hash<gaya::eval::object::object>
-{
-    size_t operator()(const gaya::eval::object::object& o) const
-    {
-        return gaya::eval::object::hash(o);
-    }
-};
-
-template <>
-struct equal_to<gaya::eval::object::object>
-{
-    bool operator()(
-        const gaya::eval::object::object& lhs,
-        const gaya::eval::object::object& rhs) const
-    {
-        return gaya::eval::object::equals(lhs, rhs);
-    }
-};
-
-}
-
-namespace gaya::eval::object
-{
 
 struct heap_object
 {
@@ -263,6 +272,14 @@ create_number_sequence(interpreter&, span, double) noexcept;
  * Create a user defined sequence object.
  */
 [[nodiscard]] object create_user_sequence(span, interpreter&, object) noexcept;
+
+/**
+ * Create a dictionary sequence.
+ */
+[[nodiscard]] object create_dict_sequence(
+    interpreter&,
+    span,
+    const robin_hood::unordered_map<object, object>&) noexcept;
 
 /* Operations */
 

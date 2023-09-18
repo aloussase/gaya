@@ -52,6 +52,21 @@ object user_sequence_next(span span, user_defined_sequence& seq) noexcept
     return call(seq.next_func, seq.interp, span, {});
 }
 
+object
+dict_sequence_next(interpreter& interp, span span, dict_sequence& seq) noexcept
+{
+    if (seq.i < seq.keys.size())
+    {
+        std::vector<object> pair { seq.keys[seq.i], seq.values[seq.i] };
+        seq.i += 1;
+        return create_array(interp, span, std::move(pair));
+    }
+    else
+    {
+        return create_unit(span);
+    }
+}
+
 object next(interpreter& interp, sequence& seq) noexcept
 {
     switch (seq.type)
@@ -80,6 +95,13 @@ object next(interpreter& interp, sequence& seq) noexcept
         return array_sequence_next(
             seq.seq_span,
             std::get<array_sequence>(seq.seq));
+    }
+    case sequence_type_dict:
+    {
+        return dict_sequence_next(
+            interp,
+            seq.seq_span,
+            std::get<dict_sequence>(seq.seq));
     }
     }
 
