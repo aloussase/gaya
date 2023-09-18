@@ -5,3 +5,16 @@ discard dict.length((->)) |> assert(_ == 0)
 discard dict.length((1 -> 2)) |> assert(_ == 1)
 discard dict.length((1 -> 2, 1 -> 2)) |> assert(_ == 1)
 
+(* dict.insert *)
+discard (1 -> 2) |> dict.insert(_, 2, 3) |> assert(_ == (1 -> 2, 2 -> 3))
+discard (->) |> dict.insert(_, 1, 2) |> assert(_ == (1 -> 2))
+discard (* make sure the dict is mutated *)
+  let d = (1 -> 2) in do
+    discard dict.insert(d, 2, 3)
+    assert(d == (1 -> 2, 2 -> 3))
+  end
+discard 
+  (1 -> 2)
+  |> dict.insert(_, "Hello", "World")
+  |> assert(_ == (1 -> 2, "Hello" -> "World"))
+

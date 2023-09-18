@@ -39,6 +39,7 @@ parser::parser()
     define("array.pop"s);
 
     define("dict.length"s);
+    define("dict.insert"s);
 
     define("seq.next"s);
     define("seq.make"s);

@@ -50,6 +50,7 @@ interpreter::interpreter()
     BUILTIN("array.pop"s, 1, array::pop);
 
     BUILTIN("dict.length"s, 1, dict::length);
+    BUILTIN("dict.insert"s, 3, dict::insert);
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
