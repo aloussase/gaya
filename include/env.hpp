@@ -94,9 +94,6 @@ public:
      */
     [[nodiscard]] bool update_at(const key_type&, value_type, size_t) noexcept;
 
-    /// Check whether the provided identifier is a valid assignment target.
-    [[nodiscard]] bool can_assign_at(const key&, size_t) const noexcept;
-
     /**
      * Return the underlying bindings map.
      */

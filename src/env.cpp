@@ -57,19 +57,6 @@ void env::set(key&& k, value_type v) noexcept
     _bindings.insert_or_assign(std::move(k), v);
 }
 
-bool env::can_assign_at(const key& k, size_t depth) const noexcept
-{
-    const auto& environment = nth_parent(depth);
-    const auto& bindings    = environment.get_bindings();
-
-    if (auto it = bindings.find(k); it != bindings.end())
-    {
-        return it->first.is_assignment_target();
-    }
-
-    return false;
-}
-
 object::object env::get(const key_type& k) const noexcept
 {
     if (auto it = _bindings.find(k); it != _bindings.end())

@@ -18,6 +18,8 @@ parser::parser()
 
     begin_scope();
 
+    /* Define builtins */
+
     define("typeof"s);
     define("assert"s);
     define("tostring"s);
@@ -40,20 +42,14 @@ std::vector<diagnostic::diagnostic> parser::diagnostics() const noexcept
 
 void parser::parser_error(span s, const std::string& message)
 {
-    _diagnostics.emplace_back(s, message, diagnostic::severity::error);
+    _diagnostics
+        .emplace_back(s, message, diagnostic::severity::error, _filename);
 }
 
 void parser::parser_hint(span s, const std::string& message)
 {
-    _diagnostics.emplace_back(s, message, diagnostic::severity::hint);
-}
-
-void parser::merge_diagnostics() noexcept
-{
-    for (const auto& diag : _lexer.diagnostics())
-    {
-        _diagnostics.insert(_diagnostics.begin(), diag);
-    }
+    _diagnostics
+        .emplace_back(s, message, diagnostic::severity::hint, _filename);
 }
 
 bool parser::match(std::optional<token> t, token_type tt) const noexcept
@@ -79,19 +75,6 @@ bool parser::is_local_stmt(token token)
     return ret;
 }
 
-std::vector<token> parser::remaining_tokens() noexcept
-{
-    std::vector<token> tokens;
-    for (;;)
-    {
-        auto token = _lexer.next_token();
-        if (!token) break;
-
-        tokens.push_back(token.value());
-    }
-    return tokens;
-}
-
 void parser::begin_scope() noexcept
 {
     _scopes.push_back({});
@@ -106,7 +89,7 @@ void parser::end_scope() noexcept
 void parser::define(eval::key key) noexcept
 {
     assert(_scopes.size() > 0);
-    _scopes.back().insert(key.hash);
+    _scopes.back().insert(key);
 }
 
 void parser::define(ast::identifier& ident) noexcept
@@ -120,7 +103,7 @@ bool parser::assign_scope(std::shared_ptr<ast::identifier>& ident) noexcept
 
     for (int i = _scopes.size() - 1; i >= 0; i--)
     {
-        if (_scopes[i].contains(ident->key.hash))
+        if (_scopes[i].contains(ident->key))
         {
             ident->depth = _scopes.size() - 1 - i;
             return true;
@@ -135,7 +118,7 @@ bool parser::assign_scope(std::unique_ptr<ast::identifier>& ident) noexcept
 
     for (int i = _scopes.size() - 1; i >= 0; i--)
     {
-        if (_scopes[i].contains(ident->key.hash))
+        if (_scopes[i].contains(ident->key))
         {
             ident->depth = _scopes.size() - 1 - i;
             return true;
@@ -144,12 +127,37 @@ bool parser::assign_scope(std::unique_ptr<ast::identifier>& ident) noexcept
     return false;
 }
 
-ast::node_ptr parser::parse(const char* source) noexcept
+bool parser::is_valid_assignment_target(
+    std::unique_ptr<ast::identifier>& ident) noexcept
 {
-    _lexer         = lexer { source };
+    assert(_scopes.size() > 0);
+
+    for (int i = _scopes.size() - 1; i >= 0; i--)
+    {
+        if (auto it = _scopes[i].find(ident->key); it != _scopes[i].end())
+        {
+            return it->kind == eval::identifier_kind::local;
+        }
+    }
+    return false;
+}
+
+ast::node_ptr
+parser::parse(const std::string& filename, const char* source) noexcept
+{
+    /* Create a new lexer for the given source code. */
+    _filename = filename;
+    _lexer    = lexer { source };
+
     auto program   = ast::make_node<ast::program>();
     program->stmts = stmts();
-    merge_diagnostics();
+
+    /* Merge any lexer diagnostics. */
+    for (const auto& diag : _lexer.diagnostics())
+    {
+        _diagnostics.insert(_diagnostics.begin(), diag);
+    }
+
     return program;
 }
 
@@ -185,7 +193,7 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
         parser_error(token->span, "Invalid start of top-level statement");
         parser_hint(
             token->span,
-            "Only definitions and discard are valid top-level statements");
+            "Only definitions and discards are valid top-level statements");
         return nullptr;
     }
 }
@@ -199,6 +207,10 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
     case token_type::while_: return while_stmt(token);
     default:
         parser_error(token.span, "Invalid start of local statement");
+        parser_hint(
+            token.span,
+            "Only discard, assignments and while loops are valid local "
+            "statements");
         return nullptr;
     }
 }
@@ -210,7 +222,7 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
     {
         parser_error(
             identifier.span,
-            "Expected '<-' after identifier in assignment");
+            "Expected '<-' after identifier in assignment statement");
         return nullptr;
     }
 
@@ -219,7 +231,7 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
     {
         parser_error(
             identifier.span,
-            "Expected expression after '<-' in assignment");
+            "Expected expression after '<-' in assignment statement");
         return nullptr;
     }
 
@@ -230,6 +242,19 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
         identifier.span,
         identifier.span.to_string());
 
+    if (!is_valid_assignment_target(ident))
+    {
+        parser_error(
+            identifier.span,
+            fmt::format(
+                "Invalid assignment target: {}",
+                identifier.span.to_string()));
+        parser_hint(
+            identifier.span,
+            "Only variables introduced with let are valid assignment targets");
+        return nullptr;
+    }
+
     if (!assign_scope(ident))
     {
         parser_error(
@@ -237,10 +262,6 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
             fmt::format(
                 "Undeclared identifier in assignment: {}",
                 identifier.span.to_string()));
-        parser_hint(
-            identifier.span,
-            "Assignment targets can only be local variables introduced with "
-            "let");
         return nullptr;
     }
 
@@ -338,8 +359,6 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
         identifier.span.to_string());
 
     /*
-     * NOTE:
-     *
      * Here we are defining the identifier before evaluating its expression,
      * which means that we do support top level recursive declarations.
      */
@@ -377,8 +396,10 @@ ast::stmt_ptr parser::expression_stmt(token discard)
 ast::expression_ptr parser::expression(token token)
 {
     /*
-     NOTE: Might want to move these to primary expression or allow then in
-     grouping expressions.
+     * NOTE:
+     *
+     * We might want to move these to primary expression or allow them in
+     * grouping expressions.
      */
     switch (token.type)
     {
@@ -878,7 +899,7 @@ ast::expression_ptr parser::let_expression(token let)
          * Since we are defining the identifier after evaluating its
          * value, that means we don't support recursive definitions
          */
-        define(*identifier);
+        define(eval::key::local(identifier->value));
 
         return ast::let_binding { std::move(identifier), std::move(value) };
     };

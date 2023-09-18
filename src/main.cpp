@@ -9,11 +9,50 @@
 #include <parser.hpp>
 #include <repl.hpp>
 
-static bool run_repl   = false;
-static bool show_usage = false;
-static bool print_ast  = false;
+static bool run_repl_flag   = false;
+static bool show_usage_flag = false;
+static bool print_ast_flag  = false;
 
-static void eval_file(char* filename)
+[[nodiscard]] static bool
+print_ast(const char* filename, const char* source) noexcept
+{
+    auto interp  = gaya::eval::interpreter {};
+    auto& parser = interp.get_parser();
+
+    if (auto ast = parser.parse(filename, source); ast)
+    {
+        fmt::println("{}", ast->to_string());
+        return true;
+    }
+    else
+    {
+        for (const auto& diag : parser.diagnostics())
+        {
+            fmt::println("{}", diag.to_string());
+        }
+        return false;
+    }
+}
+
+[[nodiscard]] static bool run_file(const char* filename, const char* source)
+{
+    gaya::eval::interpreter interp;
+    (void)interp.eval(filename, source);
+
+    if (interp.had_error())
+    {
+        for (const auto& diagnostic : interp.diagnostics())
+        {
+            fmt::print("{}", diagnostic.to_string());
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+[[noreturn]] static void process_file(char* filename)
 {
     auto fr = gaya::file_reader { filename };
     if (!fr)
@@ -22,47 +61,23 @@ static void eval_file(char* filename)
         exit(EXIT_FAILURE);
     }
 
-    auto* contents = fr.slurp();
-    auto interp    = gaya::eval::interpreter {};
+    auto* source = fr.slurp();
 
-    if (print_ast)
+    if (print_ast_flag)
     {
-        if (auto ast = interp.get_parser().parse(contents); ast)
-        {
-            fmt::println("{}", ast->to_string());
-        }
-        else
-        {
-            for (const auto& diag : interp.get_parser().diagnostics())
-            {
-                fmt::println("{}", diag.to_string());
-            }
-
-            free(contents);
-            exit(EXIT_FAILURE);
-        }
+        auto ok = print_ast(filename, source);
+        free(source);
+        exit(ok ? EXIT_SUCCESS : EXIT_FAILURE);
     }
     else
     {
-        (void)interp.eval(filename, contents);
-
-        if (!interp.diagnostics().empty())
-        {
-            for (const auto& diagnostic : interp.diagnostics())
-            {
-                fmt::print("{}", diagnostic.to_string());
-            }
-
-            free(contents);
-            exit(EXIT_FAILURE);
-        }
+        auto ok = run_file(filename, source);
+        free(source);
+        exit(ok ? EXIT_SUCCESS : EXIT_FAILURE);
     }
-
-    free(contents);
-    exit(EXIT_SUCCESS);
 }
 
-static void usage()
+[[noreturn]] static void usage()
 {
     printf("gaya lang -- version 1.0\n"
            "usage: gaya [--repl] [--help] [--print-ast] [inputfile]\n"
@@ -72,7 +87,7 @@ static void usage()
            "    --repl       run the repl\n"
            "    --help       show this help\n"
            "    --print-ast  do not run the program, print the ast\n");
-    exit(EXIT_FAILURE);
+    exit(EXIT_SUCCESS);
 }
 
 auto main(int argc, char** argv) -> int
@@ -83,15 +98,15 @@ auto main(int argc, char** argv) -> int
         char* arg = argv[i];
         if (strcmp(arg, "--repl") == 0)
         {
-            run_repl = true;
+            run_repl_flag = true;
         }
         else if (strcmp(arg, "--help") == 0)
         {
-            show_usage = true;
+            show_usage_flag = true;
         }
         else if (strcmp(arg, "--print-ast") == 0)
         {
-            print_ast = true;
+            print_ast_flag = true;
         }
         else
         {
@@ -99,7 +114,7 @@ auto main(int argc, char** argv) -> int
         }
     }
 
-    if (show_usage)
+    if (show_usage_flag)
     {
         usage();
     }
@@ -112,11 +127,10 @@ auto main(int argc, char** argv) -> int
 
     if (remaining_args == 1)
     {
-        auto inputfile = argv[i];
-        eval_file(inputfile);
+        process_file(argv[i]);
     }
 
-    if (run_repl)
+    if (run_repl_flag)
     {
         gaya::repl::run();
     }

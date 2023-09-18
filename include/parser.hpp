@@ -17,16 +17,11 @@ class parser
 public:
     parser();
 
-    [[nodiscard]] ast::node_ptr parse(const char* source) noexcept;
+    [[nodiscard]] ast::node_ptr
+    parse(const std::string& filename, const char* source) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
-
-    /// Returning the remaining, unparsed tokens.
-    [[nodiscard]] std::vector<token> remaining_tokens() noexcept;
-
-    /// Merge the lexer and parser diagnostics.
-    void merge_diagnostics() noexcept;
 
 private:
     std::vector<ast::stmt_ptr> stmts() noexcept;
@@ -77,11 +72,16 @@ private:
     [[nodiscard]] bool assign_scope(std::shared_ptr<ast::identifier>&) noexcept;
     [[nodiscard]] bool assign_scope(std::unique_ptr<ast::identifier>&) noexcept;
 
+    [[nodiscard]] bool
+    is_valid_assignment_target(std::unique_ptr<ast::identifier>&) noexcept;
+
     lexer _lexer;
     std::vector<diagnostic::diagnostic> _diagnostics;
 
-    using scope = robin_hood::unordered_set<size_t>;
+    using scope = robin_hood::unordered_set<eval::key>;
     std::vector<scope> _scopes;
+
+    std::string _filename;
 };
 
 }

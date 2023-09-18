@@ -14,22 +14,8 @@
 namespace gaya::repl
 {
 
-std::string stringify_tokens(const std::vector<token>& tokens)
-{
-    auto begin         = tokens.cbegin();
-    auto more_than_one = tokens.size() > 1;
-    return std::transform_reduce(
-        more_than_one ? begin + 1 : begin,
-        tokens.cend(),
-        more_than_one ? tokens[0].span.to_string() : std::string(),
-        [](auto acc, auto c) { return acc + " " + c; },
-        [](auto token) { return token.span.to_string(); });
-}
-
 void run() noexcept
 {
-    /* Interpreter state */
-    eval::env repl_env;
     eval::interpreter interp {};
 
     const auto* prompt          = "\x1b[35mgaya> \x1b[m";

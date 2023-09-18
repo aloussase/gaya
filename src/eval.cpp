@@ -48,6 +48,8 @@ interpreter::interpreter()
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
 
+    /* Load the standard library. */
+
     file_reader reader { GAYA_STDLIB_PATH };
     assert(reader && "failed to load stdlib");
 
@@ -56,7 +58,7 @@ interpreter::interpreter()
 
     (void)eval(GAYA_STDLIB_PATH, stdlib);
 
-    if (!_diagnostics.empty())
+    if (had_error())
     {
         for (const auto& diagnostic : _diagnostics)
         {
@@ -77,8 +79,8 @@ parser& interpreter::get_parser() noexcept
 std::optional<object::object>
 interpreter::eval(const std::string& filename, const char* source) noexcept
 {
-    auto ast  = _parser.parse(source);
     _filename = filename;
+    auto ast  = _parser.parse(filename, source);
 
     if (!_parser.diagnostics().empty())
     {
@@ -179,8 +181,9 @@ interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
 {
     expression_stmt.expr->accept(*this);
     /*
-     * NOTE: For statements I may want to return object::none or something like
-     * that
+     * NOTE:
+     *
+     * For statements I may want to return object::none or something like that.
      */
     return object::invalid;
 }
@@ -194,27 +197,11 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     auto depth = assignment.ident->depth;
     auto& key  = assignment.ident->key;
 
-    if (!environment().can_assign_at(key, depth))
-    {
-        interp_error(
-            assignment.ident->_span,
-            "Can only assign to local variables");
-
-        interp_hint(
-            assignment.ident->_span,
-            fmt::format("for example: let {} = ...", assignment.ident->value));
-
-        return object::invalid;
-    }
-
-    if (!environment().update_at(std::move(key), new_val, depth))
-    {
-        interp_error(
-            assignment.ident->_span,
-            fmt::format(
-                "{} was not previously declared",
-                assignment.ident->value));
-    }
+    /*
+     * The parser already checks that the identifier is found and that it is
+     * a valid assignment target.
+     */
+    assert(environment().update_at(std::move(key), new_val, depth));
 
     return object::invalid;
 }
@@ -607,23 +594,8 @@ object::object interpreter::visit_string(ast::string& s)
 
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    if (auto value = environment().get_at(identifier.key, identifier.depth);
-        object::is_valid(value))
-    {
-        return value;
-    }
-
-    interp_error(
-        identifier._span,
-        fmt::format("undefined identifier: {}", identifier.value));
-
-    interp_hint(
-        identifier._span,
-        fmt::format(
-            "Maybe you forgot to declare it? For example: {} :: \"someshit\"",
-            identifier.value));
-
-    return object::invalid;
+    /* The parser already checks for undefined identifiers. */
+    return environment().get_at(identifier.key, identifier.depth);
 }
 
 object::object interpreter::visit_unit(ast::unit& u)
