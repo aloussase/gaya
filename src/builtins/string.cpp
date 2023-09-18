@@ -37,8 +37,11 @@ gaya::eval::object::object concat(
             fmt::format("Expected {} and {} to be both string", t1, t2));
         return gaya::eval::object::invalid;
     }
+    auto& s1 = AS_STRING(args[0]);
+    auto& s2 = AS_STRING(args[1]);
+    s1.append(s2);
 
-    return create_string(interp, span, AS_STRING(args[0]) + AS_STRING(args[1]));
+    return args[0];
 }
 
 }
