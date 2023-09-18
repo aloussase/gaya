@@ -51,6 +51,8 @@ interpreter::interpreter()
 
     BUILTIN("dict.length"s, 1, dict::length);
     BUILTIN("dict.insert"s, 3, dict::insert);
+    BUILTIN("dict.remove"s, 2, dict::remove);
+    BUILTIN("dict.contains"s, 2, dict::contains);
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);

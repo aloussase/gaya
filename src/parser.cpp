@@ -40,6 +40,8 @@ parser::parser()
 
     define("dict.length"s);
     define("dict.insert"s);
+    define("dict.remove"s);
+    define("dict.contains"s);
 
     define("seq.next"s);
     define("seq.make"s);

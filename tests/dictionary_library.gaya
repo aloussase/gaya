@@ -18,3 +18,15 @@ discard
   |> dict.insert(_, "Hello", "World")
   |> assert(_ == (1 -> 2, "Hello" -> "World"))
 
+(* dict.remove *)
+discard (* This errors if the key is not in the dict. *)
+  let d = (1 -> 2) in
+  let v = dict.remove(d, 1) in do
+    discard assert(v == 2) 
+    discard assert(dict.length(d) == 0)
+  end
+
+(* dict.contains *)
+discard (1 -> 2) |> dict.contains(_, 1) |> assert(_)
+discard (->) |> dict.contains(_, 1) |> assert(not _)
+discard ((42 -> 69) -> 7) |> dict.contains(_, (42 -> 69)) |> assert(_)

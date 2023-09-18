@@ -287,10 +287,10 @@ void run() noexcept
             continue;
         }
 
-        if (line == ":{")
+        if (line == ":{\n")
         {
             std::string multiline;
-            while ((line = read_line("|")) != ":}")
+            while ((line = read_line("|")) != ":}\n")
             {
                 multiline += line;
             }
