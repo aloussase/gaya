@@ -33,18 +33,11 @@ concat(interpreter& interp, span span, std::vector<object> args) noexcept
         return gaya::eval::object::invalid;
     }
 
-    auto a1 = AS_ARRAY(args[0]);
-    auto a2 = AS_ARRAY(args[1]);
+    auto& a1 = AS_ARRAY(args[0]);
+    auto& a2 = AS_ARRAY(args[1]);
+    a1.insert(a1.cend(), a2.begin(), a2.end());
 
-    std::vector<object> new_elems;
-
-    new_elems.insert(new_elems.cbegin(), a1.begin(), a1.end());
-    new_elems.insert(
-        new_elems.cbegin() + std::distance(a1.begin(), a1.end()),
-        a2.begin(),
-        a2.end());
-
-    return create_array(interp, span, new_elems);
+    return args[0];
 }
 
 gaya::eval::object::object
