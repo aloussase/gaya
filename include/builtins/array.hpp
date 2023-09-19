@@ -5,8 +5,6 @@
 namespace gaya::eval::object::builtin::array
 {
 
-/* TODO: Document these. */
-
 /**
  * @return The length of the array.
  */
