@@ -1,4 +1,4 @@
-(* Output: '1\n0\n1\n0\nGaya\nGa\n2\n0\nunit\n1\n1\n0\nGay\nGaya\nunit\nunit\n("Hello", "Gaya", "!")\n()\n("", "Hello", "World!", "")\nHello\nHello\nHello' *)
+(* Output: '1\n0\n1\n0\nGaya\nGa\n2\n0\nunit\n1\n1\n0\nGay\nGaya\nunit\nunit\n' *)
 
 (* startswith *)
 discard io.println(string.startswith("Gaya", "Ga"))
@@ -29,11 +29,27 @@ discard io.println(string.substring("Gaya", -1, 4))
 discard io.println(string.substring("Gaya", 4, 0))
 
 (* split *)
-discard io.println(string.split("Hello\nGaya\n!", "\n"))
-discard io.println(string.split("Hello World!", "\n"))
-discard io.println(string.split(" Hello World! ", " "))
+discard
+  string.split("Hello\nGaya\n!", "\n")
+  |> seq.toarray(_)
+  |> assert(_ == ("Hello", "Gaya", "!"))
+
+discard 
+  string.split("Hello World!", "\n")
+  |> seq.toarray(_)
+  |> assert(_ == ("Hello World!"))
+
+discard 
+  string.split(" Hello World! ", " ") 
+  |> seq.toarray(_)
+  |> assert(_ == ("", "Hello", "World!", ""))
+
+discard
+  string.split("Hello\nWorld\n", "\n")
+  |> seq.toarray(_)
+  |> assert(_ == ("Hello", "World", ""))
 
 (* trim *)
-discard io.println(string.trim("  \n\t  Hello   "))
-discard io.println(string.trim("    \n\tHello"))
-discard io.println(string.trim("Hello  \n\t"))
+discard string.trim("  \n\t  Hello   ") |> assert(_ == "Hello")
+discard string.trim("    \n\tHello") |> assert(_ == "Hello")
+discard string.trim("Hello  \n\t") |> assert(_ == "Hello")

@@ -104,7 +104,7 @@ string.contains :: { s, pattern => string.index(s, pattern) /= unit }
 *)
 string.substring :: { s, start, finish =>
   cases
-    given finish <= start or start < 0 or finish > string.length(s) => unit
+    given finish < start or start < 0 or finish > string.length(s) => unit
     otherwise =>
       let result = "", i = start in do
         while i < finish : i <- i + 1
@@ -118,32 +118,29 @@ string.substring :: { s, start, finish =>
 
 (* Splits a string on the given pattern and returns an array with the parts. *)
 string.split :: { s, pattern =>
-  cases 
-    given not string.contains(s, pattern) => ()
-    otherwise =>
-      let result = (), i = 0, j = 0 in
-      let unitToStr = { x => ifelse(x == unit, { => "" }, { => x }) } in 
-      let nextPart = { =>
-          s 
-          |> string.substring(_, j, i) 
-          |> unitToStr(_)
-          |> array.push(result, _) 
-        } in do
-        while i < string.length(s)
-          discard let ss = string.substring(s, i, string.length(s)) in
-          cases 
-            given string.index(ss, pattern) == 0 => do
-              result <- nextPart()
-              i <- i + string.length(pattern)
-              j <- i
-            end
-            otherwise => perform i <- i + 1
+  let i = 0, j = 0 in seq.make { =>
+    let found = false, result = unit in do
+      while i < string.length(s) and not found
+        discard let substr = string.substring(s, i, string.length(s)) in
+        cases
+          given string.index(substr, pattern) == 0 => do
+            result <- string.substring(s, j, i)
+            found <- true
+            i <- i + string.length(pattern)
+            j <- i
           end
+          otherwise => perform i <- i + 1
         end
-
-        nextPart()
       end
-  end
+      cases
+        given result /= unit => result
+        given i == string.length(s) => do
+          i <- i + 1
+          string.substring(s, j, i - 1)
+        end
+      end
+    end
+  }
 }
 
 (* Return whether a string is a whitespace character. *)
