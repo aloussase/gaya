@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <vector>
 
@@ -122,6 +123,23 @@ struct while_stmt final : public stmt
     expression_ptr condition;
     std::vector<stmt_ptr> body;
     stmt_ptr continuation;
+};
+
+struct include_stmt final : public stmt
+{
+    include_stmt(span s, const std::string& f, ast::node_ptr p)
+        : span_ { s }
+        , file_path { f }
+        , parsed_file { p }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    object accept(ast_visitor&) override;
+
+    span span_;
+    std::filesystem::path file_path;
+    ast::node_ptr parsed_file;
 };
 
 /* Expressions */

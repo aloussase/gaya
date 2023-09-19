@@ -10,7 +10,7 @@ syntax keyword gayaConstant true false
 highlight link gayaConstant Constant
 
 " Keywords
-syntax keyword gayaKeyword let discard in do unit cases end given otherwise while perform and or not
+syntax keyword gayaKeyword let discard in do unit cases end given otherwise while perform and or not include
 highlight link gayaKeyword Keyword
 
 " Literals

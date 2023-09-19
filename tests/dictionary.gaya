@@ -1,5 +1,10 @@
 (* Output: '(1 -> "Hello", "Hello" -> 1)\n(->)' *)
 
+include "base"
+include "sequences"
+include "arrays"
+include "math"
+
 (* testing to_string *)
 discard io.println((1 -> "Hello", "Hello" -> 1))
 discard io.println((->))

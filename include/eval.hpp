@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <filesystem>
 
 #include <ast_visitor.hpp>
 #include <diagnostic.hpp>
@@ -12,6 +13,8 @@
 namespace gaya::eval
 {
 
+namespace fs = std::filesystem;
+
 class interpreter final : public ast::ast_visitor
 {
 public:
@@ -19,6 +22,9 @@ public:
 
     [[nodiscard]] std::optional<object::object>
     eval(const std::string& filename, const char* source) noexcept;
+
+    [[nodiscard]] std::optional<object::object>
+    eval(const std::string& filename, ast::node_ptr ast) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
@@ -67,6 +73,7 @@ public:
     object::object visit_expression_stmt(ast::expression_stmt&) override;
     object::object visit_assignment_stmt(ast::assignment_stmt&) override;
     object::object visit_while_stmt(ast::while_stmt&) override;
+    object::object visit_include_stmt(ast::include_stmt&) override;
     object::object visit_do_expression(ast::do_expression&) override;
     object::object visit_case_expression(ast::case_expression&) override;
     object::object visit_not_expression(ast::not_expression&) override;

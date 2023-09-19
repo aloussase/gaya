@@ -1,5 +1,9 @@
 (* Output: '(5, 7, 9)\n(3)\n(3)\n()' *)
 
+include "sequences"
+include "math"
+include "strings"
+
 (* seq.zip *)
 discard
   (1, 2, 3)

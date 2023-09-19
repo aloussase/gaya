@@ -1,0 +1,34 @@
+(* This file contains functions that work on arrays. *)
+
+(* Return an array with the numbers from start to finish exclusive. *)
+array.range :: { start, finish => do
+    discard assert(typeof(start) == "number" and typeof(finish) == "number")
+    let i = start, a = () in do
+      while i < finish : i <- i + 1
+        discard array.push(a, i)
+      end
+
+      a
+    end
+  end
+}
+
+(*
+  Return a string that is the result of joining the elements of the provided
+  array by the given separator.
+*)
+array.join :: { ary, sep => do
+    discard assert(typeof(ary) == "array" and typeof(sep) == "string")
+    let i = 0, result = "" in do
+      while i < array.length(ary) : i <- i + 1
+        result <- result |> string.concat(_, ary(i) |> tostring(_))
+        discard cases 
+          given i < array.length(ary) - 1 => 
+            perform result <- result |> string.concat(_, sep)
+        end
+      end
+
+      result
+    end
+  end
+}

@@ -14,6 +14,7 @@
 #include <parser.hpp>
 #include <span.hpp>
 
+#define UNUSED(e) ((void)(e))
 #define RETURN_IF_INVALID(o) \
     if (!object::is_valid(o)) return o;
 
@@ -56,27 +57,6 @@ interpreter::interpreter()
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
-
-    /* Load the standard library. */
-
-    file_reader reader { GAYA_STDLIB_PATH };
-    assert(reader && "failed to load stdlib");
-
-    auto* stdlib = reader.slurp();
-    assert(stdlib && "failed to load stdlib");
-
-    (void)eval(GAYA_STDLIB_PATH, stdlib);
-
-    if (had_error())
-    {
-        for (const auto& diagnostic : _diagnostics)
-        {
-            fmt::println("{}", diagnostic.to_string());
-        }
-
-        exit(EXIT_FAILURE);
-    }
-
 #undef BUILTIN
 }
 
@@ -88,15 +68,20 @@ parser& interpreter::get_parser() noexcept
 std::optional<object::object>
 interpreter::eval(const std::string& filename, const char* source) noexcept
 {
-    _filename = filename;
-    auto ast  = _parser.parse(filename, source);
-
+    auto ast = _parser.parse(filename, source);
     if (!ast || !_parser.diagnostics().empty())
     {
         _diagnostics = _parser.diagnostics();
         return {};
     }
 
+    return eval(filename, ast);
+}
+
+[[nodiscard]] std::optional<object::object>
+interpreter::eval(const std::string& filename, ast::node_ptr ast) noexcept
+{
+    _filename = filename;
     if (auto result = ast->accept(*this); object::is_valid(result))
     {
         return result;
@@ -240,6 +225,25 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
         }
     }
     end_scope();
+    return object::invalid;
+}
+
+object::object interpreter::visit_include_stmt(ast::include_stmt& include_stmt)
+{
+    auto& parsed_file = include_stmt.parsed_file;
+    auto filename     = include_stmt.file_path;
+    auto span         = include_stmt.span_;
+
+    UNUSED(eval(filename, parsed_file));
+    if (had_error())
+    {
+        interp_error(
+            span,
+            fmt::format(
+                "There were errors while evaluating {}",
+                filename.string()));
+    }
+
     return object::invalid;
 }
 
@@ -630,7 +634,9 @@ object::object interpreter::visit_string(ast::string& s)
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
     /* The parser already checks for undefined identifiers. */
-    return environment().get_at(identifier.key, identifier.depth);
+    auto o = environment().get_at(identifier.key, identifier.depth);
+    assert(object::is_valid(o));
+    return o;
 }
 
 object::object interpreter::visit_unit(ast::unit& u)

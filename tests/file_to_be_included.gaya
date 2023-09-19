@@ -1,0 +1,1 @@
+someFunction :: { => io.println("From included") }

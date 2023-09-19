@@ -33,12 +33,14 @@ target_compile_options(gaya PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-O2 -Wno-return-type>
     $<$<CONFIG:Debug>:-g>)
 
-
-set(GAYA_RUNTIME_STDLIB
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/gaya/runtime/stdlib.gaya")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(GAYA_RUNTIME "runtime")
+else()
+    set(GAYA_RUNTIME "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/gaya/runtime")
+endif ()
 
 target_compile_definitions(gaya PRIVATE
-    GAYA_STDLIB_PATH=$<IF:$<CONFIG:Release>,"${GAYA_RUNTIME_STDLIB}","runtime/stdlib.gaya">
+    GAYA_RUNTIME="${GAYA_RUNTIME}"
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>)
 
 target_link_libraries(gaya PRIVATE fmt::fmt)
@@ -49,6 +51,12 @@ install(
     CONFIGURATIONS Release)
 
 install(
-    FILES ${CMAKE_SOURCE_DIR}/runtime/stdlib.gaya
+    FILES 
+    ${CMAKE_SOURCE_DIR}/runtime/base.gaya
+    ${CMAKE_SOURCE_DIR}/runtime/arrays.gaya
+    ${CMAKE_SOURCE_DIR}/runtime/dictionaries.gaya
+    ${CMAKE_SOURCE_DIR}/runtime/math.gaya
+    ${CMAKE_SOURCE_DIR}/runtime/sequences.gaya
+    ${CMAKE_SOURCE_DIR}/runtime/strings.gaya
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/gaya/runtime
     CONFIGURATIONS Release)

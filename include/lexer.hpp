@@ -27,6 +27,7 @@ enum class token_type {
     greater_than_eq,
     identifier,
     in,
+    include,
     lcurly,
     less_than,
     less_than_eq,

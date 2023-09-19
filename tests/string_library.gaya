@@ -1,5 +1,8 @@
 (* Output: '1\n0\n1\n0\nGaya\nGa\n2\n0\nunit\n1\n1\n0\nGay\nGaya\nunit\nunit\n' *)
 
+include "strings"
+include "sequences"
+
 (* startswith *)
 discard io.println(string.startswith("Gaya", "Ga"))
 discard io.println(string.startswith("Gaya", "ya"))

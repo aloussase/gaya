@@ -1,5 +1,8 @@
 (* Output: '' *)
 
+include "sequences"
+include "arrays"
+
 upto :: { n => 
   let i = 0 in
   seq.make({ =>

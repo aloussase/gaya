@@ -91,6 +91,20 @@ object while_stmt::accept(ast_visitor& v)
     return v.visit_while_stmt(*this);
 }
 
+std::string include_stmt::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "include_stmt", "file_path":)" << file_path << "}";
+    return ss.str();
+}
+
+object include_stmt::accept(ast_visitor& v)
+{
+    return v.visit_include_stmt(*this);
+}
+
+/* Expressions */
+
 std::string do_expression::to_string() const noexcept
 {
     std::stringstream ss;

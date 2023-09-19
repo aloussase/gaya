@@ -1,6 +1,7 @@
 #pragma once
 
 #include <exception>
+#include <unordered_set>
 #include <vector>
 
 #include <robin_hood.h>
@@ -32,6 +33,7 @@ private:
     [[nodiscard]] ast::stmt_ptr assignment_stmt(token identifier) noexcept;
     [[nodiscard]] ast::stmt_ptr while_stmt(token while_) noexcept;
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
+    [[nodiscard]] ast::stmt_ptr include_stmt(token include) noexcept;
 
     [[nodiscard]] ast::expression_ptr expression(token);
     [[nodiscard]] ast::expression_ptr let_expression(token let);
@@ -83,6 +85,8 @@ private:
     std::vector<scope> _scopes;
 
     std::string _filename;
+
+    std::unordered_set<std::string> _included_files;
 };
 
 }

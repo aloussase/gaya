@@ -1,5 +1,7 @@
 (* Output: 'anon says: Hello!\nanon says: Hallo!' *)
 
+include "strings"
+
 test :: { s =>
   s
   |> string.trim(_)

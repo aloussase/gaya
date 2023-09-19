@@ -1,0 +1,13 @@
+(* Constants *)
+
+true  :: 1
+false :: 0
+
+(* Utilities *)
+
+ifelse :: { b, iftrue, iffalse =>
+  cases
+    given b   => iftrue()
+    otherwise => iffalse()
+  end
+}

@@ -1,5 +1,7 @@
 (* Output: '()\n(1)\n(1)\n(1, 2)\n(1)\n("hello", 1)' *)
 
+include "arrays"
+
 (* Concat *)
 discard io.println(array.concat((), ()))
 discard io.println(array.concat((1), ()))

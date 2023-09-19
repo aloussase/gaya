@@ -1,0 +1,146 @@
+(* This file contains functions to work on strings. *)
+
+include "base"
+
+(* Return whether the provided string is empty or not. *)
+string.isempty :: { s => string.length(s) == 0 }
+
+(* Return the first character in a string, or unit if empty. *)
+string.first :: { s =>
+  cases
+    given typeof(s) == "string" and not string.isempty(s) => s(0)
+  end
+}
+
+(* Return the last character in a string, or unit if empty. *)
+string.last :: { s =>
+  cases
+    given typeof(s) == "string" and not string.isempty(s) => s(string.length(s) - 1)
+  end
+}
+
+(* Return whether a string s starts with the given pattern. *)
+string.startswith :: { s, pattern =>
+  cases
+    given string.length(s) < string.length(pattern) => 0
+    otherwise =>
+      let i = 0 in
+      let result = 1 in do
+        while i < string.length(pattern) and result
+          result <- s(i) == pattern(i)
+          i <- i + 1
+        end
+
+        result
+      end
+  end
+}
+
+(* Return whether a string s ends with the given pattern. *)
+string.endswith :: { s, pattern =>
+  cases 
+    given string.length(s) < string.length(pattern) => 0
+    otherwise =>
+      let i = string.length(s) - 1 in
+      let j = string.length(pattern) - 1 in 
+      let result = 1 in do
+        while i >= 0 and j >= 0 and result
+          result <- s(i) == pattern(j)
+          i <- i - 1
+          j <- j - 1
+        end
+
+        result
+      end
+  end
+}
+
+(* Return the index in s where the provided pattern starts, or unit if not found. *)
+string.index :: { s, pattern =>
+  cases 
+    given string.length(s) < string.length(pattern) => unit
+    otherwise =>
+      let slen = string.length(s),
+          plen = string.length(pattern),
+          completeMatch = false, i = 0 in do
+        while not completeMatch and i < slen - plen + 1 : i <- i + 1
+          discard let j = 0, match = true in do
+            while match and j < plen : j <- j + 1
+              match <- s(i + j) == pattern(j)
+            end
+
+            completeMatch <- match
+          end
+        end
+
+        ifelse(completeMatch, { => i - 1}, { => unit })
+      end
+  end
+}
+
+(* Return whether the provided pattern is contained in s. *)
+string.contains :: { s, pattern => string.index(s, pattern) /= unit }
+
+(* Return a substring of s from start to finish.
+
+  If start < finish or start < 0 or finish > string.length(s), unit
+  is returned instead.
+*)
+string.substring :: { s, start, finish =>
+  cases
+    given finish < start or start < 0 or finish > string.length(s) => unit
+    otherwise =>
+      let result = "", i = start in do
+        while i < finish : i <- i + 1
+          result <- string.concat(result, s(i))
+        end
+
+        result
+      end
+  end
+}
+
+(* Splits a string on the given pattern and returns an array with the parts. *)
+string.split :: { s, pattern =>
+  let i = 0, j = 0 in seq.make { =>
+    let found = false, result = unit in do
+      while i < string.length(s) and not found
+        discard let substr = string.substring(s, i, string.length(s)) in
+        cases
+          given string.index(substr, pattern) == 0 => do
+            result <- string.substring(s, j, i)
+            found <- true
+            i <- i + string.length(pattern)
+            j <- i
+          end
+          otherwise => perform i <- i + 1
+        end
+      end
+      cases
+        given result /= unit => result
+        given i == string.length(s) => do
+          i <- i + 1
+          string.substring(s, j, i - 1)
+        end
+      end
+    end
+  }
+}
+
+(* Return whether a string is a whitespace character. *)
+string.iswhitespace :: { s => s == " " or s == "\n" or s == "\t" }
+
+(* Trim leading and trailing whitespace from a string. *)
+string.trim :: { s =>
+  let start = 0, finish = string.length(s) - 1 in do
+    while string.iswhitespace(s(start)) and start < string.length(s)
+      start <- start + 1
+    end
+    
+    while string.iswhitespace(s(finish)) and finish > start
+      finish <- finish - 1
+    end
+
+    string.substring(s, start, finish + 1)
+  end
+}

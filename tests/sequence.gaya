@@ -1,5 +1,9 @@
 (* Output: 'G!\na!\ny!\na!\nG,a,y,a,' *)
 
+include "sequences"
+include "arrays"
+include "math"
+
 (* Works on strings *)
 discard
   "Gaya"

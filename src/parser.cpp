@@ -201,6 +201,7 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     {
     case token_type::identifier: return declaration_stmt(token.value());
     case token_type::discard: return expression_stmt(token.value());
+    case token_type::include: return include_stmt(token.value());
     default:
         parser_error(token->span, "Invalid start of top-level statement");
         parser_hint(
@@ -403,6 +404,84 @@ ast::stmt_ptr parser::expression_stmt(token discard)
     if (!expr) return nullptr;
 
     return ast::make_node<ast::expression_stmt>(expr);
+}
+
+ast::stmt_ptr parser::include_stmt(token include) noexcept
+{
+    auto t = _lexer.next_token();
+    if (!match(t, token_type::string))
+    {
+        parser_error(include.span, "Expected a string after include");
+        return nullptr;
+    }
+
+    std::filesystem::path file_path = t->span.to_string();
+    auto span                       = include.span;
+
+    if (file_path.has_extension() && file_path.extension() != ".gaya")
+    {
+        parser_error(span, "Can only include gaya files");
+        return nullptr;
+    }
+    else
+    {
+        file_path = file_path.replace_extension("gaya");
+    }
+
+    if (!std::filesystem::exists(file_path))
+    {
+        /* If the file is not found, try relative to the script file. */
+        auto script_file = std::filesystem::absolute(_filename);
+        file_path        = script_file.replace_filename(file_path);
+    }
+
+    if (!std::filesystem::exists(file_path))
+    {
+        file_path = GAYA_RUNTIME / file_path.filename();
+    }
+
+    file_reader reader { file_path };
+    if (!reader)
+    {
+        parser_error(
+            span,
+            fmt::format(
+                "Failed to read the contents of {}",
+                file_path.string()));
+        return nullptr;
+    }
+
+    if (_included_files.contains(file_path))
+    {
+        /* If we've already processed that file, just ignore it. */
+        return ast::make_node<ast::expression_stmt>(
+            ast::make_node<ast::unit>(span));
+    }
+
+    auto* source = reader.slurp();
+    assert(source);
+
+    auto lexer    = _lexer;
+    auto filename = _filename;
+
+    auto ast = parse(file_path, source);
+    if (!ast)
+    {
+        parser_error(
+            span,
+            fmt::format(
+                "There were errors while parsing {}",
+                file_path.string()));
+        return nullptr;
+    }
+
+    _lexer    = lexer;
+    _filename = filename;
+
+    return ast::make_node<ast::include_stmt>(
+        include.span,
+        t->span.to_string(),
+        ast);
 }
 
 ast::expression_ptr parser::expression(token token)

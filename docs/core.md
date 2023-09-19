@@ -16,6 +16,7 @@
 - [Assignment](#assignment)
 - [Closures](#closures)
 - [Pipe Operator](#pipe-operator)
+- [Include Statements](#include-statements)
 
 ## Comments <a name="comments" />
 
@@ -175,6 +176,9 @@ discard
   |> seq.toarray(_)
   |> assert(_ == (2, 3))
 ```
+
+**NOTE** To use the functions in this snippet, you need to `include
+"sequences"`. More on include statements later.
 
 ## Let Expression <a name="let-expression">
 
@@ -360,3 +364,7 @@ discard io.println(1 |> typeof(_))
 (* Output: 5 *)
 discard io.println(5 |> let x = _ in x)
 ```
+
+## Include Statements <a name="include-statements" />
+
+TODO
