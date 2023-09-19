@@ -55,50 +55,8 @@ string.endswith :: { s, pattern =>
   end
 }
 
-(* Return the index in s where the provided pattern starts, or unit if not found. *)
-string.index :: { s, pattern =>
-  cases 
-    given string.length(s) < string.length(pattern) => unit
-    otherwise =>
-      let slen = string.length(s),
-          plen = string.length(pattern),
-          completeMatch = false, i = 0 in do
-        while not completeMatch and i < slen - plen + 1 : i <- i + 1
-          discard let j = 0, match = true in do
-            while match and j < plen : j <- j + 1
-              match <- s(i + j) == pattern(j)
-            end
-
-            completeMatch <- match
-          end
-        end
-
-        ifelse(completeMatch, { => i - 1}, { => unit })
-      end
-  end
-}
-
 (* Return whether the provided pattern is contained in s. *)
 string.contains :: { s, pattern => string.index(s, pattern) /= unit }
-
-(* Return a substring of s from start to finish.
-
-  If start < finish or start < 0 or finish > string.length(s), unit
-  is returned instead.
-*)
-string.substring :: { s, start, finish =>
-  cases
-    given finish < start or start < 0 or finish > string.length(s) => unit
-    otherwise =>
-      let result = "", i = start in do
-        while i < finish : i <- i + 1
-          discard string.concat(result, s(i))
-        end
-
-        result
-      end
-  end
-}
 
 (* Splits a string on the given pattern and returns an array with the parts. *)
 string.split :: { s, pattern =>
@@ -107,7 +65,7 @@ string.split :: { s, pattern =>
       while i < string.length(s) and not found
         discard let substr = string.substring(s, i, string.length(s)) in
         cases
-          given string.index(substr, pattern) == 0 => do
+          given string.startswith(substr, pattern) => do
             result <- string.substring(s, j, i)
             found <- true
             i <- i + string.length(pattern)

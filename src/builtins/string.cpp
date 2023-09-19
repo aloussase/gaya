@@ -67,4 +67,58 @@ gaya::eval::object::object tonumber(
     }
 }
 
+gaya::eval::object::object
+index(interpreter& interp, span span, const std::vector<object>& args) noexcept
+{
+    auto& haystack = args[0];
+    auto& needle   = args[1];
+
+    if (!IS_STRING(haystack) || !IS_STRING(needle))
+    {
+        interp.interp_error(span, "Expected both arguments to be strings");
+        return invalid;
+    }
+
+    auto pos = AS_STRING(haystack).find(AS_STRING(needle));
+    if (pos == std::string::npos)
+    {
+        return create_unit(span);
+    }
+
+    return create_number(span, pos);
+}
+
+gaya::eval::object::object substring(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    auto& s      = args[0];
+    auto& start  = args[1];
+    auto& finish = args[2];
+
+    if (!IS_STRING(s))
+    {
+        interp.interp_error(span, "Expected the first argument to be a string");
+        return invalid;
+    }
+
+    if (!IS_NUMBER(start) || !IS_NUMBER(finish))
+    {
+        interp.interp_error(span, "Expected start and finish to be numbers");
+        return invalid;
+    }
+
+    auto pos   = AS_NUMBER(start);
+    auto count = AS_NUMBER(finish) - pos;
+
+    if (pos < 0 || pos > AS_STRING(s).size() || count < 0
+        || pos + count > AS_STRING(s).size())
+    {
+        return create_unit(span);
+    }
+
+    return create_string(interp, span, AS_STRING(s).substr(pos, count));
+}
+
 }
