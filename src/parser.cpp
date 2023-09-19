@@ -29,6 +29,7 @@ parser::parser()
     define("io.println"s);
     define("io.print"s);
     define("io.readline"s);
+    define("io.readfile"s);
 
     define("string.length"s);
     define("string.concat"s);

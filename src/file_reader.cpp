@@ -1,40 +1,41 @@
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <cstdio>
 #include <cstring>
 
 #include <file_reader.hpp>
 
-namespace gaya {
+namespace gaya
+{
 
 file_reader::file_reader(std::filesystem::path p)
     : _path { p }
 {
-  if (!std::filesystem::exists(_path)) {
-    _valid = false;
-  }
+    if (!std::filesystem::exists(_path))
+    {
+        _valid = false;
+    }
 }
 
 file_reader::operator bool() const noexcept
 {
-  return _valid;
+    return _valid;
 }
 
 char* file_reader::slurp() noexcept
 {
-  if (!_valid) return {};
+    if (!_valid) return {};
 
-  auto* fp = fopen(_path.string().c_str(), "r");
-  if (!fp) return {};
+    auto fd = open(_path.string().c_str(), O_RDONLY);
+    if (fd == -1) return {};
 
-  auto filesize  = std::filesystem::file_size(_path);
-  auto* contents = (char*)calloc(filesize + 1, sizeof(char));
+    auto filesize  = std::filesystem::file_size(_path);
+    auto* contents = (char*)calloc(filesize + 1, sizeof(char));
 
-  char buffer[4096] = { 0 };
-  while (fgets(buffer, sizeof(buffer) - 1, fp) != nullptr) {
-    // FIXME: This could be faster.
-    strcat(contents, buffer);
-  }
+    if (read(fd, contents, filesize) == -1) return {};
 
-  return contents;
+    return contents;
 }
 
 }

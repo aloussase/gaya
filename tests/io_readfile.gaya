@@ -1,0 +1,7 @@
+discard 
+  io.readfile("./tests/test.txt")
+  |> assert(_ == "test\n")
+
+discard
+  io.readfile("./nonexisting.txt")
+  |> assert(_ == unit)

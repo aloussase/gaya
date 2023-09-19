@@ -41,6 +41,7 @@ interpreter::interpreter()
     BUILTIN("io.println"s, 1, io::println);
     BUILTIN("io.print"s, 1, io::print);
     BUILTIN("io.readline"s, 0, io::readline);
+    BUILTIN("io.readfile"s, 1, io::readfile);
 
     BUILTIN("string.length"s, 1, string::length);
     BUILTIN("string.concat"s, 2, string::concat);

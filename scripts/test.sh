@@ -37,14 +37,26 @@ test_error()
     [ $? -ne 0 ] && echo "ok"
 }
 
-for example in examples/* tests/*; do
+test_assertions()
+{
+    example="$1"
+    result=`${GAYA_EXE} "$example"`
+    [ $? -eq 0 ] && echo "ok"
+}
+
+for example in examples/*.gaya tests/*.gaya; do
     is_output_test=`cat "$example" | grep 'Output:'`
     is_error_test=`cat "$example" | grep 'Expect error'`
+    should_skip_test=`cat "$example" | grep 'Skip'`
+
+    echo "Testing $example"
 
     if [ -n "$is_output_test" ]; then
         test_result=`test_output "$example"`
     elif [ -n "$is_error_test" ]; then
         test_result=`test_error "$example"`
+    elif [ -z "$should_skip_test" ]; then
+        test_result=`test_assertions "$example"`
     fi
 
     if [ "$test_result" = "ok" ]; then
@@ -55,11 +67,15 @@ for example in examples/* tests/*; do
         echo -e -n "❌ \x1b[1m\x1b[31m$example : "
         if [ -n "$is_output_test" ]; then
             echo -n "$test_result"
-        else 
+        elif [ -n "$is_error_test" ]; then
             echo -n "expected error"
+        elif [ -z "$should_skip_test" ]; then
+            echo -n "assertion failed"
         fi
         echo -e "\x1b[m"
     fi
+
+    echo
 done
 
 echo -e "\nsummary: $successes success(es), $failures failure(s)"

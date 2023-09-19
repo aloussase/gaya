@@ -24,4 +24,10 @@ print(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 readline(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * Read the contents of a file. If the file does not exist, unit is returned.
+ */
+gaya::eval::object::object
+readfile(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

@@ -4,6 +4,7 @@
 
 #include <builtins/io.hpp>
 #include <eval.hpp>
+#include <file_reader.hpp>
 #include <object.hpp>
 
 namespace gaya::eval::object::builtin::io
@@ -57,4 +58,32 @@ readline(interpreter& interp, span span, const std::vector<object>&) noexcept
     return create_string(interp, span, std::move(line));
 }
 
+gaya::eval::object::object readfile(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    auto& filename = args[0];
+    if (!IS_STRING(filename))
+    {
+        interp.interp_error(span, "Expected first argument to be a string");
+        return invalid;
+    }
+
+    file_reader reader { AS_STRING(filename) };
+    if (!reader)
+    {
+        return create_unit(span);
+    }
+
+    /*
+     * NOTE: We don't free contents because the returned string will take
+     *       ownership of it.
+     */
+    char* contents = reader.slurp();
+    assert(contents);
+    std::string contents_as_string(contents);
+
+    return create_string(interp, span, contents);
+}
 }
