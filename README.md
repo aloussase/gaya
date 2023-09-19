@@ -9,7 +9,7 @@
     |> string.split(_, " ")
 ```
 
-Gaya is a toy scripting language I made for solving
+Gaya is a scripting language I made for solving
 [AoC](https://adventofcode.com/) problems in 2023. The name comes from my
 favourite cat.
 

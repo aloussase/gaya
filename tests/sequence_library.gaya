@@ -86,3 +86,30 @@ discard
   |> seq.take(_, 10)
   |> seq.reduce(_, 0) { acc, x => acc + x}
   |> assert(_ == 55)
+
+(* seq.any *)
+discard 
+  seq.range(1, 10)
+  |> seq.any(_) { x => x == 5 }
+  |> assert(_)
+
+discard
+  (1, 2, 3, 5)
+  |> seq.any(_) { x => x == 4 }
+  |> assert(not _)
+
+discard
+  ("Hello", 42, (1 -> 2))
+  |> seq.any(_) { x => typeof(x) == "dictionary" }
+  |> assert(_)
+
+(* seq.all *)
+discard 
+  seq.range(1, 10)
+  |> seq.all(_) { x => typeof(x) == "number" }
+  |> assert(_)
+
+discard 
+  (1, 2, 3, "Hola")
+  |> seq.all(_) { x => typeof(x) == "number" }
+  |> assert(not _)

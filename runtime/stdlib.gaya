@@ -232,6 +232,45 @@ seq.reduce :: { s, init, f => do
 }
 
 (*
+  Return true if any element in the provided sequence
+  satisfies the given predicate. 
+*)
+seq.any :: { xs, pred => do
+  discard xs |> issequence(_) |> assert(_)
+  let xs = tosequence(xs), 
+      x = seq.next(xs),
+      found = false, 
+   in do
+      while x /= unit and not found 
+        found <- pred(x)
+        x <- seq.next(xs)
+      end
+
+      found
+    end
+  end
+}
+
+(*
+  Returns whether all the elements in the provided sequence satifsy
+  the given predicate.
+*)
+seq.all :: { xs, pred => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs),
+        x = seq.next(xs),
+        success = true
+     in do
+        while x /= unit and success : x <- seq.next(xs)
+          success <- pred(x)
+        end
+
+        success
+    end
+  end
+}
+
+(*
   Return a new sequence that maps the given function over the elements of the
   provided sequence. 
 *)
