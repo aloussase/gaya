@@ -56,3 +56,7 @@ discard
 discard string.trim("  \n\t  Hello   ") |> assert(_ == "Hello")
 discard string.trim("    \n\tHello") |> assert(_ == "Hello")
 discard string.trim("Hello  \n\t") |> assert(_ == "Hello")
+
+(* tonumber *)
+discard string.tonumber("42") |> assert(_ == 42)
+discard string.tonumber("Gaya") |> assert(_ == unit)

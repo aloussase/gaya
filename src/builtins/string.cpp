@@ -44,4 +44,27 @@ gaya::eval::object::object concat(
     return args[0];
 }
 
+gaya::eval::object::object tonumber(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    auto& s = args[0];
+
+    if (!IS_STRING(s))
+    {
+        interp.interp_error(span, "Expected the first argument to be a string");
+        return gaya::eval::object::invalid;
+    }
+
+    try
+    {
+        return create_number(span, std::stod(AS_STRING(s)));
+    }
+    catch (...)
+    {
+        return create_unit(span);
+    }
+}
+
 }

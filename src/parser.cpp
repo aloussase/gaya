@@ -32,6 +32,7 @@ parser::parser()
 
     define("string.length"s);
     define("string.concat"s);
+    define("string.tonumber"s);
 
     define("array.length"s);
     define("array.concat"s);

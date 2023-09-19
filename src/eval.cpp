@@ -44,6 +44,7 @@ interpreter::interpreter()
 
     BUILTIN("string.length"s, 1, string::length);
     BUILTIN("string.concat"s, 2, string::concat);
+    BUILTIN("string.tonumber"s, 1, string::tonumber);
 
     BUILTIN("array.length"s, 1, array::length);
     BUILTIN("array.concat"s, 2, array::concat);
