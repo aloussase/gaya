@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <list>
 #include <memory>
 #include <unordered_map>
 
@@ -101,11 +100,6 @@ public:
     [[nodiscard]] bindings& get_bindings() noexcept;
 
     /**
-     * Return the list of objects in the environment.
-     */
-    [[nodiscard]] const std::list<object::object*>& objects() const noexcept;
-
-    /**
      * Get this env's parent.
      * @return The env's parent or nullptr if it doesn't have one.
      */
@@ -117,7 +111,6 @@ private:
 
     bindings _bindings;
     parent_ptr _parent = nullptr;
-    std::list<object::object*> _objects;
 };
 
 }

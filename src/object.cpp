@@ -10,8 +10,6 @@
 namespace gaya::eval::object
 {
 
-/* TODO: Clear all objects in Interpreter destructor. */
-
 static int bytes_allocated   = 0;
 static int next_gc_threshold = 1024 * 1024;
 
@@ -24,6 +22,22 @@ static void mark_array(std::vector<object>& elems)
         if (IS_HEAP_OBJECT(elem))
         {
             mark(AS_HEAP_OBJECT(elem));
+        }
+    }
+}
+
+static void mark_dictionary(robin_hood::unordered_map<object, object>& dict)
+{
+    for (auto it : dict)
+    {
+        if (IS_HEAP_OBJECT(it.first))
+        {
+            mark(AS_HEAP_OBJECT(it.first));
+        }
+
+        if (IS_HEAP_OBJECT(it.second))
+        {
+            mark(AS_HEAP_OBJECT(it.second));
         }
     }
 }
@@ -43,29 +57,32 @@ static void mark(heap_object* o)
     }
     case object_type_dictionary:
     {
-        for (auto it : o->as_dictionary)
-        {
-            if (IS_HEAP_OBJECT(it.second))
-            {
-                mark(AS_HEAP_OBJECT(it.second));
-            }
-        }
+        mark_dictionary(o->as_dictionary);
         break;
     }
     case object_type_sequence:
     {
         if (auto* user_seq
-            = std::get_if<user_defined_sequence>(&o->as_sequence.seq))
+            = std::get_if<user_defined_sequence>(&o->as_sequence.seq);
+            user_seq)
         {
             if (IS_HEAP_OBJECT(user_seq->next_func))
             {
                 mark(AS_HEAP_OBJECT(user_seq->next_func));
             }
         }
-        else if (
-            auto* array_seq = std::get_if<array_sequence>(&o->as_sequence.seq))
+        else if (auto* array_seq
+                 = std::get_if<array_sequence>(&o->as_sequence.seq);
+                 array_seq)
         {
             mark_array(array_seq->elems);
+        }
+        else if (auto* dict_seq
+                 = std::get_if<dict_sequence>(&o->as_sequence.seq);
+                 dict_seq)
+        {
+            mark_array(dict_seq->keys);
+            mark_array(dict_seq->values);
         }
         break;
     }
@@ -83,17 +100,20 @@ static void mark(heap_object* o)
 
 static void mark_bindings(const env& env)
 {
-    for (auto* o : env.objects())
+    for (auto& it : env.get_bindings())
     {
-        if (nanbox_is_pointer(o->box))
+        if (IS_HEAP_OBJECT(it.second))
         {
-            mark(static_cast<heap_object*>(nanbox_to_pointer(o->box)));
+            mark(AS_HEAP_OBJECT(it.second));
         }
     }
 
     if (auto parent = env.parent(); parent)
     {
-        mark_bindings(*parent);
+        if (parent)
+        {
+            mark_bindings(*parent);
+        }
     }
 }
 

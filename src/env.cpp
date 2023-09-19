@@ -36,11 +36,6 @@ env::bindings& env::get_bindings() noexcept
     return _bindings;
 }
 
-const std::list<object::object*>& env::objects() const noexcept
-{
-    return _objects;
-}
-
 const env::parent_ptr env::parent() const noexcept
 {
     return _parent;
@@ -53,7 +48,6 @@ env::env(parent_ptr p)
 
 void env::set(key&& k, value_type v) noexcept
 {
-    _objects.push_front(&v);
     _bindings.insert_or_assign(std::move(k), v);
 }
 

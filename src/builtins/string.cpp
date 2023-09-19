@@ -27,8 +27,7 @@ gaya::eval::object::object concat(
     span span,
     const std::vector<gaya::eval::object::object>& args) noexcept
 {
-    if (args[0].type != object_type_string
-        || args[1].type != object_type_string)
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1]))
     {
         auto t1 = typeof_(args[0]);
         auto t2 = typeof_(args[1]);
@@ -37,6 +36,7 @@ gaya::eval::object::object concat(
             fmt::format("Expected {} and {} to be both string", t1, t2));
         return gaya::eval::object::invalid;
     }
+
     auto& s1 = AS_STRING(args[0]);
     auto& s2 = AS_STRING(args[1]);
     s1.append(s2);

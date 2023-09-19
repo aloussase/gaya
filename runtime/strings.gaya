@@ -92,7 +92,7 @@ string.substring :: { s, start, finish =>
     otherwise =>
       let result = "", i = start in do
         while i < finish : i <- i + 1
-          result <- string.concat(result, s(i))
+          discard string.concat(result, s(i))
         end
 
         result
