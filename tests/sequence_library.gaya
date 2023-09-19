@@ -113,3 +113,10 @@ discard
   (1, 2, 3, "Hola")
   |> seq.all(_) { x => typeof(x) == "number" }
   |> assert(not _)
+
+(* seq.enumerate *)
+discard
+  "Gaya"
+  |> seq.enumerate(_)
+  |> seq.toarray(_)
+  |> assert(_ == ((0, "G"), (1, "a"), (2, "y"), (3, "a")))

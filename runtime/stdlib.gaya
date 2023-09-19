@@ -401,6 +401,25 @@ seq.range :: { start, finish => do
   end
 }
 
+(* 
+  Return a sequence that yields 2 element arrays where the
+  first element is the index of the second element from the
+  provided sequence.
+*)
+seq.enumerate :: { xs => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs), i = 0 in seq.make { =>
+      let x = seq.next(xs), pair = (i, x) in 
+      cases
+        given x /= unit => do
+          i <- i + 1
+          pair
+        end
+      end
+    }
+  end
+}
+
 (* Return an array with the elements of the provided sequence. *)
 seq.toarray :: { xs => do
     discard xs |> issequence(_) |> assert(_)
