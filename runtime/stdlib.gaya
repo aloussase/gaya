@@ -344,6 +344,24 @@ seq.drop :: { xs, n => do
   end
 }
 
+(*
+  Create a sequence that yields the numbers from start inclusive to end
+  exclusive.
+*)
+seq.range :: { start, finish => do
+    discard assert(typeof(start) == "number" and typeof(finish) == "number")
+    let i = start in seq.make { =>
+      cases
+        given i < finish =>
+          let previous = i in do
+            i <- i + 1
+            previous
+        end
+      end
+    }
+  end
+}
+
 (* Return an array with the elements of the provided sequence. *)
 seq.toarray :: { xs => do
     discard xs |> issequence(_) |> assert(_)

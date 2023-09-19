@@ -80,3 +80,9 @@ discard
   |> string.isempty(_)
   |> assert(_)
 
+(* seq.range *)
+discard
+  seq.range(1, 1000000)
+  |> seq.take(_, 10)
+  |> seq.reduce(_, 0) { acc, x => acc + x}
+  |> assert(_ == 55)
