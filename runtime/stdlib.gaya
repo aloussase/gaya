@@ -19,19 +19,19 @@ ifelse :: { b, iftrue, iffalse =>
 (* Strings *)
 
 (* Return whether the provided string is empty or not. *)
-string.empty :: { s => string.length(s) == 0 }
+string.isempty :: { s => string.length(s) == 0 }
 
 (* Return the first character in a string, or unit if empty. *)
 string.first :: { s =>
   cases
-    given typeof(s) == "string" and not string.empty(s) => s(0)
+    given typeof(s) == "string" and not string.isempty(s) => s(0)
   end
 }
 
 (* Return the last character in a string, or unit if empty. *)
 string.last :: { s =>
   cases
-    given typeof(s) == "string" and not string.empty(s) => s(string.length(s) - 1)
+    given typeof(s) == "string" and not string.isempty(s) => s(string.length(s) - 1)
   end
 }
 
@@ -295,6 +295,20 @@ seq.takewhile :: { xs, pred => do
   end
 }
 
+(* Return a sequence that takes the first n elements of the provided one. *)
+seq.take :: { xs, n => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs), i = 0 in seq.make { =>
+      cases
+        given i < n => do
+          i <- i + 1
+          seq.next(xs)
+        end
+      end
+    }
+  end
+}
+
 (*
   Return a sequence that drops elements from the input sequence as long as they
   satisfy the given predicate.
@@ -311,6 +325,20 @@ seq.dropwhile :: { xs, pred => do
         end
 
         x
+      end
+    }
+  end
+}
+
+(* Return a new sequence that drops the first n elements of the provided one. *)
+seq.drop :: { xs, n => do
+    discard xs |> issequence(_) |> assert(_)
+    let xs = tosequence(xs), i = 1, x = seq.next(xs) in seq.make { => do
+        while i < n : i <- i + 1
+          x <- seq.next(xs)
+        end
+        
+        seq.next(xs)
       end
     }
   end
@@ -346,6 +374,7 @@ seq.tostring :: { xs => do
     end
   end
 }
+
 
 (* Dictionaries *)
 
