@@ -20,8 +20,9 @@
 #define IS_BUILTIN_FUNCION(o) \
     ((o).type == gaya::eval::object::object_type_builtin_function)
 
-#define AS_NUMBER(o)           nanbox_to_double((o).box)
-#define AS_HEAP_OBJECT(o)      static_cast<heap_object*>(nanbox_to_pointer((o).box))
+#define AS_NUMBER(o) nanbox_to_double((o).box)
+#define AS_HEAP_OBJECT(o) \
+    static_cast<gaya::eval::object::heap_object*>(nanbox_to_pointer((o).box))
 #define AS_STRING(o)           AS_HEAP_OBJECT(o)->as_string
 #define AS_ARRAY(o)            AS_HEAP_OBJECT(o)->as_array
 #define AS_DICT(o)             AS_HEAP_OBJECT(o)->as_dictionary

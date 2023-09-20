@@ -1,0 +1,2 @@
+discard "Hello, " <> "World" <> "!" |> assert(_ == "Hello, World!")
+discard "The answer is: " <> 42 |> assert(_ == "The answer is: 42")

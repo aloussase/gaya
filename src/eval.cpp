@@ -470,11 +470,18 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
 
         static key underscore = key::local("_");
         define(underscore, replacement);
+        _placeholders_in_use += 1;
 
         auto result = binop.rhs->accept(*this);
         end_scope();
 
-        RETURN_IF_INVALID(result);
+        if (_placeholders_in_use != 0 && !_had_unused_placeholders)
+        {
+            interp_error(binop.op.span, "The result of a pipe was not used");
+            interp_hint(binop.op.span, "Maybe you forgot to use a '_'?");
+            _had_unused_placeholders = true;
+            return object::invalid;
+        }
 
         return result;
     }
@@ -482,6 +489,22 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
     case token_type::or_:
     {
         return interpret_logical_expression(*this, binop);
+    }
+    case token_type::diamond:
+    {
+        auto s1 = binop.lhs->accept(*this);
+        if (!IS_STRING(s1))
+        {
+            interp_error(binop.op.span, "Expected lhs to '<>' to be a string");
+            return object::invalid;
+        }
+
+        auto s2 = binop.rhs->accept(*this);
+
+        std::string result = AS_STRING(s1)
+            + (IS_STRING(s2) ? AS_STRING(s2) : object::to_string(*this, s2));
+
+        return object::create_string(*this, binop.op.span, std::move(result));
     }
     default:
     {
@@ -657,6 +680,10 @@ object::object interpreter::visit_placeholder(ast::placeholder& p)
     static key underscore = key::local("_");
     if (auto value = environment().get(underscore); object::is_valid(value))
     {
+        if (_placeholders_in_use > 0)
+        {
+            _placeholders_in_use -= 1;
+        }
         return value;
     }
     else

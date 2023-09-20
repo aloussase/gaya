@@ -738,6 +738,7 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
 /**
  * term_expression ::= factor_expression '+' factor_expression
  *                   | factor_expression '-' factor_expression
+ *                   | factor_expression '<>' factor_expression
  *                   | factor_expression
  */
 ast::expression_ptr parser::term_expression(token token) noexcept
@@ -755,6 +756,7 @@ ast::expression_ptr parser::term_expression(token token) noexcept
         {
         case token_type::plus:
         case token_type::dash:
+        case token_type::diamond:
         {
             auto op = t.value();
 

@@ -18,6 +18,7 @@ enum class token_type {
     comma,
     dash,
     discard,
+    diamond,
     do_,
     end,
     equal,

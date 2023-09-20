@@ -59,6 +59,7 @@ pipe_expression ::= term_expression '|>' term_expression
 
 term_expression ::= factor_expression '+' factor_expression
                   | factor_expression '-' factor_expression
+                  | factor_expression '<>' factor_expression
                   | factor_expression
 
 factor_expression ::= unary_expression '*' unary_expression

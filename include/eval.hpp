@@ -96,6 +96,9 @@ private:
     parser _parser;
     std::vector<diagnostic::diagnostic> _diagnostics;
     std::vector<env> _scopes;
+
+    int _placeholders_in_use      = 0;
+    bool _had_unused_placeholders = false;
 };
 
 }

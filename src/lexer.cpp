@@ -232,6 +232,12 @@ std::optional<token> lexer::less_than() noexcept
             advance();
             return mk_token(token_type::back_arrow);
         }
+
+        if (c.value() == '>')
+        {
+            advance();
+            return mk_token(token_type::diamond);
+        }
     }
 
     return mk_token(token_type::less_than);
