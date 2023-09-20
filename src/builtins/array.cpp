@@ -81,14 +81,28 @@ pop(interpreter& interp, span span, const std::vector<object>& args) noexcept
 gaya::eval::object::object
 sort(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
-    auto& a = args[0];
+    auto& a  = args[0];
+    auto cmp = args[1];
+
     if (!IS_ARRAY(a))
     {
         interp.interp_error(span, "Expected the first argument to be an array");
         return invalid;
     }
 
-    std::sort(AS_ARRAY(a).begin(), AS_ARRAY(a).end());
+    if (!IS_FUNCTION(cmp))
+    {
+        interp.interp_error(
+            span,
+            "Expected the second argument to be a function");
+        return invalid;
+    }
+
+    std::sort(AS_ARRAY(a).begin(), AS_ARRAY(a).end(), [&](auto o1, auto o2) {
+        auto result = call(cmp, interp, span, { o1, o2 });
+        assert(is_valid(result));
+        return is_truthy(result);
+    });
 
     return a;
 }

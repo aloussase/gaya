@@ -1,10 +1,15 @@
 (* This file contains function utilities. *)
 
 (* These are useful for sequence algorithms. *)
+
 fn.add  :: { x, y => x + y }
 fn.sub  :: { x, y => x - y }
 fn.mult :: { x, y => x * y }
 fn.div  :: { x, y => x / y }
+
+fn.less    :: { x, y => x < y }
+fn.greater :: { x, y => x > y }
+fn.equal   :: { x, y => x == y }
 
 (* Return the greater of two objects. 
   @param x <object> The first object.

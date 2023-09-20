@@ -1,6 +1,7 @@
 (* Output: '()\n(1)\n(1)\n(1, 2)\n(1)\n("hello", 1)' *)
 
 include "arrays"
+include "functions"
 
 (* Concat *)
 discard io.println(array.concat((), ()))
@@ -27,5 +28,5 @@ discard array.pop((1, 2, 3)) |> assert(_ == 3)
 discard array.pop(("Hello", 12, "World")) |> assert(_ == "World")
 
 (* Sort *)
-discard (1, 3, 2) |> array.sort(_) |> assert(_ == (1, 2, 3))
-discard ("World", "Hello") |> array.sort(_) |> assert(_ == ("Hello", "World"))
+discard (1, 3, 2) |> array.sort(_, fn.less) |> assert(_ == (1, 2, 3))
+discard ("World", "Hello") |> array.sort(_, fn.less) |> assert(_ == ("Hello", "World"))

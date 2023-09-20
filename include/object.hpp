@@ -15,7 +15,10 @@
 #define IS_STRING(o)      ((o).type == gaya::eval::object::object_type_string)
 #define IS_ARRAY(o)       ((o).type == gaya::eval::object::object_type_array)
 #define IS_SEQUENCE(o)    ((o).type == gaya::eval::object::object_type_sequence)
+#define IS_FUNCTION(o)    ((o).type == gaya::eval::object::object_type_function)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
+#define IS_BUILTIN_FUNCION(o) \
+    ((o).type == gaya::eval::object::object_type_builtin_function)
 
 #define AS_NUMBER(o)           nanbox_to_double((o).box)
 #define AS_HEAP_OBJECT(o)      static_cast<heap_object*>(nanbox_to_pointer((o).box))
@@ -63,18 +66,6 @@ struct object
 [[nodiscard]] bool cmp(const object&, const object&, int*) noexcept;
 [[nodiscard]] bool equals(const object&, const object&) noexcept;
 [[nodiscard]] size_t hash(const object&) noexcept;
-
-static inline bool operator<(const object& o1, const object& o2) noexcept
-{
-    int result;
-    if (!cmp(o1, o2, &result))
-    {
-        // TODO: Maybe we should signal an error here.
-        return false;
-    }
-
-    return result < 0;
-}
 
 }
 
