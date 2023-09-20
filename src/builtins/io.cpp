@@ -15,18 +15,15 @@ gaya::eval::object::object println(
     span span,
     const std::vector<object>& args) noexcept
 {
-    using namespace gaya::eval::object;
-
-    auto x = args[0];
-    auto s = to_string(interp, x);
-
-    if (IS_STRING(x))
+    if (IS_STRING(args[0]))
     {
-        s.erase(s.cbegin());
-        s.erase(s.cend() - 1);
+        fmt::println("{}", AS_STRING(args[0]));
     }
-
-    fmt::println("{}", s);
+    else
+    {
+        auto line = to_string(interp, args[0]);
+        fmt::println("{}", line);
+    }
 
     return create_unit(span);
 }
@@ -34,19 +31,15 @@ gaya::eval::object::object println(
 gaya::eval::object::object
 print(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
-    using namespace gaya::eval::object;
-
-    auto x = args[0];
-    auto s = to_string(interp, x);
-
-    if (x.type == object_type_string)
+    if (IS_STRING(args[0]))
     {
-        s.erase(s.cbegin());
-        s.erase(s.cend() - 1);
+        fmt::print("{}", AS_STRING(args[0]));
     }
-
-    fmt::print("{}", s);
-
+    else
+    {
+        auto line = to_string(interp, args[0]);
+        fmt::print("{}", line);
+    }
     return create_unit(span);
 }
 

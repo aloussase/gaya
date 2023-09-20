@@ -9,21 +9,21 @@ namespace gaya::eval::object::builtin::array
 gaya::eval::object::object
 length(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
-    auto o = args[0];
+    auto a = args[0];
 
-    if (o.type != object_type_array)
+    if (!IS_ARRAY(a))
     {
         interp.interp_error(span, "Expected its argument to be an array");
         return gaya::eval::object::invalid;
     }
 
-    return create_number(span, AS_ARRAY(o).size());
+    return create_number(span, AS_ARRAY(a).size());
 }
 
 gaya::eval::object::object
 concat(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
-    if (args[0].type != object_type_array || args[1].type != object_type_array)
+    if (!IS_ARRAY(args[0]) || !IS_ARRAY(args[1]))
     {
         auto t1 = typeof_(args[0]);
         auto t2 = typeof_(args[1]);
@@ -43,7 +43,7 @@ concat(interpreter& interp, span span, const std::vector<object>& args) noexcept
 gaya::eval::object::object
 push(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
-    if (args[0].type != object_type_array)
+    if (!IS_ARRAY(args[0]))
     {
         interp.interp_error(span, "Expected first argument to be an array");
         return gaya::eval::object::invalid;
@@ -57,21 +57,21 @@ push(interpreter& interp, span span, const std::vector<object>& args) noexcept
 gaya::eval::object::object
 pop(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
-    if (args[0].type != object_type_array)
+    if (!IS_ARRAY(args[0]))
     {
         interp.interp_error(span, "Expected first argument to be an array");
         return gaya::eval::object::invalid;
     }
 
-    auto& ary = AS_ARRAY(args[0]);
+    auto& a = AS_ARRAY(args[0]);
 
-    if (ary.empty())
+    if (a.empty())
     {
         return create_unit(span);
     }
 
-    auto value = ary.back();
-    ary.pop_back();
+    auto value = a.back();
+    a.pop_back();
 
     return value;
 }

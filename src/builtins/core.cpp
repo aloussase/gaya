@@ -22,8 +22,6 @@ gaya::eval::object::object assert_(
     span span,
     const std::vector<object>& args) noexcept
 {
-    using namespace gaya::eval::object;
-
     if (is_truthy(args[0]))
     {
         return create_unit(span);
@@ -46,7 +44,7 @@ gaya::eval::object::object tostring(
     span span,
     const std::vector<object>& args) noexcept
 {
-    if (args[0].type == gaya::eval::object::object_type_string)
+    if (IS_STRING(args[0]))
     {
         return args[0];
     }
@@ -71,8 +69,6 @@ gaya::eval::object::object tosequence(
     span span,
     const std::vector<object>& args) noexcept
 {
-    using namespace gaya::eval::object;
-
     if (!is_sequence(args[0]))
     {
         interp.interp_error(
@@ -82,8 +78,8 @@ gaya::eval::object::object tosequence(
                 to_string(interp, args[0])));
     }
 
-    auto arg      = args[0];
-    auto sequence = to_sequence(interp, arg);
+    auto o        = args[0];
+    auto sequence = to_sequence(interp, o);
 
     return sequence;
 }

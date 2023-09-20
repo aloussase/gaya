@@ -13,6 +13,8 @@
 
 #define IS_NUMBER(o)      ((o).type == gaya::eval::object::object_type_number)
 #define IS_STRING(o)      ((o).type == gaya::eval::object::object_type_string)
+#define IS_ARRAY(o)       ((o).type == gaya::eval::object::object_type_array)
+#define IS_SEQUENCE(o)    ((o).type == gaya::eval::object::object_type_sequence)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
 
 #define AS_NUMBER(o)           nanbox_to_double((o).box)
