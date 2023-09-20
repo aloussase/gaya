@@ -59,7 +59,7 @@ interpreter::interpreter()
     BUILTIN("array.sort"s, 1, array::sort);
 
     BUILTIN("dict.length"s, 1, dict::length);
-    BUILTIN("dict.insert"s, 3, dict::insert);
+    BUILTIN("dict.set"s, 3, dict::set);
     BUILTIN("dict.remove"s, 2, dict::remove);
     BUILTIN("dict.contains"s, 2, dict::contains);
 

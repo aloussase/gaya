@@ -47,7 +47,7 @@ parser::parser()
     define("array.sort"s);
 
     define("dict.length"s);
-    define("dict.insert"s);
+    define("dict.set"s);
     define("dict.remove"s);
     define("dict.contains"s);
 

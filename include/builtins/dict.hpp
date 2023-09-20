@@ -22,7 +22,7 @@ length(interpreter&, span, const std::vector<object>&) noexcept;
  * @return The provided dictionary.
  */
 gaya::eval::object::object
-insert(interpreter&, span, const std::vector<object>&) noexcept;
+set(interpreter&, span, const std::vector<object>&) noexcept;
 
 /**
  * Remove the specified key-value pair from the dictionary.

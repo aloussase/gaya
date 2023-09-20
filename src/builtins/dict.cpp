@@ -23,7 +23,7 @@ length(interpreter& interp, span span, const std::vector<object>& args) noexcept
 }
 
 gaya::eval::object::object
-insert(interpreter& interp, span span, const std::vector<object>& args) noexcept
+set(interpreter& interp, span span, const std::vector<object>& args) noexcept
 {
     auto& d = args[0];
     auto& k = args[1];
