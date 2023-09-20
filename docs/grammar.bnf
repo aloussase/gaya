@@ -82,8 +82,19 @@ primary_expression ::= NUMBER
                      | let_expression
                      | function_expression
                      | array
+                     | dict
 
 array ::= '(' array_elems ')'
 
 array_elems ::= expression ',' array_elems
               | expression
+
+dict ::= '(' dict_elems ')' 
+       | empty_dict
+
+empty_dict ::= '(' '->' ')'
+
+dict_elems ::= dict_pair ',' dict_elems
+             | dict_pair
+
+dict_pair ::= expression '->' expression
