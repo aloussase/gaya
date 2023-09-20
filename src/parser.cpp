@@ -44,6 +44,7 @@ parser::parser()
     define("array.concat"s);
     define("array.push"s);
     define("array.pop"s);
+    define("array.sort"s);
 
     define("dict.length"s);
     define("dict.insert"s);

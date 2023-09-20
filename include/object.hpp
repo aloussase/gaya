@@ -60,8 +60,21 @@ struct object
     nanbox_t box;
 };
 
+[[nodiscard]] bool cmp(const object&, const object&, int*) noexcept;
 [[nodiscard]] bool equals(const object&, const object&) noexcept;
 [[nodiscard]] size_t hash(const object&) noexcept;
+
+static inline bool operator<(const object& o1, const object& o2) noexcept
+{
+    int result;
+    if (!cmp(o1, o2, &result))
+    {
+        // TODO: Maybe we should signal an error here.
+        return false;
+    }
+
+    return result < 0;
+}
 
 }
 

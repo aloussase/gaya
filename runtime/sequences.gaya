@@ -5,6 +5,8 @@ include "base"
 (*
   Call the provided function for each element in the sequence, discarding
   the results.
+  @param s <sequence> A sequence.
+  @param f <function> A function to call on every element in the sequence.
  *)
 seq.foreach :: { s, f => do
     discard s |> issequence(_) |> assert(_)
@@ -19,6 +21,9 @@ seq.foreach :: { s, f => do
   Reduce the provided sequence according to the specified accumulator function,
   using the given initial element. Return the initial element if the sequence
   was empty.
+  @param s <sequence> A sequence.
+  @param init <object> The initial element.
+  @param f <function> The accumulator function.
  *)
 seq.reduce :: { s, init, f => do
     discard s |> issequence(_) |> assert(_)

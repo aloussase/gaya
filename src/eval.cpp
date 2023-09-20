@@ -56,6 +56,7 @@ interpreter::interpreter()
     BUILTIN("array.concat"s, 2, array::concat);
     BUILTIN("array.push"s, 2, array::push);
     BUILTIN("array.pop"s, 1, array::pop);
+    BUILTIN("array.sort"s, 1, array::sort);
 
     BUILTIN("dict.length"s, 1, dict::length);
     BUILTIN("dict.insert"s, 3, dict::insert);

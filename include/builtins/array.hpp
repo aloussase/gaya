@@ -38,4 +38,13 @@ push(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 pop(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * Sort the provided array in place.
+ * If the elements of the array are not comparable, an interpreter error takes
+ * place.
+ * @param a <array> The array to sort.
+ */
+gaya::eval::object::object
+sort(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

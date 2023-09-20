@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <fmt/core.h>
 
 #include <builtins/array.hpp>
@@ -74,6 +76,21 @@ pop(interpreter& interp, span span, const std::vector<object>& args) noexcept
     a.pop_back();
 
     return value;
+}
+
+gaya::eval::object::object
+sort(interpreter& interp, span span, const std::vector<object>& args) noexcept
+{
+    auto& a = args[0];
+    if (!IS_ARRAY(a))
+    {
+        interp.interp_error(span, "Expected the first argument to be an array");
+        return invalid;
+    }
+
+    std::sort(AS_ARRAY(a).begin(), AS_ARRAY(a).end());
+
+    return a;
 }
 
 }
