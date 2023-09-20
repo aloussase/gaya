@@ -294,6 +294,11 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     return object::create_unit(cases.span_);
 }
 
+object::object interpreter::visit_match_expression(ast::match_expression& expr)
+{
+    assert(0 && "not implemented");
+}
+
 static inline object::object interpret_arithmetic_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept

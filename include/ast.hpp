@@ -200,6 +200,55 @@ struct case_expression final : public expression
     expression_ptr otherwise;
 };
 
+struct match_pattern final
+{
+    enum class kind { wildcard, capture, expr };
+
+    match_pattern(kind k, expression_ptr v = nullptr)
+        : kind { k }
+        , value { v }
+    {
+    }
+
+    kind kind;
+    expression_ptr value = nullptr;
+};
+
+struct match_branch final
+{
+    match_branch(match_pattern p, expression_ptr b, expression_ptr c = nullptr)
+        : pattern { p }
+        , body { b }
+        , condition { c }
+    {
+    }
+
+    match_pattern pattern;
+    expression_ptr body;
+    // optional
+    expression_ptr condition = nullptr;
+};
+
+struct match_expression final : expression
+{
+    match_expression(
+        expression_ptr t,
+        std::vector<match_branch> b,
+        expression_ptr o = nullptr)
+        : target { t }
+        , branches { b }
+        , otherwise { o }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    object accept(ast_visitor&) override;
+
+    expression_ptr target;
+    std::vector<match_branch> branches;
+    expression_ptr otherwise = nullptr;
+};
+
 struct call_expression final : public expression
 {
     call_expression(span s, expression_ptr t, std::vector<expression_ptr>&& a)

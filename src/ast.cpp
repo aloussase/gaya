@@ -145,6 +145,46 @@ object case_expression::accept(ast_visitor& v)
     return v.visit_case_expression(*this);
 }
 
+std::string match_expression::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "match_expression", "expr": )" << target->to_string()
+       << R"(, "branches": [)";
+    for (size_t i = 0; i < branches.size(); i++)
+    {
+        const auto& branch = branches[i];
+        ss << R"({ "condition": )"
+           << (branch.condition ? branch.condition->to_string() : "null")
+           << R"(, "body": )" << branch.body->to_string() << R"(, "pattern": )";
+
+        switch (branch.pattern.kind)
+        {
+        case match_pattern::kind::wildcard: ss << R"("wildcard")"; break;
+        case match_pattern::kind::capture:
+            ss << R"({ "type": "capture", "identifier": )"
+               << branch.pattern.value->to_string() << "}";
+            break;
+        case match_pattern::kind::expr:
+            ss << R"({ "type": "expr", "expr": )"
+               << branch.pattern.value->to_string() << "}";
+            break;
+        }
+
+        ss << "}";
+        if (i < branches.size() - 1)
+        {
+            ss << ", ";
+        }
+    }
+    ss << "]}";
+    return ss.str();
+}
+
+object match_expression::accept(ast_visitor& v)
+{
+    return v.visit_match_expression(*this);
+}
+
 std::string call_expression::to_string() const noexcept
 {
     std::stringstream ss;

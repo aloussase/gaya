@@ -1,0 +1,36 @@
+
+test1 :: { n => 
+  cases n
+    given 42  => "life"
+    given 69  => "nice"
+    otherwise => "dunno"
+  end
+}
+
+test2 :: { n =>
+  cases n
+    given x when x == 42 => "life"
+    given x when x == 69 => "nice"
+    otherwise            => "dunno"
+  end
+}
+
+test3 :: { n =>
+  cases n
+    given _ when n == 42 => "life"
+    given _ when n == 69 => "nice"
+    given _              => "dunno"
+  end
+}
+
+discard assert(test1(42) == "life")
+discard assert(test1(69) == "nice")
+discard assert(test1(15) == "dunno")
+
+discard assert(test2(42) == "life")
+discard assert(test2(69) == "nice")
+discard assert(test2(15) == "dunno")
+
+discard assert(test3(42) == "life")
+discard assert(test3(69) == "nice")
+discard assert(test3(15) == "dunno")

@@ -566,6 +566,14 @@ ast::expression_ptr parser::function_expression(token lcurly)
         else
         {
             auto expr = expression(token.value());
+            if (!expr)
+            {
+                parser_error(
+                    lcurly.span,
+                    "Expected an expression after '=>' in function");
+                return nullptr;
+            }
+
             if (auto rcurly = _lexer.next_token();
                 !match(rcurly, token_type::rcurly))
             {
@@ -1105,8 +1113,16 @@ ast::expression_ptr parser::case_expression(token cases)
 
         if (!match(token, token_type::given))
         {
-            _lexer.push_back(token.value());
-            break;
+            if (match(token, token_type::otherwise)
+                || match(token, token_type::end))
+            {
+                _lexer.push_back(token.value());
+                break;
+            }
+            else
+            {
+                return match_expression(token.value());
+            }
         }
 
         token = _lexer.next_token();
@@ -1177,6 +1193,204 @@ ast::expression_ptr parser::case_expression(token cases)
 
     return ast::make_node<ast::case_expression>(
         cases.span,
+        std::move(branches),
+        otherwise);
+}
+
+ast::expression_ptr parser::match_expression(token target)
+{
+    auto target_expr = expression(target);
+    if (!target_expr)
+    {
+        parser_error(
+            target.span,
+            "Expected an expression after 'cases' in match expression");
+        return nullptr;
+    }
+
+    std::vector<ast::match_branch> branches;
+    for (;;)
+    {
+        auto given_token = _lexer.next_token();
+        if (!given_token) break;
+
+        if (!match(given_token, token_type::given))
+        {
+            _lexer.push_back(given_token.value());
+            break;
+        }
+
+        auto pattern_token = _lexer.next_token();
+        if (!pattern_token)
+        {
+            parser_error(
+                given_token->span,
+                "Expected a pattern after given in match expression");
+            return nullptr;
+        }
+
+        auto pattern = ([&]() -> std::optional<ast::match_pattern> {
+            if (pattern_token->type == token_type::underscore)
+            {
+                return ast::match_pattern {
+                    ast::match_pattern::kind::wildcard
+                };
+            }
+            else if (pattern_token->type == token_type::identifier)
+            {
+                auto lparen = _lexer.next_token();
+                if (lparen) _lexer.push_back(lparen.value());
+
+                if (match(lparen, token_type::lparen))
+                {
+                    /* Not an identifier, a function call. */
+                    auto e = expression(pattern_token.value());
+                    if (!e) return {};
+                    return ast::match_pattern {
+                        ast::match_pattern::kind::expr,
+                        e,
+                    };
+                }
+                else
+                {
+                    /* Here we have an identifier. */
+                    auto identifier = ast::make_node<ast::identifier>(
+                        pattern_token->span,
+                        pattern_token->span.to_string());
+                    define(identifier->key);
+                    return ast::match_pattern {
+                        ast::match_pattern::kind::capture,
+                        identifier,
+                    };
+                }
+            }
+            else
+            {
+                /* Otherwise, the pattern is an arbitrary expression. */
+                auto e = expression(pattern_token.value());
+                if (!e) return {};
+                return ast::match_pattern {
+                    ast::match_pattern::kind::expr,
+                    e,
+                };
+            }
+        })();
+
+        if (!pattern)
+        {
+            parser_error(
+                given_token->span,
+                "Expected a pattern in match branch");
+            return nullptr;
+        }
+
+        /* An optional when clause. */
+        ast::expression_ptr condition = nullptr;
+        auto when_token               = _lexer.next_token();
+
+        if (match(when_token, token_type::when))
+        {
+            auto when_expr_token = _lexer.next_token();
+            if (!when_expr_token)
+            {
+                parser_error(
+                    when_token->span,
+                    "Expected an expression after when in match expression");
+                return nullptr;
+            }
+
+            auto when_expr = expression(when_expr_token.value());
+            if (!when_expr)
+            {
+                parser_error(
+                    when_token->span,
+                    "Expected an expression after when in match expression");
+                return nullptr;
+            }
+
+            condition = when_expr;
+        }
+        else if (when_token)
+        {
+            _lexer.push_back(when_token.value());
+        }
+
+        /* A mandatory arrow. */
+        auto arrow = _lexer.next_token();
+        if (!match(arrow, token_type::arrow))
+        {
+            parser_error(
+                given_token->span,
+                "Expected a '=>' in match expression branch");
+            return nullptr;
+        }
+
+        /* The branch body. */
+        auto expr_token = _lexer.next_token();
+        if (!expr_token)
+        {
+            parser_error(
+                given_token->span,
+                "Expected an expression after '=>' in match branch");
+            return nullptr;
+        }
+
+        auto expr = expression(expr_token.value());
+        if (!expr)
+        {
+            parser_error(
+                given_token->span,
+                "Expected an expression after '=>' in match branch");
+            return nullptr;
+        }
+
+        branches.emplace_back(pattern.value(), expr, condition);
+    }
+
+    /* An optional otherwise brach. */
+    ast::expression_ptr otherwise = nullptr;
+    auto t                        = _lexer.next_token();
+
+    if (match(t, token_type::otherwise))
+    {
+        auto arrow = _lexer.next_token();
+        if (!match(arrow, token_type::arrow))
+        {
+            parser_error(t->span, "Expected a '=>' after otherwise");
+            return nullptr;
+        }
+
+        auto expr_token = _lexer.next_token();
+        if (!expr_token)
+        {
+            parser_error(t->span, "Expected an expression after otherwise");
+            return nullptr;
+        }
+
+        auto expr = expression(expr_token.value());
+        if (!expr)
+        {
+            parser_error(t->span, "Expected an expression after otherwise");
+            return nullptr;
+        }
+
+        otherwise = expr;
+    }
+    else
+    {
+        _lexer.push_back(t.value());
+    }
+
+    /* A mandatory end token. */
+    auto end_token = _lexer.next_token();
+    if (!match(end_token, token_type::end))
+    {
+        parser_error(target.span, "Expected 'end' after match expression");
+        return nullptr;
+    }
+
+    return ast::make_node<ast::match_expression>(
+        target_expr,
         std::move(branches),
         otherwise);
 }

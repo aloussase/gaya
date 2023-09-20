@@ -34,8 +34,8 @@ assignment_stmt ::= IDENTIFIER '<-' expression
 
 while_stmt ::= 'while' expression 'do' local_stmts 'done'
 
-case_expression ::= 'case' case_branches 'end'
-                  | 'case' case_branches case_otherwise 'end'
+case_expression ::= 'cases' case_branches 'end'
+                  | 'cases' case_branches case_otherwise 'end'
 
 case_branches ::= case_branch
                 | case_branch case_branches
@@ -43,6 +43,19 @@ case_branches ::= case_branch
 case_branch ::= 'given' expression '=>' expression
 
 case_otherwise ::= 'otherwise' '=>' expression 
+
+match_expression ::= 'cases' expression match_branches 'end'
+                   | 'cases' expression match_branches match_otherwise 'end'
+
+match_branches ::= match_branch match_branches
+                 | match_branch
+
+match_branches ::= 'given' match_pattern '=>' expression
+                 | 'given' match_pattern 'when' expression '=>' expression
+
+match_pattern ::= '_' | IDENTIFIER | expression
+
+match_otherwise ::= 'otherwise' '=>' expression
 
 logical_expression ::= comparison_expression 'and' comparison_expression
                      | comparison_expression 'or' comparison_expression

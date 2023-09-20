@@ -17,8 +17,8 @@ enum class token_type {
     colon_colon,
     comma,
     dash,
-    discard,
     diamond,
+    discard,
     do_,
     end,
     equal,
@@ -50,6 +50,7 @@ enum class token_type {
     thin_arrow,
     underscore,
     unit,
+    when,
     while_,
 };
 

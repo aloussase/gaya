@@ -10,7 +10,7 @@ std::unordered_map<std::string, token_type> lexer::_keywords = {
     { "end", token_type::end },         { "while", token_type::while_ },
     { "not", token_type::not_ },        { "perform", token_type::perform },
     { "and", token_type::and_ },        { "or", token_type::or_ },
-    { "include", token_type::include },
+    { "include", token_type::include }, { "when", token_type::when },
 };
 
 lexer::lexer(const char* source)
