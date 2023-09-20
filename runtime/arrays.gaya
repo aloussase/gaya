@@ -1,8 +1,11 @@
 (* This file contains functions that work on arrays. *)
 
-(* Return an array with the numbers from start to finish exclusive. *)
+(* Return an array with the numbers from start to finish exclusive. 
+  @param start <number> The start of the range.
+  @param finish <number> The non-inclusive end of the range. *)
 array.range :: { start, finish => do
-    discard assert(typeof(start) == "number" and typeof(finish) == "number")
+    discard assert(typeof(start) == "number")
+    discard assert(typeof(finish) == "number")
     let i = start, a = () in do
       while i < finish : i <- i + 1
         discard array.push(a, i)
@@ -16,15 +19,18 @@ array.range :: { start, finish => do
 (*
   Return a string that is the result of joining the elements of the provided
   array by the given separator.
+  @param a <array> The array to join.
+  @param sep <string> The separator to use
 *)
-array.join :: { ary, sep => do
-    discard assert(typeof(ary) == "array" and typeof(sep) == "string")
+array.join :: { a, sep => do
+    discard assert(typeof(a) == "array")
+    discard assert(typeof(sep) == "string")
     let i = 0, result = "" in do
-      while i < array.length(ary) : i <- i + 1
-        result <- result |> string.concat(_, ary(i) |> tostring(_))
+      while i < array.length(a) : i <- i + 1
+        discard string.concat(result, tostring(a(i)))
         discard cases 
-          given i < array.length(ary) - 1 => 
-            perform result <- result |> string.concat(_, sep)
+          given i < array.length(a) - 1 => 
+            string.concat(result, sep)
         end
       end
 

@@ -227,9 +227,13 @@ static void enable_raw_mode()
         default:
         {
             if (iscntrl(c) && c != '\n') break;
-            line += c;
+            line.insert(cursor + 1, 1, c);
             cursor += 1;
             fmt::print("\x1b[2K\x1b[99999D{}{}", prompt, highlight(line));
+            for (size_t i = 0; i < line.size() - cursor - 1; i++)
+            {
+                fmt::print("\x1b[1D");
+            }
         }
         }
 
@@ -297,7 +301,8 @@ void run() noexcept
             line = multiline;
         }
 
-        if (!line.starts_with("discard") && line.find("::") == line.npos)
+        if (!line.starts_with("discard") && line.find("::") == line.npos
+            && !line.starts_with("include"))
         {
             line = fmt::format(
                 "discard {}{}{}",
