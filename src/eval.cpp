@@ -238,20 +238,19 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
 
 object::object interpreter::visit_include_stmt(ast::include_stmt& include_stmt)
 {
-    auto& parsed_file = include_stmt.parsed_file;
-    auto filename     = include_stmt.file_path;
-    auto span         = include_stmt.span_;
+    auto filename = _filename;
 
-    UNUSED(eval(filename, parsed_file));
+    UNUSED(eval(include_stmt.file_path, include_stmt.parsed_file));
     if (had_error())
     {
         interp_error(
-            span,
+            include_stmt.span_,
             fmt::format(
                 "There were errors while evaluating {}",
-                filename.string()));
+                include_stmt.file_path.string()));
     }
 
+    _filename = filename;
     return object::invalid;
 }
 
