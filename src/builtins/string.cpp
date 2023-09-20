@@ -36,9 +36,8 @@ gaya::eval::object::object concat(
     }
 
     auto& s1 = AS_STRING(args[0]);
-    auto s2  = to_string(interp, args[1]);
-    s2.erase(0, 1);
-    s2.erase(s2.size() - 1, 1);
+    auto s2
+        = IS_STRING(args[1]) ? AS_STRING(args[1]) : to_string(interp, args[1]);
     s1.append(s2);
 
     return args[0];
@@ -174,6 +173,37 @@ gaya::eval::object::object endswith(
         size);
 
     return create_number(span, cmp == 0 ? 1 : 0);
+}
+
+gaya::eval::object::object
+trim(interpreter& interp, span span, const std::vector<object>& args) noexcept
+{
+#define IS_WS(c) ((c) == ' ' || (c) == '\n' || (c) == '\t')
+
+    auto& s = args[0];
+
+    if (!IS_STRING(s))
+    {
+        interp.interp_error(span, "Expected first argument to be a string");
+        return invalid;
+    }
+
+    size_t i = 0;
+    size_t j = AS_STRING(s).size() - 1;
+
+    while (IS_WS(AS_STRING(s)[i]))
+    {
+        i += 1;
+    }
+
+    while (IS_WS(AS_STRING(s)[j]))
+    {
+        j -= 1;
+    }
+
+    auto trimmed = AS_STRING(s).substr(i, j - i + 1);
+    return create_string(interp, span, std::move(trimmed));
+#undef IS_WS
 }
 
 }

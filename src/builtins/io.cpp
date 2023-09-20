@@ -20,7 +20,7 @@ gaya::eval::object::object println(
     auto x = args[0];
     auto s = to_string(interp, x);
 
-    if (x.type == object_type_string)
+    if (IS_STRING(x))
     {
         s.erase(s.cbegin());
         s.erase(s.cend() - 1);

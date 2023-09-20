@@ -69,4 +69,12 @@ startswith(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 endswith(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * Return a new string that is the result of trimming the leading and trailing
+ * whitespace from the provided string.
+ * @param s <string> The string to trim.
+ */
+gaya::eval::object::object
+trim(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

@@ -38,6 +38,7 @@ parser::parser()
     define("string.substring"s);
     define("string.startswith"s);
     define("string.endswith"s);
+    define("string.trim"s);
 
     define("array.length"s);
     define("array.concat"s);

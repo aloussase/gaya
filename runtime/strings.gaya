@@ -1,6 +1,7 @@
 (* This file contains functions to work on strings. *)
 
 include "base"
+include "sequences"
 
 (* Return whether the provided string is empty or not. *)
 string.isempty :: { s => string.length(s) == 0 }
@@ -56,20 +57,3 @@ string.split :: { s, pattern =>
 (* Return whether a string is a whitespace character.
   @param s <string> The string to test. *)
 string.iswhitespace :: { s => s == " " or s == "\n" or s == "\t" }
-
-(* Return a new string that is the result of trimming the leading and trailing
-  whitespace from the provided string. 
-  @param s <string> The string to trim. *)
-string.trim :: { s =>
-  let start = 0, finish = string.length(s) - 1 in do
-    while string.iswhitespace(s(start)) and start < string.length(s)
-      start <- start + 1
-    end
-    
-    while string.iswhitespace(s(finish)) and finish > start
-      finish <- finish - 1
-    end
-
-    string.substring(s, start, finish + 1)
-  end
-}

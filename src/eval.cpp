@@ -50,6 +50,7 @@ interpreter::interpreter()
     BUILTIN("string.substring"s, 3, string::substring);
     BUILTIN("string.startswith"s, 2, string::startswith);
     BUILTIN("string.endswith"s, 2, string::endswith);
+    BUILTIN("string.trim"s, 1, string::trim);
 
     BUILTIN("array.length"s, 1, array::length);
     BUILTIN("array.concat"s, 2, array::concat);
