@@ -36,6 +36,8 @@ parser::parser()
     define("string.tonumber"s);
     define("string.index"s);
     define("string.substring"s);
+    define("string.startswith"s);
+    define("string.endswith"s);
 
     define("array.length"s);
     define("array.concat"s);

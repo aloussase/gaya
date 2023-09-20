@@ -2,7 +2,7 @@
 
 include "sequences"
 include "arrays"
-include "math"
+include "functions"
 
 (* Works on strings *)
 discard
@@ -23,12 +23,12 @@ discard
   array.range(1, 10)
   |> tosequence(_)
   |> seq.map(_, { x => x + 1 })
-  |> seq.reduce(_, 0, math.add)
+  |> seq.reduce(_, 0, fn.add)
   |> assert(_ == 54)
 
 (* Works on numbers. *)
 discard
   42
   |> tosequence(_)
-  |> seq.reduce(_, 0, math.add)
+  |> seq.reduce(_, 0, fn.add)
   |> assert(_ == 861)

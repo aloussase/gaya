@@ -55,7 +55,7 @@ install(
     ${CMAKE_SOURCE_DIR}/runtime/base.gaya
     ${CMAKE_SOURCE_DIR}/runtime/arrays.gaya
     ${CMAKE_SOURCE_DIR}/runtime/dictionaries.gaya
-    ${CMAKE_SOURCE_DIR}/runtime/math.gaya
+    ${CMAKE_SOURCE_DIR}/runtime/functions.gaya
     ${CMAKE_SOURCE_DIR}/runtime/sequences.gaya
     ${CMAKE_SOURCE_DIR}/runtime/strings.gaya
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/gaya/runtime

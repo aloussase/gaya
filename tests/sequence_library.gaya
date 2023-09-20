@@ -1,14 +1,14 @@
 (* Output: '(5, 7, 9)\n(3)\n(3)\n()' *)
 
 include "sequences"
-include "math"
+include "functions"
 include "strings"
 
 (* seq.zip *)
 discard
   (1, 2, 3)
   |> tosequence(_)
-  |> seq.zip(_, (4, 5, 6), math.add)
+  |> seq.zip(_, (4, 5, 6), fn.add)
   |> io.println(_)
 
 (* seq.filter works outside of pipeline *)

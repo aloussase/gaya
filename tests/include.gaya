@@ -1,9 +1,9 @@
 (* Output: 'From included\nFrom other included' *)
 
 include "./file_to_be_included.gaya"
-include "math"
+include "functions"
 include "file_to_be_included_without_extension"
 
 discard someFunction()
-discard math.add(1, 2)
+discard fn.add(1, 2)
 discard someOtherFunction()

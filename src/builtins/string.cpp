@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <fmt/core.h>
 
 #include <builtins/string.hpp>
@@ -27,18 +29,16 @@ gaya::eval::object::object concat(
     span span,
     const std::vector<gaya::eval::object::object>& args) noexcept
 {
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1]))
+    if (!IS_STRING(args[0]))
     {
-        auto t1 = typeof_(args[0]);
-        auto t2 = typeof_(args[1]);
-        interp.interp_error(
-            span,
-            fmt::format("Expected {} and {} to be both string", t1, t2));
+        interp.interp_error(span, "Expected the first argument to be a string");
         return gaya::eval::object::invalid;
     }
 
     auto& s1 = AS_STRING(args[0]);
-    auto& s2 = AS_STRING(args[1]);
+    auto s2  = to_string(interp, args[1]);
+    s2.erase(0, 1);
+    s2.erase(s2.size() - 1, 1);
     s1.append(s2);
 
     return args[0];
@@ -119,6 +119,61 @@ gaya::eval::object::object substring(
     }
 
     return create_string(interp, span, AS_STRING(s).substr(pos, count));
+}
+
+gaya::eval::object::object startswith(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    auto& s       = args[0];
+    auto& pattern = args[1];
+
+    if (!IS_STRING(s) || !IS_STRING(pattern))
+    {
+        interp.interp_error(span, "Expected both arguments to be strings");
+        return invalid;
+    }
+
+    if (AS_STRING(s).size() < AS_STRING(pattern).size())
+    {
+        return create_unit(span);
+    }
+
+    auto cmp = std::memcmp(
+        AS_STRING(s).c_str(),
+        AS_STRING(pattern).c_str(),
+        AS_STRING(pattern).size());
+
+    return create_number(span, cmp == 0 ? 1 : 0);
+}
+
+gaya::eval::object::object endswith(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    auto& s       = args[0];
+    auto& pattern = args[1];
+
+    if (!IS_STRING(s) || !IS_STRING(pattern))
+    {
+        interp.interp_error(span, "Expected both arguments to be strings");
+        return invalid;
+    }
+
+    if (AS_STRING(s).size() < AS_STRING(pattern).size())
+    {
+        return create_unit(span);
+    }
+
+    auto size = AS_STRING(pattern).size();
+    auto cmp  = std::memcmp(
+        (AS_STRING(s).end() - size).base(),
+        AS_STRING(pattern).c_str(),
+        size);
+
+    return create_number(span, cmp == 0 ? 1 : 0);
 }
 
 }

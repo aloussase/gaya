@@ -8,57 +8,25 @@ string.isempty :: { s => string.length(s) == 0 }
 (* Return the first character in a string, or unit if empty. *)
 string.first :: { s =>
   cases
-    given typeof(s) == "string" and not string.isempty(s) => s(0)
+    given typeof(s) == "string" and not string.isempty(s) => 
+      s(0)
   end
 }
 
 (* Return the last character in a string, or unit if empty. *)
 string.last :: { s =>
   cases
-    given typeof(s) == "string" and not string.isempty(s) => s(string.length(s) - 1)
-  end
-}
-
-(* Return whether a string s starts with the given pattern. *)
-string.startswith :: { s, pattern =>
-  cases
-    given string.length(s) < string.length(pattern) => 0
-    otherwise =>
-      let i = 0 in
-      let result = 1 in do
-        while i < string.length(pattern) and result
-          result <- s(i) == pattern(i)
-          i <- i + 1
-        end
-
-        result
-      end
-  end
-}
-
-(* Return whether a string s ends with the given pattern. *)
-string.endswith :: { s, pattern =>
-  cases 
-    given string.length(s) < string.length(pattern) => 0
-    otherwise =>
-      let i = string.length(s) - 1 in
-      let j = string.length(pattern) - 1 in 
-      let result = 1 in do
-        while i >= 0 and j >= 0 and result
-          result <- s(i) == pattern(j)
-          i <- i - 1
-          j <- j - 1
-        end
-
-        result
-      end
+    given typeof(s) == "string" and not string.isempty(s) =>
+      s(string.length(s) - 1)
   end
 }
 
 (* Return whether the provided pattern is contained in s. *)
 string.contains :: { s, pattern => string.index(s, pattern) /= unit }
 
-(* Splits a string on the given pattern and returns an array with the parts. *)
+(* Splits a string on the given pattern and returns a sequence over the parts. 
+  @param s <string> The string to split.
+  @param pattern <string> The pattern to split the string on. *)
 string.split :: { s, pattern =>
   let i = 0, j = 0 in seq.make { =>
     let found = false, result = unit in do
@@ -85,10 +53,13 @@ string.split :: { s, pattern =>
   }
 }
 
-(* Return whether a string is a whitespace character. *)
+(* Return whether a string is a whitespace character.
+  @param s <string> The string to test. *)
 string.iswhitespace :: { s => s == " " or s == "\n" or s == "\t" }
 
-(* Trim leading and trailing whitespace from a string. *)
+(* Return a new string that is the result of trimming the leading and trailing
+  whitespace from the provided string. 
+  @param s <string> The string to trim. *)
 string.trim :: { s =>
   let start = 0, finish = string.length(s) - 1 in do
     while string.iswhitespace(s(start)) and start < string.length(s)

@@ -3,7 +3,7 @@
 include "base"
 include "sequences"
 include "arrays"
-include "math"
+include "functions"
 
 (* testing to_string *)
 discard io.println((1 -> "Hello", "Hello" -> 1))
@@ -41,5 +41,5 @@ discard ((1, 2, 3) -> "Hello")(array.range(1, 4)) |> assert(_ == "Hello")
 discard
   (1 -> 2, 2 -> 3, 3 -> 4)
   |> seq.map(_) { xs => xs(0) + xs(1) }
-  |> seq.reduce(_, 0, math.add)
+  |> seq.reduce(_, 0, fn.add)
   |> assert(_ == 15)

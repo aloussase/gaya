@@ -1,12 +1,12 @@
 (* Output: '<function-0>\n69' *)
 
-include "math"
+include "functions"
 
 f :: { x =>
   cases
     otherwise =>
       let y = 42 in
-      { => math.add(x, y) }
+      { => fn.add(x, y) }
   end
 }
 

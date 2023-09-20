@@ -1,3 +1,0 @@
-(* This file contains math utilities. *)
-
-math.add :: { x, y => x + y }

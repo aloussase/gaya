@@ -7,18 +7,24 @@ namespace gaya::eval::object::builtin::string
 
 /**
  * Return the length of the string.
+ * @param s <string> The string for which to calculate the length.
  */
 gaya::eval::object::object
 length(interpreter&, span, const std::vector<object>&) noexcept;
 
 /**
- * Return the concatenation of the first string onto the second one.
+ * Return the concatenation of the second string onto the first one.
+ * NOTE: This function mutates its first argument.
+ * @param s1 <string> The first string.
+ * @param s2 <string> The string to tack onto the end of the first one.
  */
 gaya::eval::object::object
 concat(interpreter&, span, const std::vector<object>&) noexcept;
 
 /**
- * Convert a string to a number. Unit is returned if the conversion failed.
+ * Convert a string to a number.
+ * Unit is returned if the conversion failed.
+ * @param s <string> The string to try to parse as a number.
  */
 gaya::eval::object::object
 tonumber(interpreter&, span, const std::vector<object>&) noexcept;
@@ -26,6 +32,8 @@ tonumber(interpreter&, span, const std::vector<object>&) noexcept;
 /**
  * Return the index in the string where the provided pattern starts, or unit if
  * the pattern is not contained in the string.
+ * @param haystack <string> The string in which to search for the pattern.
+ * @param needle <string> The string to search for.
  */
 gaya::eval::object::object
 index(interpreter&, span, const std::vector<object>&) noexcept;
@@ -42,5 +50,23 @@ index(interpreter&, span, const std::vector<object>&) noexcept;
  */
 gaya::eval::object::object
 substring(interpreter&, span, const std::vector<object>&) noexcept;
+
+/**
+ * Return whether a string starts with the given pattern.
+ *
+ * @param s <string> The string to test.
+ * @param pattern <string> The pattern to search for in s.
+ */
+gaya::eval::object::object
+startswith(interpreter&, span, const std::vector<object>&) noexcept;
+
+/**
+ * Return whether a string ends with the given pattern.
+ *
+ * @param s <string> The string to test.
+ * @param pattern <string> The pattern to search for in s.
+ */
+gaya::eval::object::object
+endswith(interpreter&, span, const std::vector<object>&) noexcept;
 
 }
