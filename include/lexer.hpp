@@ -29,11 +29,15 @@ enum class token_type {
     identifier,
     in,
     include,
+    land,
     lcurly,
     less_than,
     less_than_eq,
     let,
+    lnot,
+    lor,
     lparen,
+    lshift,
     not_,
     not_equals,
     number,
@@ -44,6 +48,7 @@ enum class token_type {
     plus,
     rcurly,
     rparen,
+    rshift,
     slash,
     star,
     string,
@@ -52,6 +57,7 @@ enum class token_type {
     unit,
     when,
     while_,
+    xor_,
 };
 
 struct token

@@ -29,7 +29,8 @@ public:
     virtual eval::object::object visit_let_expression(let_expression&) = 0;
     virtual eval::object::object visit_binary_expression(binary_expression&)
         = 0;
-    virtual eval::object::object visit_not_expression(not_expression&) = 0;
+    virtual eval::object::object visit_lnot_expression(lnot_expression&) = 0;
+    virtual eval::object::object visit_not_expression(not_expression&)   = 0;
     virtual eval::object::object visit_perform_expression(perform_expression&)
         = 0;
     virtual eval::object::object visit_array(array&)             = 0;

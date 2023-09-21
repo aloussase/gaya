@@ -120,9 +120,12 @@ std::optional<token> lexer::next_token() noexcept
     case '+': return mk_token(token_type::plus);
     case '*': return mk_token(token_type::star);
     case '_': return mk_token(token_type::underscore);
+    case '&': return mk_token(token_type::land);
     case '-': return dash();
     case '/': return slash();
     case '|': return pipe();
+    case '^': return mk_token(token_type::xor_);
+    case '~': return mk_token(token_type::lnot);
     case '0':
     case '1':
     case '2':
@@ -228,9 +231,7 @@ std::optional<token> lexer::pipe() noexcept
         return mk_token(token_type::pipe);
     }
 
-    lexer_error("Invalid token");
-    lexer_hint("Maybe you meant to use the pipe operator '|>'?");
-    return std::nullopt;
+    return mk_token(token_type::lor);
 }
 
 std::optional<token> lexer::less_than() noexcept
@@ -254,6 +255,12 @@ std::optional<token> lexer::less_than() noexcept
             advance();
             return mk_token(token_type::diamond);
         }
+
+        if (c.value() == '<')
+        {
+            advance();
+            return mk_token(token_type::lshift);
+        }
     }
 
     return mk_token(token_type::less_than);
@@ -265,6 +272,12 @@ std::optional<token> lexer::greater_than() noexcept
     {
         advance();
         return mk_token(token_type::greater_than_eq);
+    }
+
+    if (auto c = peek(); c && c.value() == '>')
+    {
+        advance();
+        return mk_token(token_type::rshift);
     }
 
     return mk_token(token_type::greater_than);

@@ -338,6 +338,21 @@ struct binary_expression final : public expression
 
 /* Unary expressions */
 
+struct lnot_expression final : public expression
+{
+    lnot_expression(token o, expression_ptr oper)
+        : op { o }
+        , operand { oper }
+    {
+    }
+
+    object accept(ast_visitor&) override;
+    std::string to_string() const noexcept override;
+
+    token op;
+    expression_ptr operand;
+};
+
 struct not_expression final : public expression
 {
     not_expression(token o, expression_ptr oper)

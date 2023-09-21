@@ -68,7 +68,13 @@ comparison_expression ::= pipe_expression '<' pipe_expression
                         | pipe_expression '==' pipe_expression
                         | pipe_expression
 
-pipe_expression ::= term_expression '|>' term_expression
+pipe_expression ::= bitwise_expression '|>' bitwise_expression
+
+bitwise_expression ::= comparison_expression '^' comparison_expression
+                     | comparison_expression '&' comparison_expression
+                     | comparison_expression '|' comparison_expression
+                     | comparison_expression '<<' comparison_expression
+                     | comparison_expression '>>' comparison_expression
 
 term_expression ::= factor_expression '+' factor_expression
                   | factor_expression '-' factor_expression
@@ -81,6 +87,7 @@ factor_expression ::= unary_expression '*' unary_expression
 
 unary_expression ::= 'not' call_expression
                    | 'perform' call_expression
+                   | '~' call_expression
 
 call_expression ::= primary_expression '(' args_list ')'
                   | primary_expression

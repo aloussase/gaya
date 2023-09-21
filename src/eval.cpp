@@ -23,6 +23,14 @@ namespace gaya::eval
 
 using namespace std::string_literals;
 
+template <typename To, typename From>
+To bit_cast(const From& src) noexcept
+{
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
+
 interpreter::interpreter()
 {
 #define BUILTIN(name, arity, func) \
@@ -573,14 +581,77 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
 
         return object::create_string(*this, binop.op.span, std::move(result));
     }
+    case token_type::land:
+    case token_type::lor:
+    case token_type::xor_:
+    case token_type::lshift:
+    case token_type::rshift:
+    {
+        auto span = binop.op.span;
+        auto x    = binop.lhs->accept(*this);
+        RETURN_IF_INVALID(x);
+
+        if (!IS_NUMBER(x))
+        {
+            interp_error(
+                binop.op.span,
+                fmt::format(
+                    "Expected left of '{}' to be a number",
+                    span.to_string()));
+            return object::invalid;
+        }
+
+        auto y = binop.rhs->accept(*this);
+        RETURN_IF_INVALID(y);
+
+        if (!IS_NUMBER(y))
+        {
+            interp_error(
+                binop.op.span,
+                fmt::format(
+                    "Expected right of '{}' to be a number",
+                    span.to_string()));
+            return object::invalid;
+        }
+
+        auto i = static_cast<int>(AS_NUMBER(x));
+        auto j = static_cast<int>(AS_NUMBER(y));
+
+        switch (binop.op.type)
+        {
+        case token_type::land: return object::create_number(span, i & j);
+        case token_type::lor: return object::create_number(span, i | j);
+        case token_type::xor_: return object::create_number(span, i ^ j);
+        case token_type::lshift: return object::create_number(span, i << j);
+        case token_type::rshift: return object::create_number(span, i >> j);
+        default: assert("unreachable");
+        }
+    }
     default:
     {
-
         assert(0 && "unhandled case in visit_binary_expression");
     }
     }
 
     assert(0 && "unhandled case in visit_binary_expression");
+}
+
+object::object interpreter::visit_lnot_expression(ast::lnot_expression& e)
+{
+    auto n = e.operand->accept(*this);
+    RETURN_IF_INVALID(n);
+
+    if (!IS_NUMBER(n))
+    {
+        interp_error(e.op.span, "Expected operand to '~' to be a number");
+        return object::invalid;
+    }
+
+    int num           = static_cast<unsigned int>(AS_NUMBER(n));
+    int num_flipped   = ~num;
+    double num_double = static_cast<double>(num_flipped);
+
+    return object::create_number(e.op.span, num_double);
 }
 
 object::object interpreter::visit_not_expression(ast::not_expression& expr)

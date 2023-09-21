@@ -723,12 +723,9 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
     return lhs;
 }
 
-/*
- * pipe_expression ::= term_expression '|>' term_expression
- */
 ast::expression_ptr parser::pipe_expression(token token) noexcept
 {
-    auto lhs = term_expression(token);
+    auto lhs = bitwise_expression(token);
     if (!lhs) return nullptr;
 
     for (;;)
@@ -753,7 +750,7 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
         }
 
         begin_scope();
-        auto rhs = term_expression(expr_token.value());
+        auto rhs = bitwise_expression(expr_token.value());
         end_scope();
 
         if (!rhs) return nullptr;
@@ -764,6 +761,57 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
             lhs,
             pipe_token.value(),
             rhs);
+    }
+
+    return lhs;
+}
+
+ast::expression_ptr parser::bitwise_expression(token token) noexcept
+{
+    auto lhs = term_expression(token);
+    if (!lhs) return nullptr;
+
+    auto done = false;
+    while (!done)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        switch (t->type)
+        {
+        case token_type::land:
+        case token_type::lor:
+        case token_type::xor_:
+        case token_type::lshift:
+        case token_type::rshift:
+        {
+            auto op = t.value();
+
+            t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    op.span,
+                    fmt::format(
+                        "Expected an expression after {}",
+                        op.span.to_string()));
+                return nullptr;
+            }
+
+            auto rhs = term_expression(t.value());
+            if (!rhs) return nullptr;
+
+            lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
+
+            break;
+        }
+        default:
+        {
+            _lexer.push_back(t.value());
+            done = true;
+            break;
+        }
+        }
     }
 
     return lhs;
@@ -886,19 +934,41 @@ ast::expression_ptr parser::unary_expression(token op) noexcept
     {
     case token_type::perform: return perform_expression(op);
     case token_type::not_: return not_expression(op);
+    case token_type::lnot: return lnot_expression(op);
     default: return call_expression(op);
     }
 }
 
-ast::expression_ptr parser::not_expression(token op) noexcept
+ast::expression_ptr parser::lnot_expression(token op) noexcept
 {
+    assert(op.type == token_type::lnot);
     auto token = _lexer.next_token();
     if (!token)
     {
         parser_error(
             op.span,
             fmt::format(
-                "Expected expression after 'not'",
+                "Expected an expression after '~'",
+                op.span.to_string()));
+        return nullptr;
+    }
+
+    auto expr = call_expression(token.value());
+    if (!expr) return nullptr;
+
+    return ast::make_node<ast::lnot_expression>(op, expr);
+}
+
+ast::expression_ptr parser::not_expression(token op) noexcept
+{
+    assert(op.type == token_type::not_);
+    auto token = _lexer.next_token();
+    if (!token)
+    {
+        parser_error(
+            op.span,
+            fmt::format(
+                "Expected an expression after 'not'",
                 op.span.to_string()));
         return nullptr;
     }

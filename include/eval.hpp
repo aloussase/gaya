@@ -77,6 +77,7 @@ public:
     object::object visit_do_expression(ast::do_expression&) override;
     object::object visit_case_expression(ast::case_expression&) override;
     object::object visit_match_expression(ast::match_expression&) override;
+    object::object visit_lnot_expression(ast::lnot_expression&) override;
     object::object visit_not_expression(ast::not_expression&) override;
     object::object visit_perform_expression(ast::perform_expression&) override;
     object::object visit_binary_expression(ast::binary_expression&) override;

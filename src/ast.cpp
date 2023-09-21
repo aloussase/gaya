@@ -251,6 +251,19 @@ std::string binary_expression::to_string() const noexcept
 
 /* Unary expressions */
 
+std::string lnot_expression::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "lnot_expression", "operand": )" << operand->to_string()
+       << "}";
+    return ss.str();
+}
+
+object lnot_expression::accept(ast_visitor& v)
+{
+    return v.visit_lnot_expression(*this);
+}
+
 std::string not_expression::to_string() const noexcept
 {
     std::stringstream ss;
