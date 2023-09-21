@@ -12,10 +12,10 @@ f :: { x =>
   end
 }
 
-discard io.println(x)
+io.println(x).
 
-discard f(1)
+f(1).
 
-discard io.println(x)
+io.println(x).
 
-discard f(unit)
+f(unit).

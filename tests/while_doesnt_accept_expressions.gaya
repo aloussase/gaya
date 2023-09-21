@@ -1,6 +1,6 @@
 (* Expect error *)
 
-discard do
+do
   let i = 0 in perform
   while i < 10
     i <- i + 1
@@ -9,4 +9,4 @@ discard do
     *)
     io.println(i) 
   end
-end
+end.

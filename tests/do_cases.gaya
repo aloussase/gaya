@@ -4,17 +4,17 @@ f :: { x =>
   cases
     given x =>
       do
-        discard io.println("Truthy")
+        io.println("Truthy").
         io.println(x)
       end
     otherwise =>
       do
-        discard io.println("Falsey")
+        io.println("Falsey").
         io.println(x)
       end
     end
 }
 
-discard f(42)
+f(42).
 
-discard f("")
+f("").

@@ -1,14 +1,13 @@
 (* Output: '25' *)
 
-discard 
-  let i = 0 in 
-  let j = 0 in do 
-    while i < 5
-      while j < 5 
-        j <- j + 1
-      end
-      i <- i + 1
+let i = 0 in 
+let j = 0 in do 
+  while i < 5
+    while j < 5 
+      j <- j + 1
     end
-    
-    io.println(i * j)
+    i <- i + 1
   end
+  
+  io.println(i * j)
+end.

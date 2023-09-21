@@ -4,29 +4,29 @@ include "arrays"
 include "functions"
 
 (* Concat *)
-discard io.println(array.concat((), ()))
-discard io.println(array.concat((1), ()))
-discard io.println(array.concat((), (1)))
-discard io.println(array.concat((1), (2)))
+io.println(array.concat((), ())).
+io.println(array.concat((1), ())).
+io.println(array.concat((), (1))).
+io.println(array.concat((1), (2))).
 
 (* Push *)
-discard io.println(array.push((), 1))
-discard io.println(array.push(("hello"), 1))
+io.println(array.push((), 1)).
+io.println(array.push(("hello"), 1)).
 
 (* Range *)
-discard array.range(1, 10) |> assert(_ == (1, 2, 3, 4, 5, 6, 7, 8, 9))
-discard array.range(10, 1) |> assert(_ == ())
+array.range(1, 10) |> assert(_ == (1, 2, 3, 4, 5, 6, 7, 8, 9)).
+array.range(10, 1) |> assert(_ == ()).
 
 (* Join *)
-discard array.join((), "") |> assert(_ == "")
-discard array.join((1, 2, 3), ", ") |> assert(_ == "1, 2, 3")
-discard array.join(((1, 2, 3)), ", ") |> assert(_ == "(1, 2, 3)")
+array.join((), "") |> assert(_ == "").
+array.join((1, 2, 3), ", ") |> assert(_ == "1, 2, 3").
+array.join(((1, 2, 3)), ", ") |> assert(_ == "(1, 2, 3)").
 
 (* Pop *)
-discard array.pop(()) |> assert(_ == unit)
-discard array.pop((1, 2, 3)) |> assert(_ == 3)
-discard array.pop(("Hello", 12, "World")) |> assert(_ == "World")
+array.pop(()) |> assert(_ == unit).
+array.pop((1, 2, 3)) |> assert(_ == 3).
+array.pop(("Hello", 12, "World")) |> assert(_ == "World").
 
 (* Sort *)
-discard (1, 3, 2) |> array.sort(_, fn.less) |> assert(_ == (1, 2, 3))
-discard ("World", "Hello") |> array.sort(_, fn.less) |> assert(_ == ("Hello", "World"))
+(1, 3, 2) |> array.sort(_, fn.less) |> assert(_ == (1, 2, 3)).
+("World", "Hello") |> array.sort(_, fn.less) |> assert(_ == ("Hello", "World")).

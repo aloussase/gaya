@@ -4,59 +4,55 @@ include "strings"
 include "sequences"
 
 (* startswith *)
-discard io.println(string.startswith("Gaya", "Ga"))
-discard io.println(string.startswith("Gaya", "ya"))
+io.println(string.startswith("Gaya", "Ga")).
+io.println(string.startswith("Gaya", "ya")).
 
 (* endswith *)
-discard io.println(string.endswith("Gaya", "ya"))
-discard io.println(string.endswith("Gaya", "Ga"))
+io.println(string.endswith("Gaya", "ya")).
+io.println(string.endswith("Gaya", "Ga")).
 
 (* concat *)
-discard io.println(string.concat("Ga", "ya"))
-discard io.println(string.concat("Ga", ""))
+io.println(string.concat("Ga", "ya")).
+io.println(string.concat("Ga", "")).
 
 (* index *)
-discard io.println(string.index("Gaya", "ya"))
-discard io.println(string.index("Gaya", "Ga"))
-discard io.println(string.index("Gaya", "Gata"))
+io.println(string.index("Gaya", "ya")).
+io.println(string.index("Gaya", "Ga")).
+io.println(string.index("Gaya", "Gata")).
 
 (* contains *)
-discard io.println(string.contains("Gaya", "ya"))
-discard io.println(string.contains("Gaya", "Ga"))
-discard io.println(string.contains("Gaya", "Gata"))
+io.println(string.contains("Gaya", "ya")).
+io.println(string.contains("Gaya", "Ga")).
+io.println(string.contains("Gaya", "Gata")).
 
 (* substring *)
-discard io.println(string.substring("Gaya", 0, 3))
-discard io.println(string.substring("Gaya", 0, 4))
-discard io.println(string.substring("Gaya", -1, 4))
-discard io.println(string.substring("Gaya", 4, 0))
+io.println(string.substring("Gaya", 0, 3)).
+io.println(string.substring("Gaya", 0, 4)).
+io.println(string.substring("Gaya", -1, 4)).
+io.println(string.substring("Gaya", 4, 0)).
 
 (* split *)
-discard
-  string.split("Hello\nGaya\n!", "\n")
+string.split("Hello\nGaya\n!", "\n")
   |> seq.toarray(_)
-  |> assert(_ == ("Hello", "Gaya", "!"))
+  |> assert(_ == ("Hello", "Gaya", "!")).
 
-discard 
-  string.split("Hello World!", "\n")
+string.split("Hello World!", "\n")
   |> seq.toarray(_)
-  |> assert(_ == ("Hello World!"))
+  |> assert(_ == ("Hello World!")).
 
-discard 
-  string.split(" Hello World! ", " ") 
+string.split(" Hello World! ", " ") 
   |> seq.toarray(_)
-  |> assert(_ == ("", "Hello", "World!", ""))
+  |> assert(_ == ("", "Hello", "World!", "")).
 
-discard
-  string.split("Hello\nWorld\n", "\n")
+string.split("Hello\nWorld\n", "\n")
   |> seq.toarray(_)
-  |> assert(_ == ("Hello", "World", ""))
+  |> assert(_ == ("Hello", "World", "")).
 
 (* trim *)
-discard string.trim("  \n\t  Hello   ") |> assert(_ == "Hello")
-discard string.trim("    \n\tHello") |> assert(_ == "Hello")
-discard string.trim("Hello  \n\t") |> assert(_ == "Hello")
+string.trim("  \n\t  Hello   ") |> assert(_ == "Hello").
+string.trim("    \n\tHello") |> assert(_ == "Hello").
+string.trim("Hello  \n\t") |> assert(_ == "Hello").
 
 (* tonumber *)
-discard string.tonumber("42") |> assert(_ == 42)
-discard string.tonumber("Gaya") |> assert(_ == unit)
+string.tonumber("42") |> assert(_ == 42).
+string.tonumber("Gaya") |> assert(_ == unit).

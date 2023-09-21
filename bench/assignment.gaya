@@ -1,5 +1,0 @@
-discard
-  let x = 0 in perform
-  while x < 1000000
-    x <- x + 1
-  end

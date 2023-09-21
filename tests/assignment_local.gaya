@@ -1,9 +1,8 @@
 (* Output: 'before\nafter' *)
 
-discard do
-  discard let a = "before" in io.println(a)
-  discard let a = "after"  in io.println(a)
-  unit
-end
+do
+  let a = "before" in io.println(a).
+  let a = "after"  in io.println(a).
+end.
     
 

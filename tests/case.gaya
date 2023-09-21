@@ -7,6 +7,6 @@ f :: { arg =>
   end
 }
 
-discard f(42)
+f(42).
 
-discard f(unit)
+f(unit).

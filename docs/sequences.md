@@ -7,7 +7,7 @@ created from a number of other objects using the `tosequence` builtin function.
 ```
 include "sequences"
 
-discard seq.range(1, 10000000)
+seq.range(1, 10000000).
 ```
 
 This creates a sequence over the numbers from 1 to 10000000, but doesn't
@@ -20,11 +20,11 @@ sequence has been completely consumed.
 ```
 xs :: tosequence("Gaya")
 
-discard seq.next(xs) (* G *)
-discard seq.next(xs) (* a *)
-discard seq.next(xs) (* y *)
-discard seq.next(xs) (* a *)
-discard seq.next(xs) (* unit *)
+seq.next(xs). (* G *)
+seq.next(xs). (* a *)
+seq.next(xs). (* y *)
+seq.next(xs). (* a *)
+seq.next(xs). (* unit *)
 ```
 
 Consult the documentation of each object to know if they support the sequence

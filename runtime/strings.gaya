@@ -32,7 +32,7 @@ string.split :: { s, pattern =>
   let i = 0, j = 0 in seq.make { =>
     let found = false, result = unit in do
       while i < string.length(s) and not found
-        discard let substr = string.substring(s, i, string.length(s)) in
+        let substr = string.substring(s, i, string.length(s)) in
         cases
           given string.startswith(substr, pattern) => do
             result <- string.substring(s, j, i)
@@ -41,7 +41,7 @@ string.split :: { s, pattern =>
             j <- i
           end
           otherwise => perform i <- i + 1
-        end
+        end.
       end
       cases
         given result /= unit => result

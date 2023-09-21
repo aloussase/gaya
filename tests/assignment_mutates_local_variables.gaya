@@ -7,4 +7,4 @@ test :: { x =>
   end
 }
 
-discard test(69)
+test(69).

@@ -14,6 +14,6 @@ min :: { x, y =>
   end
 }
 
-discard io.println(max(42, 69))
+io.println(max(42, 69)).
 
-discard io.println(min(42, 69))
+io.println(min(42, 69)).

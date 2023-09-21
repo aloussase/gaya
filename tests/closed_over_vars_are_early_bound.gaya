@@ -4,8 +4,8 @@ x :: 42
 
 f :: { => x }
 
-discard io.println(f())
+io.println(f()).
 
 x :: 69
 
-discard io.println(f())
+io.println(f()).

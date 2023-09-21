@@ -4,4 +4,4 @@ f :: { => io.println("f") }
 
 g :: f
 
-discard g()
+g().

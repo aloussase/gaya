@@ -4,11 +4,11 @@
   @param start <number> The start of the range.
   @param finish <number> The non-inclusive end of the range. *)
 array.range :: { start, finish => do
-    discard assert(typeof(start) == "number")
-    discard assert(typeof(finish) == "number")
+    assert(typeof(start) == "number").
+    assert(typeof(finish) == "number").
     let i = start, a = () in do
       while i < finish : i <- i + 1
-        discard array.push(a, i)
+        array.push(a, i).
       end
 
       a
@@ -23,15 +23,15 @@ array.range :: { start, finish => do
   @param sep <string> The separator to use
 *)
 array.join :: { a, sep => do
-    discard assert(typeof(a) == "array")
-    discard assert(typeof(sep) == "string")
+    assert(typeof(a) == "array").
+    assert(typeof(sep) == "string").
     let i = 0, result = "" in do
       while i < array.length(a) : i <- i + 1
-        discard string.concat(result, tostring(a(i)))
-        discard cases 
+        string.concat(result, tostring(a(i))).
+        cases
           given i < array.length(a) - 1 => 
             string.concat(result, sep)
-        end
+        end.
       end
 
       result

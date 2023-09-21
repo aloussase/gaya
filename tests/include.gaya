@@ -4,6 +4,6 @@ include "./file_to_be_included.gaya"
 include "functions"
 include "file_to_be_included_without_extension"
 
-discard someFunction()
-discard fn.add(1, 2)
-discard someOtherFunction()
+someFunction().
+fn.add(1, 2).
+someOtherFunction().

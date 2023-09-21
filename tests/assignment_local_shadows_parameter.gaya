@@ -5,4 +5,4 @@ f :: { x =>
   io.println(x)
 }
 
-discard f(69)
+f(69).

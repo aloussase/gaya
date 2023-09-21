@@ -45,25 +45,25 @@ test6 :: { xs =>
   end
 }
 
-discard assert(test1(42) == "life")
-discard assert(test1(69) == "nice")
-discard assert(test1(15) == "dunno")
+assert(test1(42) == "life").
+assert(test1(69) == "nice").
+assert(test1(15) == "dunno").
 
-discard assert(test2(42) == "life")
-discard assert(test2(69) == "nice")
-discard assert(test2(15) == "dunno")
+assert(test2(42) == "life").
+assert(test2(69) == "nice").
+assert(test2(15) == "dunno").
 
-discard assert(test3(42) == "life")
-discard assert(test3(69) == "nice")
-discard assert(test3(15) == "dunno")
+assert(test3(42) == "life").
+assert(test3(69) == "nice").
+assert(test3(15) == "dunno").
 
-discard assert(test4(42) == "life is 42")
-discard assert(test4(69) == "life is worthless")
+assert(test4(42) == "life is 42").
+assert(test4(69) == "life is worthless").
 
-discard assert(test5((42, 69)) == "life")
-discard assert(test5((69, 42)) == "nice")
-discard assert(test5((1, 2)) == "It was 1 and 2")
+assert(test5((42, 69)) == "life").
+assert(test5((69, 42)) == "nice").
+assert(test5((1, 2)) == "It was 1 and 2").
 
-discard assert(test6((42, 69, (42, 69))) == 42)
-discard assert(test6(((42, 69), 69, 42)) == 69)
-discard assert(test6(42) == "dunno")
+assert(test6((42, 69, (42, 69))) == 42).
+assert(test6(((42, 69), 69, 42)) == 69).
+assert(test6(42) == "dunno").

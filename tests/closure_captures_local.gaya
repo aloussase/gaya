@@ -10,8 +10,8 @@ f :: { =>
 g :: f()
 h :: f()
 
-discard g()
+g().
 
-discard h()
+h().
 
-discard io.println(x)
+io.println(x).

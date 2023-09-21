@@ -70,8 +70,8 @@ end
 
 ## `discard` and `perform` <a name="discard-and-perform" />
 
-`discard` is used to _discard_ the result of an expression, which is mandatory
-if you are not using it.
+To discard the result of an expression, which is mandatory if you are not using
+it, you put a '.' at the end, just like semicolons in Rust for example.
 
 On the other hand, `perform` allows you to _perform_ a single statement in an
 expression context, returning `unit`.
@@ -115,12 +115,12 @@ test :: { x =>
   end
 }
 
-discard test(42)    (* Truthy *)
-discard test("42")  (* Truthy *)
-discard test(unit)  (* Falsey *)
-discard test("")    (* Falsey *)
-discard test(0)     (* Falsey *)
-discard test(())    (* Falsey *)
+test(42).    (* Truthy *)
+test("42").  (* Truthy *)
+test(unit).  (* Falsey *)
+test("").    (* Falsey *)
+test(0).     (* Falsey *)
+test(()).    (* Falsey *)
 ```
 
 ## Comparison <a name="comparison" />
@@ -147,15 +147,15 @@ Where `<params>` is a comma separated list of identifiers and `<body>` is a
 single expression. For example:
 
 ```ocaml
-discard { => io.println("Gaya is cool!") }() (* Output: Gaya is cool *)
+{ => io.println("Gaya is cool!") }(). (* Output: Gaya is cool *)
 
 (* Multiple statments *)
-discard { => do
-    discard io.println("Gaya")
-    discard io.println("is")
-    discard io.println("cool!")
+{ => do
+    io.println("Gaya").
+    io.println("is").
+    io.println("cool!").
   end
-}() (* Output: Gaya\nis\ncool! *)
+}(). (* Output: Gaya\nis\ncool! *)
 ```
 
 In this examples we are immediatly invoking the function, but you can also
@@ -163,19 +163,18 @@ store it for later:
 
 ```ocaml
 add :: { x, y => x + y }
-discard add(1, 2) (* Output: 3 *)
+add(1, 2). (* Output: 3 *)
 ```
 
 Finally, if the last argument to function call is a function, you can put it
 outside the parenthesis:
 
 ```ocaml
-discard
-  (1, 2, 3, 4)
+(1, 2, 3, 4)
   |> seq.takewhile(_) { x => x < 4 }
   |> seq.dropwhile(_) { x => x < 2 }
   |> seq.toarray(_)
-  |> assert(_ == (2, 3))
+  |> assert(_ == (2, 3)).
 ```
 
 **NOTE** To use the functions in this snippet, you need to `include
@@ -246,16 +245,16 @@ return, else, if it's a statement, unit is returned.
 ```ocaml
 (* Results in 42*)
 do
-  discard io.println("A statement")
+  io.println("A statement").
   42
 end
 
 (* Results in unit *)
 do
-  discard let x = 0 in perform
+  let x = 0 in perform
   while x < 10
     x <- x + 1
-  end
+  end.
 end
 ```
 
@@ -266,7 +265,7 @@ While loops work as you'd expect in other programming languages:
 ```ocaml
 let x = 0 in perform
 while x < 10
-  discard io.println(x)
+  io.println(x).
   x <- x + 1
 end
 ```
@@ -277,7 +276,7 @@ Zig. So the last example could be rewritten to:
 ```ocaml
 let x = 0 in perform
 while x < 10 : x <- x + 1
-  discard io.println(x)
+  io.println(x).
 end
 ```
 
@@ -292,10 +291,10 @@ introduced with `let`). It cannot be used on global definitions of function
 parameters.
 
 ```ocaml
-discard let x = 0 in do
+let x = 0 in do
   x <- 10
   io.println(x)
-end
+end.
 ```
 
 It can only be used in _local statements_, meaning `do` blocks, the body of
@@ -317,7 +316,7 @@ f :: { x =>
 
 a :: f(1)
 
-discard io.println(a(5)) (* Output: 6 *)
+io.println(a(5)). (* Output: 6 *)
 ```
 
 In this example `f` returns a closure that captures the parameter `x`.
@@ -337,8 +336,8 @@ mkCounter :: { =>
 
 counter :: mkCounter()
 
-discard io.println(counter()) (* Output: 0 *)
-discard io.println(counter()) (* Output: 1 *)
+io.println(counter()). (* Output: 0 *)
+io.println(counter()). (* Output: 1 *)
 ```
 
 Really cool ;). See the `object.gaya` example in the `examples` directory of
@@ -355,19 +354,19 @@ For example:
 
 ```ocaml
 (* Output: H *)
-discard io.println(0 |> "Hello"(_))
+io.println(0 |> "Hello"(_)).
 
 (* Output: 69 *)
-discard io.println(42 |> _ + 27)
+io.println(42 |> _ + 27).
 
 (* Output: l *)
-discard io.println(1 |> _ + 2 |> "Hello"(_))
+io.println(1 |> _ + 2 |> "Hello"(_)).
 
 (* Output: number *)
-discard io.println(1 |> typeof(_))
+io.println(1 |> typeof(_)).
 
 (* Output: 5 *)
-discard io.println(5 |> let x = _ in x)
+io.println(5 |> let x = _ in x).
 ```
 
 ## Include Statements <a name="include-statements" />

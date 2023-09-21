@@ -75,7 +75,6 @@ private:
 
     [[nodiscard]] bool match(token_type) noexcept;
     [[nodiscard]] bool match(std::optional<token>, token_type) noexcept;
-    [[nodiscard]] bool is_local_stmt(token);
 
     /* Resolving identifier locations */
     void begin_scope() noexcept;

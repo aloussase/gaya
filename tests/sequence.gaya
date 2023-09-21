@@ -5,30 +5,26 @@ include "arrays"
 include "functions"
 
 (* Works on strings *)
-discard
-  "Gaya"
+"Gaya"
   |> tosequence(_)
   |> seq.map(_, { c => string.concat(c, "!") })
-  |> seq.foreach(_, io.println)
+  |> seq.foreach(_, io.println).
 
-discard
-  "Gaya"
+"Gaya"
   |> tosequence(_)
   |> seq.map(_, { c => string.concat(c, ",") })
   |> seq.reduce(_, "", { acc, c => string.concat(acc, c) })
-  |> io.println(_)
+  |> io.println(_).
 
 (* Works in arrays. *)
-discard 
-  array.range(1, 10)
+array.range(1, 10)
   |> tosequence(_)
   |> seq.map(_, { x => x + 1 })
   |> seq.reduce(_, 0, fn.add)
-  |> assert(_ == 54)
+  |> assert(_ == 54).
 
 (* Works on numbers. *)
-discard
-  42
+42
   |> tosequence(_)
   |> seq.reduce(_, 0, fn.add)
-  |> assert(_ == 861)
+  |> assert(_ == 861).

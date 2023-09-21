@@ -3,14 +3,21 @@
 #include <lexer.hpp>
 
 std::unordered_map<std::string, token_type> lexer::_keywords = {
-    { "discard", token_type::discard }, { "let", token_type::let },
-    { "in", token_type::in },           { "do", token_type::do_ },
-    { "unit", token_type::unit },       { "cases", token_type::cases },
-    { "given", token_type::given },     { "otherwise", token_type::otherwise },
-    { "end", token_type::end },         { "while", token_type::while_ },
-    { "not", token_type::not_ },        { "perform", token_type::perform },
-    { "and", token_type::and_ },        { "or", token_type::or_ },
-    { "include", token_type::include }, { "when", token_type::when },
+    { "let", token_type::let },
+    { "in", token_type::in },
+    { "do", token_type::do_ },
+    { "unit", token_type::unit },
+    { "cases", token_type::cases },
+    { "given", token_type::given },
+    { "otherwise", token_type::otherwise },
+    { "end", token_type::end },
+    { "while", token_type::while_ },
+    { "not", token_type::not_ },
+    { "perform", token_type::perform },
+    { "and", token_type::and_ },
+    { "or", token_type::or_ },
+    { "include", token_type::include },
+    { "when", token_type::when },
 };
 
 lexer::lexer(const char* source)
@@ -126,6 +133,7 @@ std::optional<token> lexer::next_token() noexcept
     case '|': return pipe();
     case '^': return mk_token(token_type::xor_);
     case '~': return mk_token(token_type::lnot);
+    case '.': return mk_token(token_type::dot);
     case '0':
     case '1':
     case '2':
@@ -140,7 +148,7 @@ std::optional<token> lexer::next_token() noexcept
     case '\n': _lineno += 1; return next_token();
     case ' ': return next_token();
     default:
-        if (is_valid_identifier(c.value()))
+        if (is_valid_identifier(c.value()) && c.value() != '.')
         {
             return identifier();
         }
@@ -354,7 +362,8 @@ std::optional<token> lexer::number() noexcept
         return mk_token(token_type::number);
     }
 
-    if (auto c = peek(); c && c == '.')
+    if (auto c = peek(); c && c == '.'
+        && !(*(_current + 1) == '\0' || !is_digit(*(_current + 1))))
     {
         /* Parse floating point literal. */
         auto lex_at_least_one_decimal = false;
@@ -423,6 +432,18 @@ std::optional<token> lexer::identifier() noexcept
     {
         if (auto c = peek(); c && is_valid_identifier(c.value()))
         {
+            /*
+             * We need to check if the dot is being used as part of an
+             * identifier or as a statement terminator.
+             */
+            if (c.value() == '.'
+                && (*(_current + 1) == '\0'
+                    || !is_valid_identifier(*(_current + 1))))
+            {
+                /* Here we're using it as a statement terminator. */
+                break;
+            }
+
             advance();
         }
         else

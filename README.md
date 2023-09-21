@@ -36,10 +36,6 @@ problems, surely I can write such a language myself". And here we are now.
   - Hash keys are precomputed in AST nodes
   - Resolving identifiers statically
 
-- Elegance: The language is mostly based on expressions. Every expression that
-  is not used needs to be explicitely discarded. This may be tedious at first,
-  but you'll come to appreciate it.
-
 - Sequence protocol: You can build data processing or algorithmic pipelines
   using the functions and data structures from the sequence protocol. The first
   snippet in this readme is an example of that.

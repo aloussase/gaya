@@ -1,7 +1,7 @@
 (* Skip *)
 
-discard do
-  discard io.print("Enter your name: ")
+do
+  io.print("Enter your name: ").
   let name = io.readline() in 
   io.println(string.concat("Hello, ", name))
-end
+end.

@@ -6,12 +6,12 @@ f :: { =>
     let b = "b" in
     { =>
       let c = "c" in do
-        discard io.println(a)
-        discard io.println(b)
+        io.println(a).
+        io.println(b).
         io.println(c)
       end
     }
   }
 }
 
-discard f()()()
+f()()().

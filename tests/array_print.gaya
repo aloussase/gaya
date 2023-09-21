@@ -1,4 +1,4 @@
 (* Output: '(1, 2, 3)' *)
 
-discard io.println((1, 2, 3))
+io.println((1, 2, 3)).
 

@@ -91,24 +91,6 @@ bool parser::match(token_type tt) noexcept
     return false;
 }
 
-bool parser::is_local_stmt(token token)
-{
-    if (token.type == token_type::discard) return true;
-    if (token.type == token_type::while_) return true;
-    if (token.type != token_type::identifier) return false;
-
-    /*
-     * NOTE:
-     *
-     * Callers should call _lexer.next_token() before calling this function.
-     * Otherwise, if the caller instead call _lexer.peek_token(), we would be
-     * reading the same token here and this would never be true.
-     *
-     */
-    auto t = _lexer.peek_token();
-    return t && t->type == token_type::back_arrow;
-}
-
 void parser::begin_scope() noexcept
 {
     _scopes.push_back({});
@@ -221,15 +203,26 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
 
     switch (token->type)
     {
-    case token_type::identifier: return declaration_stmt(token.value());
-    case token_type::discard: return expression_stmt(token.value());
-    case token_type::include: return include_stmt(token.value());
+    case token_type::identifier:
+    {
+        if (auto colon_colon = _lexer.peek_token();
+            match(colon_colon, token_type::colon_colon))
+        {
+            return declaration_stmt(token.value());
+        }
+        else
+        {
+            return expression_stmt(token.value());
+        }
+    }
+    case token_type::include:
+    {
+        return include_stmt(token.value());
+    }
     default:
-        parser_error(token->span, "Invalid start of top-level statement");
-        parser_hint(
-            token->span,
-            "Only definitions and discards are valid top-level statements");
-        return nullptr;
+    {
+        return expression_stmt(token.value());
+    }
     }
 }
 
@@ -237,16 +230,26 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
 {
     switch (token.type)
     {
-    case token_type::discard: return expression_stmt(token);
-    case token_type::identifier: return assignment_stmt(token);
-    case token_type::while_: return while_stmt(token);
+    case token_type::identifier:
+    {
+        if (auto backarrow = _lexer.peek_token();
+            match(backarrow, token_type::back_arrow))
+        {
+            return assignment_stmt(token);
+        }
+        else
+        {
+            return expression_stmt(token);
+        }
+    }
+    case token_type::while_:
+    {
+        return while_stmt(token);
+    }
     default:
-        parser_error(token.span, "Invalid start of local statement");
-        parser_hint(
-            token.span,
-            "Only discard, assignments and while loops are valid local "
-            "statements");
-        return nullptr;
+    {
+        return expression_stmt(token);
+    }
     }
 }
 
@@ -329,19 +332,18 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 
     if (match(token_type::colon))
     {
-
-        if (auto stmt_token = _lexer.next_token();
-            !stmt_token || !is_local_stmt(stmt_token.value()))
+        if (auto identifier_token = _lexer.next_token();
+            match(identifier_token, token_type::identifier))
         {
-            parser_error(
-                while_.span,
-                "Expected a statement after ':' in while");
-            end_scope();
-            return nullptr;
+            continuation = assignment_stmt(identifier_token.value());
         }
         else
         {
-            continuation = local_stmt(stmt_token.value());
+            parser_error(
+                while_.span,
+                "Expected a an assignment statement after ':' in while");
+            end_scope();
+            return nullptr;
         }
     }
 
@@ -352,22 +354,23 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         auto stmt_token = _lexer.next_token();
         if (!stmt_token) break;
 
-        if (is_local_stmt(stmt_token.value()))
-        {
-            auto stmt = local_stmt(stmt_token.value());
-            if (!stmt)
-            {
-                end_scope();
-                return nullptr;
-            }
-
-            body.push_back(std::move(stmt));
-        }
-        else
+        if (match(stmt_token, token_type::end))
         {
             _lexer.push_back(stmt_token.value());
             break;
         }
+
+        auto stmt = local_stmt(stmt_token.value());
+        if (!stmt)
+        {
+            parser_error(
+                while_.span,
+                "Expected a local statement in while body");
+            end_scope();
+            return nullptr;
+        }
+
+        body.push_back(std::move(stmt));
     }
 
     end_scope();
@@ -397,7 +400,6 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
     if (!colon_colon || colon_colon->type != token_type::colon_colon)
     {
         parser_error(identifier.span, "Expected a '::' after identifier");
-        parser_hint(identifier.span, "Maybe you meant to use discard?");
         return nullptr;
     }
 
@@ -424,19 +426,18 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
     return ast::make_node<ast::declaration_stmt>(std::move(ident), expr);
 }
 
-ast::stmt_ptr parser::expression_stmt(token discard)
+ast::stmt_ptr parser::expression_stmt(token token)
 {
-    assert(discard.type == token_type::discard);
-    auto token = _lexer.next_token();
-    if (!token)
+    auto expr = expression(token);
+    if (!expr) return nullptr;
+
+    if (!match(token_type::dot))
     {
-        parser_error(discard.span, "Expected an expression after discard");
+        parser_error(
+            token.span,
+            "Expected '.' after expression in expression statement");
         return nullptr;
     }
-
-    assert(token && "parser::expression_stmt: expected token to have a value");
-    auto expr = expression(token.value());
-    if (!expr) return nullptr;
 
     return ast::make_node<ast::expression_stmt>(expr);
 }
@@ -1272,7 +1273,7 @@ ast::expression_ptr parser::case_expression(token cases)
         otherwise);
 }
 
-[[nodiscard]] std::optional<ast::match_pattern>
+std::optional<ast::match_pattern>
 parser::match_pattern(const token& pattern_token) noexcept
 {
     switch (pattern_token.type)
@@ -1546,38 +1547,80 @@ ast::expression_ptr parser::do_expression(token token)
 
     for (;;)
     {
-        auto tk = _lexer.next_token();
-        if (!tk) break;
+        auto stmt_token = _lexer.next_token();
+        if (!stmt_token) break;
 
-        if (match(tk, token_type::end))
+        if (match(stmt_token, token_type::end))
         {
-            _lexer.push_back(tk.value());
+            _lexer.push_back(stmt_token.value());
             break;
         }
 
-        if (is_local_stmt(tk.value()))
+        if (stmt_token->type == token_type::while_)
         {
-            auto stmt = local_stmt(tk.value());
-            if (!stmt)
-            {
-                end_scope();
-                return nullptr;
-            }
+            auto stmt = while_stmt(stmt_token.value());
+            if (!stmt) return nullptr;
 
-            body.push_back(std::move(stmt));
+            body.push_back(stmt);
+        }
+        else if (stmt_token->type == token_type::identifier)
+        {
+            if (auto lparen_or_backarrow = _lexer.peek_token();
+                match(lparen_or_backarrow, token_type::lparen))
+            {
+                auto e = call_expression(stmt_token.value());
+                if (!e) return nullptr;
+
+                if (match(token_type::dot))
+                {
+                    body.push_back(ast::make_node<ast::expression_stmt>(e));
+                }
+                else
+                {
+                    body.push_back(e);
+                    parsed_final_expression = true;
+                    break;
+                }
+            }
+            else if (match(lparen_or_backarrow, token_type::back_arrow))
+            {
+                auto stmt = assignment_stmt(stmt_token.value());
+                if (!stmt) return nullptr;
+
+                body.push_back(stmt);
+            }
+            else
+            {
+                auto e = expression(stmt_token.value());
+                if (!e) return nullptr;
+
+                if (match(token_type::dot))
+                {
+                    body.push_back(ast::make_node<ast::expression_stmt>(e));
+                }
+                else
+                {
+                    body.push_back(e);
+                    parsed_final_expression = true;
+                    break;
+                }
+            }
         }
         else
         {
-            auto expr = expression(tk.value());
-            if (!expr)
-            {
-                end_scope();
-                return nullptr;
-            }
+            auto expr = expression(stmt_token.value());
+            if (!expr) return nullptr;
 
-            body.push_back(std::move(expr));
-            parsed_final_expression = true;
-            break;
+            if (match(token_type::dot))
+            {
+                body.push_back(ast::make_node<ast::expression_stmt>(expr));
+            }
+            else
+            {
+                body.push_back(expr);
+                parsed_final_expression = true;
+                break;
+            }
         }
     }
 
@@ -1588,15 +1631,20 @@ ast::expression_ptr parser::do_expression(token token)
 
     end_scope();
 
-    if (!match(token_type::end))
+    if (auto end = _lexer.next_token(); !match(end, token_type::end))
     {
         parser_error(
             token.span,
-            "Expected 'end' after last expression in do block");
+            fmt::format(
+                "Expected 'end' after last expression in do block, but got "
+                "'{}'",
+                end ? end->span.to_string() : "nothing"));
+
         parser_hint(
             token.span,
             "Check that you don't have leftover expressions in the do "
             "block");
+
         return nullptr;
     }
 
@@ -1701,8 +1749,7 @@ int parser::to_hex_value(char c) const noexcept
     }
 }
 
-[[nodiscard]] int
-parser::hex_string_to_int(const std::string& s, size_t& i) const noexcept
+int parser::hex_string_to_int(const std::string& s, size_t& i) const noexcept
 {
     int hex_value     = 0;
     size_t num_digits = 0;

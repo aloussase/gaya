@@ -1,12 +1,12 @@
 (* Output: 'H\n69\nl\nnumber\n5' *)
 
-discard io.println(0 |> "Hello"(_))
+io.println(0 |> "Hello"(_)).
 
-discard io.println(42 |> _ + 27)
+io.println(42 |> _ + 27).
 
-discard io.println(1 |> _ + 2 |> "Hello"(_))
+io.println(1 |> _ + 2 |> "Hello"(_)).
 
-discard io.println(1 |> typeof(_))
+io.println(1 |> typeof(_)).
 
-discard io.println(5 |> let x = _ in x)
+io.println(5 |> let x = _ in x).
 

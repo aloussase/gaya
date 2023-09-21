@@ -1,14 +1,14 @@
 (* Output: '2\n6\n8\n2\nunit\n6\n7' *)
 
-discard io.println(4 - 2)
+io.println(4 - 2).
 
-discard io.println(4 + 2)
+io.println(4 + 2).
 
-discard io.println(4 * 2)
+io.println(4 * 2).
 
-discard io.println(4 / 2)
+io.println(4 / 2).
 
-discard io.println(4 / 0)
+io.println(4 / 0).
 
-discard io.println(4 + 2 * 2 - 2)
-discard io.println(4 / 2 * 3 + 1)
+io.println(4 + 2 * 2 - 2).
+io.println(4 / 2 * 3 + 1).

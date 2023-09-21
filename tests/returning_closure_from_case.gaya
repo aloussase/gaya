@@ -10,6 +10,6 @@ f :: { x =>
   end
 }
 
-discard io.println(f(""))
+io.println(f("")).
 
-discard io.println(f(27)())
+io.println(f(27)()).

@@ -9,5 +9,5 @@ test :: { s =>
   |> string.concat("anon says: ", _)
 }
 
-discard io.println(test("   Hello \n "))
-discard io.println(test("   Hallo   "))
+io.println(test("   Hello \n ")).
+io.println(test("   Hallo   ")).

@@ -1,7 +1,7 @@
 (* Output: 'before\nafter' *)
 
 a :: "before"
-discard io.println(a)
+io.println(a).
 
 a :: "after"
-discard io.println(a)
+io.println(a).

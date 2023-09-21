@@ -2,4 +2,4 @@
 
 f :: { => }
 
-discard io.println(f())
+io.println(f()).

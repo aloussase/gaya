@@ -7,6 +7,6 @@ f :: { =>
   io.println(foo)
 }
 
-discard f()
+f().
 
-discard io.println(foo)
+io.println(foo).

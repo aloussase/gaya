@@ -301,11 +301,11 @@ void run() noexcept
             line = multiline;
         }
 
-        if (!line.starts_with("discard") && line.find("::") == line.npos
+        if (!line.ends_with(".\n") && line.find("::") == line.npos
             && !line.starts_with("include"))
         {
             line = fmt::format(
-                "discard {}{}{}",
+                "{}{}{}.",
                 print_mode ? "io.println(" : "",
                 line,
                 print_mode ? ")" : "");

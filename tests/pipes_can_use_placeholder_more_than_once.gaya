@@ -2,4 +2,4 @@
 
 test :: { s1, s2 => string.concat(s1, s2) }
 
-discard io.println("Hello" |> test(_, _))
+io.println("Hello" |> test(_, _)).

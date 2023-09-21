@@ -4,9 +4,8 @@ f :: { name =>
   { => io.println(name) }
 }
 
-discard 
-  let xs = ({ => io.println("Inside array!") }) in
-  let ys = ( f("Gaya") ) in do
-    discard xs(0)()
-    ys(0)()
-  end
+let xs = ({ => io.println("Inside array!") }) in
+let ys = ( f("Gaya") ) in do
+  xs(0)().
+  ys(0)()
+end.

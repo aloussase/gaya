@@ -9,10 +9,10 @@ include "base"
   @param f <function> A function to call on every element in the sequence.
  *)
 seq.foreach :: { s, f => do
-    discard s |> issequence(_) |> assert(_)
+    s |> issequence(_) |> assert(_).
     let xs = tosequence(s), next = seq.next(xs) in perform
     while next /= unit : next <- seq.next(xs)
-      discard f(next)
+      f(next).
     end
   end
 }
@@ -26,7 +26,7 @@ seq.foreach :: { s, f => do
   @param f <function> The accumulator function.
  *)
 seq.reduce :: { s, init, f => do
-    discard s |> issequence(_) |> assert(_)
+    s |> issequence(_) |> assert(_).
     let acc = init, xs = tosequence(s), next = seq.next(xs) in do
       while next /= unit : next <- seq.next(xs)
         acc <- f(acc, next)
@@ -42,7 +42,7 @@ seq.reduce :: { s, init, f => do
   satisfies the given predicate. 
 *)
 seq.any :: { xs, pred => do
-  discard xs |> issequence(_) |> assert(_)
+  xs |> issequence(_) |> assert(_).
   let xs = tosequence(xs), 
       x = seq.next(xs),
       found = false, 
@@ -62,7 +62,7 @@ seq.any :: { xs, pred => do
   the given predicate.
 *)
 seq.all :: { xs, pred => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs),
         x = seq.next(xs),
         success = true
@@ -81,7 +81,7 @@ seq.all :: { xs, pred => do
   provided sequence. 
 *)
 seq.map :: { s, func => do
-    discard s |> issequence(_) |> assert(_)
+    s |> issequence(_) |> assert(_).
     let xs = tosequence(s) in seq.make { =>
       let next = seq.next(xs) in
       cases 
@@ -96,7 +96,7 @@ seq.map :: { s, func => do
   predicate function returns false.
 *)
 seq.filter :: { xs, func => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs) in seq.make { => 
       let x = seq.next(xs) in do
         while x /= unit and not func(x)
@@ -114,8 +114,8 @@ seq.filter :: { xs, func => do
   the given sequence in a pairwise manner.
 *)
 seq.zip :: { xs, ys, func => do
-    discard xs |> issequence(_) |> assert(_)
-    discard ys |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
+    ys |> issequence(_) |> assert(_).
     let xs = tosequence(xs), ys = tosequence(ys) in seq.make { =>
       let x = seq.next(xs), y = seq.next(ys) in
       cases 
@@ -130,7 +130,7 @@ seq.zip :: { xs, ys, func => do
   they satisfy the given predicate.
 *)
 seq.takewhile :: { xs, pred => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs) in seq.make { =>
       let x = seq.next(xs) in
       cases
@@ -142,7 +142,7 @@ seq.takewhile :: { xs, pred => do
 
 (* Return a sequence that takes the first n elements of the provided one. *)
 seq.take :: { xs, n => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), i = 0 in seq.make { =>
       cases
         given i < n => do
@@ -159,14 +159,14 @@ seq.take :: { xs, n => do
   satisfy the given predicate.
 *)
 seq.dropwhile :: { xs, pred => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), predicateFailed = false in seq.make { =>
       let x = seq.next(xs) in do
         while x /= unit and not predicateFailed
-          discard cases
+          cases
             given pred(x) => perform x <- seq.next(xs) 
             otherwise     => perform predicateFailed <- true
-          end
+          end.
         end
 
         x
@@ -177,7 +177,7 @@ seq.dropwhile :: { xs, pred => do
 
 (* Return a new sequence that drops the first n elements of the provided one. *)
 seq.drop :: { xs, n => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), i = 1, x = seq.next(xs) in seq.make { => do
         while i < n : i <- i + 1
           x <- seq.next(xs)
@@ -194,7 +194,7 @@ seq.drop :: { xs, n => do
   exclusive.
 *)
 seq.range :: { start, finish => do
-    discard assert(typeof(start) == "number" and typeof(finish) == "number")
+    assert(typeof(start) == "number" and typeof(finish) == "number").
     let i = start in seq.make { =>
       cases
         given i < finish =>
@@ -213,7 +213,7 @@ seq.range :: { start, finish => do
   provided sequence.
 *)
 seq.enumerate :: { xs => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), i = 0 in seq.make { =>
       let x = seq.next(xs), pair = (i, x) in 
       cases
@@ -228,10 +228,10 @@ seq.enumerate :: { xs => do
 
 (* Return an array with the elements of the provided sequence. *)
 seq.toarray :: { xs => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), x = seq.next(xs), ary = () in do
       while x /= unit : x <- seq.next(xs)
-        discard array.push(ary, x)
+        array.push(ary, x).
       end
 
       ary
@@ -246,10 +246,10 @@ seq.toarray :: { xs => do
   string.
 *)
 seq.tostring :: { xs => do
-    discard xs |> issequence(_) |> assert(_)
+    xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), x = seq.next(xs), s = "" in do
       while x /= unit : x <- seq.next(xs)
-        discard x |> tostring(_) |> string.concat(s, _)
+        x |> tostring(_) |> string.concat(s, _).
       end
 
       s

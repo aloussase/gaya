@@ -1,9 +1,9 @@
 (* Output: '0\n1\n2\n3\n4' *)
 
-discard do
+do
   let i = 0 in perform
   while i < 5
-    discard io.println(i)
+    io.println(i).
     i <- i + 1
   end
-end
+end.

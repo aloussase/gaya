@@ -6,5 +6,5 @@ f :: { =>
   end
 }
 
-discard f()
-discard f()
+f().
+f().

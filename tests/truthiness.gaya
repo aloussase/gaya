@@ -7,9 +7,9 @@ test :: { x =>
   end
 }
 
-discard test(42)    (* Truthy *)
-discard test("42")  (* Truthy *)
-discard test(unit)  (* Falsey *)
-discard test("")    (* Falsey *)
-discard test(0)     (* Falsey *)
+test(42)    (* Truthy *).
+test("42")  (* Truthy *).
+test(unit)  (* Falsey *).
+test("")    (* Falsey *).
+test(0)     (* Falsey *).
 

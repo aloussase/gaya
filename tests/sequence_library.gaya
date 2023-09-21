@@ -5,122 +5,104 @@ include "functions"
 include "strings"
 
 (* seq.zip *)
-discard
-  (1, 2, 3)
+(1, 2, 3)
   |> tosequence(_)
   |> seq.zip(_, (4, 5, 6), fn.add)
-  |> io.println(_)
+  |> io.println(_).
 
 (* seq.filter works outside of pipeline *)
-discard 
-  let xs = (1, 2, 3, 4) in
-  let ss = seq.filter(xs, { x => x < 4 }) in
-  let ss = seq.filter(ss, { x => x > 2 }) in
-  io.println(ss)
+let xs = (1, 2, 3, 4) in
+let ss = seq.filter(xs, { x => x < 4 }) in
+let ss = seq.filter(ss, { x => x > 2 }) in
+io.println(ss).
 
 (* seq.filter can be applied twice *)
-discard
-  (1, 2, 3, 4)
+(1, 2, 3, 4)
   |> tosequence(_)
   |> seq.filter(_, { x => x < 4 })
   |> seq.filter(_, { x => x > 2 })
-  |> io.println(_)
+  |> io.println(_).
 
 (* seq.filter *)
-discard 
-  (1, 2, 3, 4)
+(1, 2, 3, 4)
   |> tosequence(_)
   |> seq.filter(_, { x => x < 1 })
-  |> io.println(_)
+  |> io.println(_).
 
 (* seq.map and seq.filter *)
-discard
-  (1, 2, 3, 4)
+(1, 2, 3, 4)
   |> seq.map(_, { x => x + 1 })
   |> seq.filter(_, { x => x < 3 })
   |> seq.toarray(_)
-  |> assert(_ == (2))
+  |> assert(_ == (2)).
 
 (* seq.takewhile and seq.dropwhile *)
-discard 
-  (1, 2, 3, 4)
+(1, 2, 3, 4)
   |> seq.takewhile(_) { x => x < 4 }
   |> seq.dropwhile(_) { x => x < 2 }
   |> seq.toarray(_)
-  |> assert(_ == (2, 3))
+  |> assert(_ == (2, 3)).
 
 (* seq.dropwhile *)
-discard 
-  "  Hello  "
+"  Hello  "
   |> seq.dropwhile(_, string.iswhitespace)
   |> seq.tostring(_)
-  |> assert(_ == "Hello  ")
+  |> assert(_ == "Hello  ").
 
 (* seq.takewhile *)
-discard 
-  "Hello   world"
+"Hello   world"
   |> seq.takewhile(_) { c => not string.iswhitespace(c) }
   |> seq.tostring(_)
-  |> assert(_ == "Hello")
+  |> assert(_ == "Hello").
 
 (* seq.drop *)
-discard 
-  "  Hello, world!"
+"  Hello, world!"
   |> seq.drop(_, 2)
   |> seq.tostring(_)
-  |> assert(_ == "Hello, world!")
+  |> assert(_ == "Hello, world!").
 
 (* seq.take *)
-discard
-  "Hello, world!  "
+"Hello, world!  "
   |> seq.take(_, string.length("Hello, world!"))
   |> seq.tostring(_)
-  |> assert(_ == "Hello, world!")
+  |> assert(_ == "Hello, world!").
 
-discard
-  "Hello, Gaya!"
+"Hello, Gaya!"
   |> seq.take(_, 0)
   |> seq.tostring(_)
   |> string.isempty(_)
-  |> assert(_)
+  |> assert(_).
 
 (* seq.range *)
-discard
-  seq.range(1, 1000000)
+seq.range(1, 1000000)
   |> seq.take(_, 10)
   |> seq.reduce(_, 0) { acc, x => acc + x}
-  |> assert(_ == 55)
+  |> assert(_ == 55).
 
 (* seq.any *)
-discard 
-  seq.range(1, 10)
+seq.range(1, 10)
   |> seq.any(_) { x => x == 5 }
-  |> assert(_)
+  |> assert(_).
 
-discard
-  (1, 2, 3, 5)
+(1, 2, 3, 5)
   |> seq.any(_) { x => x == 4 }
-  |> assert(not _)
+  |> assert(not _).
 
-discard
-  ("Hello", 42, (1 -> 2))
+("Hello", 42, (1 -> 2))
   |> seq.any(_) { x => typeof(x) == "dictionary" }
-  |> assert(_)
+  |> assert(_).
 
 (* seq.all *)
-discard 
-  seq.range(1, 10)
+seq.range(1, 10)
   |> seq.all(_) { x => typeof(x) == "number" }
-  |> assert(_)
+  |> assert(_).
 
-discard 
-  (1, 2, 3, "Hola")
+(1, 2, 3, "Hola")
   |> seq.all(_) { x => typeof(x) == "number" }
-  |> assert(not _)
+  |> assert(not _).
 
 (* seq.enumerate *)
-discard
-  "Gaya"
+"Gaya"
   |> seq.enumerate(_)
   |> seq.toarray(_)
-  |> assert(_ == ((0, "G"), (1, "a"), (2, "y"), (3, "a")))
+  |> assert(_ == ((0, "G"), (1, "a"), (2, "y"), (3, "a"))).

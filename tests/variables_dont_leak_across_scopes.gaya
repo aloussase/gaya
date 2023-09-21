@@ -2,4 +2,4 @@
 
 f :: { => io.println(x) }
 
-discard let x = 42 in f()
+let x = 42 in f().

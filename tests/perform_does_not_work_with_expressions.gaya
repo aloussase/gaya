@@ -1,7 +1,7 @@
 (* Expect error *)
 
-discard perform 42
+perform 42.
 
-discard perform { => 42 }
+perform { => 42 }.
 
 

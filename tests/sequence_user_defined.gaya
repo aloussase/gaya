@@ -16,8 +16,7 @@ upto :: { n =>
   })
 }
 
-discard
-  upto(10)
+upto(10)
   |> seq.map(_, { x => (x + 1) })
   |> seq.reduce(_, (), array.concat)
-  |> assert(_ == array.range(1, 11))
+  |> assert(_ == array.range(1, 11)).

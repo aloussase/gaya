@@ -4,15 +4,15 @@ x :: "global"
 
 f :: { =>
   do
-    discard io.println("Hello, ")
+    io.println("Hello, ").
     do 
-      discard io.println(x)
+      io.println(x).
       let x = "World!" in io.println(x)
     end
   end
 }
 
-discard f()
+f().
 
-discard io.println(x)
+io.println(x).
 

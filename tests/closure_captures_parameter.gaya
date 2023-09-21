@@ -6,4 +6,4 @@ f :: { name =>
 
 x :: f("Gaya")()
 
-discard x
+x.

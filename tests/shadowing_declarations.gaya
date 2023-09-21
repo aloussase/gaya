@@ -1,7 +1,7 @@
 (* Output: '42\n69' *)
 
 x :: 42 
-discard io.println(x)
+io.println(x).
 
 x :: 69
-discard io.println(x)
+io.println(x).

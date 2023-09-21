@@ -1,25 +1,24 @@
 (* Output: '1\n2\n3' *)
 
-discard
-  let f1 = unit in
-  let f2 = unit in
-  let f3 = unit in 
-  let i = 1 in do
-    while i < 4
-      discard let j = i in do
-        let f = { => io.println(j) } in
-        cases
-          given j == 1 => perform f1 <- f
-          given j == 2 => perform f2 <- f
-          otherwise    => perform f3 <- f
-        end
+let f1 = unit in
+let f2 = unit in
+let f3 = unit in 
+let i = 1 in do
+  while i < 4
+    let j = i in do
+      let f = { => io.println(j) } in
+      cases
+        given j == 1 => perform f1 <- f
+        given j == 2 => perform f2 <- f
+        otherwise    => perform f3 <- f
       end
-      i <- i + 1
-    end
-
-    discard f1()
-    discard f2()
-    discard f3()
-
-    unit
+    end.
+    i <- i + 1
   end
+
+  f1().
+  f2().
+  f3().
+
+  unit
+end.

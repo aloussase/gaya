@@ -11,4 +11,4 @@ f :: { x =>
   end
 }
 
-discard io.println(f(42))
+io.println(f(42)).

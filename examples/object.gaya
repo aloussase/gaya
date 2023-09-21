@@ -13,9 +13,9 @@ Person :: { name =>
 
 p :: Person("Gaya")
 
-discard "getName" |> p(_) |> io.println(_)
-discard "print" |> p(_)
-discard "someOtherMessage" |> p(_)
+"getName" |> p(_) |> io.println(_).
+"print" |> p(_).
+"someOtherMessage" |> p(_).
 
 (* Take 2: Using a dict with functions. *)
 Person :: { name =>
@@ -28,6 +28,6 @@ Person :: { name =>
 
 p :: Person("Gaya")
 
-discard p("getName") |> assert(_ == "Gaya")
-discard p("print")()
-discard p("someOtherMessage") |> assert(_ == unit)
+p("getName") |> assert(_ == "Gaya").
+p("print")().
+p("someOtherMessage") |> assert(_ == unit).

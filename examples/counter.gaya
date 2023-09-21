@@ -15,6 +15,5 @@ mkCounter :: { =>
 
 counter :: mkCounter()
 
-discard io.println(counter())
-
-discard io.println(counter())
+io.println(counter()).
+io.println(counter()).

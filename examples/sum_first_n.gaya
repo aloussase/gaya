@@ -10,4 +10,4 @@ sumFirstN :: { n =>
   end
 }
 
-discard io.println(sumFirstN(10))
+io.println(sumFirstN(10)).
