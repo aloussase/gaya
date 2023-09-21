@@ -16,7 +16,7 @@ favourite cat.
 I wanted to make something that makes me feel pleasure every time I use it. I
 hope this way I can give pleasure to you too.
 
-### Motivation
+#### Motivation
 
 It all started when I was trying out [Typst](https://typst.app/). I was writing
 a document for a hackathon I was organizing and I wanted to try its scripting
@@ -70,7 +70,7 @@ For examples, take a look at the `examples` directory or at the standard
 library at `runtime/stdlib.gaya`. You can also peek at the tests if you want,
 though they may not use the latest features of the language.
 
-### Feedback & Contributing
+#### Feedback & Contributing
 
 Please feel free to open an issue or PR if you think you can make Gaya better!
 The only prerequisites for contributing is getting familiar with codebase style

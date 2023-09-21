@@ -321,8 +321,9 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 
     if (match(token_type::colon))
     {
-        auto stmt_token = _lexer.next_token();
-        if (!stmt_token || !is_local_stmt(stmt_token.value()))
+
+        if (auto stmt_token = _lexer.next_token();
+            !stmt_token || !is_local_stmt(stmt_token.value()))
         {
             parser_error(
                 while_.span,
@@ -330,8 +331,10 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
             end_scope();
             return nullptr;
         }
-
-        continuation = local_stmt(stmt_token.value());
+        else
+        {
+            continuation = local_stmt(stmt_token.value());
+        }
     }
 
     std::vector<ast::stmt_ptr> body;
