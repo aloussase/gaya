@@ -59,10 +59,16 @@ private:
 
     [[nodiscard]] ast::expression_ptr primary_expression(token);
     [[nodiscard]] ast::expression_ptr function_expression(token lcurly);
-    [[nodiscard]] ast::expression_ptr string(token) noexcept;
     [[nodiscard]] ast::expression_ptr array(token) noexcept;
     [[nodiscard]] ast::expression_ptr
         dictionary(token, ast::expression_ptr) noexcept;
+
+    [[nodiscard]] bool is_hex_digit(char c) const noexcept;
+    [[nodiscard]] int to_hex_value(char c) const noexcept;
+    [[nodiscard]] int
+    hex_string_to_int(const std::string&, size_t&) const noexcept;
+    [[nodiscard]] ast::expression_ptr string(token) noexcept;
+    [[nodiscard]] ast::expression_ptr number(token) noexcept;
 
     void parser_error(span, const std::string&);
     void parser_hint(span, const std::string&);

@@ -329,9 +329,34 @@ std::optional<token> lexer::number() noexcept
         }
     }
 
+    if (auto c = peek(); c && c == 'x')
+    {
+        /* A hex literal. */
+        advance();
+
+        auto is_valid_hex_digit = [](char c) {
+            return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')
+                || (c >= 'A' && c <= 'F');
+        };
+
+        for (;;)
+        {
+            if (auto c = peek(); c && is_valid_hex_digit(c.value()))
+            {
+                advance();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return mk_token(token_type::number);
+    }
+
     if (auto c = peek(); c && c == '.')
     {
-        // Parse floating point literal.
+        /* Parse floating point literal. */
         auto lex_at_least_one_decimal = false;
         advance();
         for (;;)

@@ -1615,9 +1615,7 @@ ast::expression_ptr parser::primary_expression(token token)
     {
     case token_type::number:
     {
-        return ast::make_node<ast::number>(
-            token.span,
-            std::stod(token.span.to_string()));
+        return number(token);
     }
     case token_type::string:
     {
@@ -1675,33 +1673,58 @@ ast::expression_ptr parser::primary_expression(token token)
     }
 }
 
+bool parser::is_hex_digit(char c) const noexcept
+{
+    return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+        || (c >= '0' && c <= '9');
+}
+
+int parser::to_hex_value(char c) const noexcept
+{
+    if (c >= '0' && c <= '9') return c - '0';
+
+    switch (c)
+    {
+    case 'a':
+    case 'A': return 10;
+    case 'b':
+    case 'B': return 11;
+    case 'c':
+    case 'C': return 12;
+    case 'd':
+    case 'D': return 13;
+    case 'e':
+    case 'E': return 14;
+    case 'f':
+    case 'F': return 15;
+    default: assert(0 && "not a hex digit");
+    }
+}
+
+[[nodiscard]] int
+parser::hex_string_to_int(const std::string& s, size_t& i) const noexcept
+{
+    int hex_value     = 0;
+    size_t num_digits = 0;
+
+    for (;;)
+    {
+        char hex_digit = s[i + 1];
+        if (!hex_digit || !is_hex_digit(hex_digit)) break;
+        num_digits += 1;
+        i += 1;
+    }
+
+    for (size_t x = num_digits; x > 0; x--)
+    {
+        hex_value |= to_hex_value(s[i - x + 1]) << (4 * (x - 1));
+    }
+
+    return hex_value;
+}
+
 ast::expression_ptr parser::string(token token) noexcept
 {
-    auto is_hex_digit = [](char c) {
-        return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
-            || (c >= '0' && c <= '9');
-    };
-
-    auto to_hex_value = [](char c) -> int {
-        if (c >= '0' && c <= '9') return c - '0';
-        switch (c)
-        {
-        case 'a':
-        case 'A': return 10;
-        case 'b':
-        case 'B': return 11;
-        case 'c':
-        case 'C': return 12;
-        case 'd':
-        case 'D': return 13;
-        case 'e':
-        case 'E': return 14;
-        case 'f':
-        case 'F': return 15;
-        default: assert(false && "not a hex digit");
-        }
-    };
-
     auto unescape = [&](const std::string& s) {
         std::string result;
 
@@ -1720,27 +1743,7 @@ ast::expression_ptr parser::string(token token) noexcept
             case 'b': result.push_back('\b'); break;
             case 't': result.push_back('\t'); break;
             case '"': result.push_back('\"'); break;
-            case 'x':
-            {
-                char hex_value    = 0;
-                size_t num_digits = 0;
-
-                for (;;)
-                {
-                    char hex_digit = s[i + 1];
-                    if (!hex_digit || !is_hex_digit(hex_digit)) break;
-                    num_digits += 1;
-                    i += 1;
-                }
-
-                for (size_t x = num_digits; x > 0; x--)
-                {
-                    hex_value |= to_hex_value(s[i - x + 1]) << (4 * (x - 1));
-                }
-
-                result.push_back(hex_value);
-                break;
-            }
+            case 'x': result.push_back(hex_string_to_int(s, i)); break;
             default:
             {
                 parser_error(token.span, "Invalid escape character");
@@ -1754,6 +1757,24 @@ ast::expression_ptr parser::string(token token) noexcept
     return ast::make_node<ast::string>(
         token.span,
         unescape(token.span.to_string()));
+}
+
+ast::expression_ptr parser::number(token token) noexcept
+{
+    auto value = token.span.to_string();
+    double num = 0;
+
+    if (value.starts_with("0x"))
+    {
+        size_t i = 1;
+        num      = hex_string_to_int(value, i);
+    }
+    else
+    {
+        num = std::stod(value);
+    }
+
+    return ast::make_node<ast::number>(token.span, num);
 }
 
 ast::expression_ptr parser::array(token lparen) noexcept
