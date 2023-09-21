@@ -53,7 +53,12 @@ match_branches ::= match_branch match_branches
 match_branches ::= 'given' match_pattern '=>' expression
                  | 'given' match_pattern 'when' expression '=>' expression
 
-match_pattern ::= '_' | IDENTIFIER | expression
+match_pattern ::= '_' | IDENTIFIER | expression | array_pattern
+
+array_pattern ::= '[' match_patterns ']'
+
+match_patterns ::= match_pattern ',' match_patterns
+                 | match_pattern
 
 match_otherwise ::= 'otherwise' '=>' expression
 

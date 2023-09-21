@@ -202,7 +202,7 @@ struct case_expression final : public expression
 
 struct match_pattern final
 {
-    enum class kind { wildcard, capture, expr };
+    enum class kind { wildcard, capture, expr, array_pattern };
 
     match_pattern(kind k, expression_ptr v = nullptr)
         : kind { k }
@@ -210,8 +210,14 @@ struct match_pattern final
     {
     }
 
+    match_pattern(kind k, std::vector<match_pattern> v)
+        : kind { k }
+        , value { std::move(v) }
+    {
+    }
+
     kind kind;
-    expression_ptr value = nullptr;
+    std::variant<expression_ptr, std::vector<match_pattern>> value;
 };
 
 struct match_branch final

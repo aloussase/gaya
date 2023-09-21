@@ -309,14 +309,15 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     }
     case ast::match_pattern::kind::capture:
     {
-        auto& value     = pattern.value;
+        auto& value     = std::get<ast::expression_ptr>(pattern.value);
         auto identifier = std::static_pointer_cast<ast::identifier>(value);
         interp.define(identifier->value, target);
         return true;
     }
     case ast::match_pattern::kind::expr:
     {
-        auto expr = pattern.value->accept(interp);
+        auto value = std::get<ast::expression_ptr>(pattern.value);
+        auto expr  = value->accept(interp);
         if (!object::is_valid(expr)) return false;
 
         return object::equals(target, expr);
