@@ -5,7 +5,7 @@
 ```ocaml
 "  Gaya is cool  "
     |> string.trim(_)
-    |> string.concat(_, "!")
+    |> _ <> "!"
     |> string.split(_, " ")
 ```
 
@@ -16,26 +16,33 @@ favourite cat.
 I wanted to make something that makes me feel pleasure every time I use it. I
 hope this way I can give pleasure to you too.
 
+### Motivation
+
+It all started when I was trying out [Typst](https://typst.app/). I was writing
+a document for a hackathon I was organizing and I wanted to try its scripting
+capabilities to solve the proposed exercises in the document itself.
+
+I could solve all graph processing problems and at the end I thought: "This is
+a very simple scripting language, and yet it was enough for solving these
+problems, surely I can write such a language myself". And here we are now.
+
 #### Features
 
 - _Blazingly Fast_ (for a tree-walk interpreter): Gaya implements a number of
-  optimizations that make it faster than Python in some benchmarks. Some of
-  these optimizations are:
+  optimizations that make it go brrr. Some of these optimizations are:
 
   - NaN Boxing
   - Uses an efficient hash table for the environment
   - Hash keys are precomputed in AST nodes
   - Resolving identifiers statically
 
-  To see the results of some benchmarks, have a look [here](./docs/bench.md).
-
 - Elegance: The language is mostly based on expressions. Every expression that
   is not used needs to be explicitely discarded. This may be tedious at first,
   but you'll come to appreciate it.
 
 - Sequence protocol: You can build data processing or algorithmic pipelines
-  using the functions and data structures conforming to the sequence protocol.
-  The first snippet in this readme is an example of that.
+  using the functions and data structures from the sequence protocol. The first
+  snippet in this readme is an example of that.
 
 - Hack pipes: The language has Hack style pipes, which are pipes in which the
   result of the first expression can be piped into any arbitrary expression,
