@@ -1229,7 +1229,8 @@ ast::expression_ptr parser::match_expression(token target)
             return nullptr;
         }
 
-        auto pattern = ([&]() -> std::optional<ast::match_pattern> {
+        auto is_capture_pattern = false;
+        auto pattern            = ([&]() -> std::optional<ast::match_pattern> {
             if (pattern_token->type == token_type::underscore)
             {
                 return ast::match_pattern {
@@ -1257,6 +1258,8 @@ ast::expression_ptr parser::match_expression(token target)
                     auto identifier = ast::make_node<ast::identifier>(
                         pattern_token->span,
                         pattern_token->span.to_string());
+                    is_capture_pattern = true;
+                    begin_scope();
                     define(identifier->key);
                     return ast::match_pattern {
                         ast::match_pattern::kind::capture,
@@ -1344,6 +1347,11 @@ ast::expression_ptr parser::match_expression(token target)
             return nullptr;
         }
 
+        if (is_capture_pattern)
+        {
+            end_scope();
+        }
+
         branches.emplace_back(pattern.value(), expr, condition);
     }
 
@@ -1390,6 +1398,7 @@ ast::expression_ptr parser::match_expression(token target)
     }
 
     return ast::make_node<ast::match_expression>(
+        target.span,
         target_expr,
         std::move(branches),
         otherwise);

@@ -232,10 +232,12 @@ struct match_branch final
 struct match_expression final : expression
 {
     match_expression(
+        span s,
         expression_ptr t,
         std::vector<match_branch> b,
         expression_ptr o = nullptr)
-        : target { t }
+        : span_ { s }
+        , target { t }
         , branches { b }
         , otherwise { o }
     {
@@ -244,6 +246,7 @@ struct match_expression final : expression
     std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
+    span span_;
     expression_ptr target;
     std::vector<match_branch> branches;
     expression_ptr otherwise = nullptr;

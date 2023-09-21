@@ -276,19 +276,13 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
 
         if (object::is_truthy(condition))
         {
-            auto result = branch.body->accept(*this);
-            RETURN_IF_INVALID(result);
-
-            return result;
+            return branch.body->accept(*this);
         }
     }
 
     if (cases.otherwise)
     {
-        auto result = cases.otherwise->accept(*this);
-        RETURN_IF_INVALID(result);
-
-        return result;
+        return cases.otherwise->accept(*this);
     }
 
     return object::create_unit(cases.span_);
@@ -296,7 +290,76 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
 
 object::object interpreter::visit_match_expression(ast::match_expression& expr)
 {
-    assert(0 && "not implemented");
+    auto target = expr.target->accept(*this);
+    RETURN_IF_INVALID(target);
+
+    for (const auto& branch : expr.branches)
+    {
+        auto pattern_matches    = false;
+        auto condition_holds    = true;
+        auto is_capture_pattern = false;
+
+        switch (branch.pattern.kind)
+        {
+        case ast::match_pattern::kind::wildcard:
+        {
+            pattern_matches = true;
+            break;
+        }
+        case ast::match_pattern::kind::capture:
+        {
+            pattern_matches    = true;
+            is_capture_pattern = true;
+            auto identifier    = std::static_pointer_cast<ast::identifier>(
+                branch.pattern.value);
+            begin_scope(env { std::make_shared<env>(environment()) });
+            define(identifier->value, target);
+            break;
+        }
+        case ast::match_pattern::kind::expr:
+        {
+            auto expr = branch.pattern.value->accept(*this);
+            RETURN_IF_INVALID(expr);
+
+            pattern_matches = object::equals(target, expr);
+            break;
+        }
+        }
+
+        if (branch.condition != nullptr)
+        {
+            auto c = branch.condition->accept(*this);
+            if (is_capture_pattern)
+            {
+                end_scope();
+                return object::invalid;
+            }
+
+            condition_holds = object::is_truthy(c);
+        }
+
+        if (pattern_matches && condition_holds)
+        {
+            auto result = branch.body->accept(*this);
+            if (is_capture_pattern)
+            {
+                end_scope();
+            }
+            return result;
+        }
+
+        if (is_capture_pattern)
+        {
+            end_scope();
+        }
+    }
+
+    if (expr.otherwise != nullptr)
+    {
+        return expr.otherwise->accept(*this);
+    }
+
+    return object::create_unit(expr.span_);
 }
 
 static inline object::object interpret_arithmetic_expression(

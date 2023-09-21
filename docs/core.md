@@ -11,6 +11,7 @@
 - [Functions](#functions)
 - [Let Expression](#let-expression)
 - [Cases Expression](#cases-expression)
+- [Match Expression](#match-expression)
 - [Do Expression](#do-expression)
 - [While loops](#while-loops)
 - [Assignment](#assignment)
@@ -231,6 +232,10 @@ max :: { x, y =>
   end
 }
 ```
+
+## Match Expression <a name="match-expression" />
+
+TODO
 
 ## Do Expression <a name="do-expression" />
 

@@ -149,6 +149,30 @@ std::optional<token> lexer::next_token() noexcept
     }
 }
 
+std::optional<token> lexer::peek_token() noexcept
+{
+    if (!_buffer.empty())
+    {
+        return _buffer.back();
+    }
+
+    auto token = next_token();
+    if (token)
+    {
+        _buffer.push(token.value());
+    }
+
+    return token;
+}
+
+void lexer::discard_token() noexcept
+{
+    if (!_buffer.empty())
+    {
+        _buffer.pop();
+    }
+}
+
 std::optional<token> lexer::colon_colon() noexcept
 {
     if (auto c = peek(); !c || c.value() != ':')
