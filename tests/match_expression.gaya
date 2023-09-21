@@ -29,6 +29,14 @@ test4 :: { n =>
   end
 }
 
+test5 :: { xs =>
+  cases xs
+    given (42, _) => "life"
+    given (69, _) => "nice"
+    given (x, y)  => "It was " <> x <> " and " <> y
+  end
+}
+
 discard assert(test1(42) == "life")
 discard assert(test1(69) == "nice")
 discard assert(test1(15) == "dunno")
@@ -43,3 +51,7 @@ discard assert(test3(15) == "dunno")
 
 discard assert(test4(42) == "life is 42")
 discard assert(test4(69) == "life is worthless")
+
+discard assert(test5((42, 69)) == "life")
+discard assert(test5((69, 42)) == "nice")
+discard assert(test5((1, 2)) == "It was 1 and 2")

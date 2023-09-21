@@ -145,6 +145,48 @@ object case_expression::accept(ast_visitor& v)
     return v.visit_case_expression(*this);
 }
 
+[[nodiscard]] static std::string
+match_pattern_to_string(const match_pattern& pattern) noexcept
+{
+    std::stringstream ss;
+    switch (pattern.kind)
+    {
+    case match_pattern::kind::wildcard:
+    {
+        ss << R"("wildcard")";
+        break;
+    }
+    case match_pattern::kind::capture:
+    {
+        ss << R"({ "type": "capture", "identifier": )"
+           << std::get<expression_ptr>(pattern.value)->to_string() << "}";
+        break;
+    }
+    case match_pattern::kind::expr:
+    {
+        ss << R"({ "type": "expr", "expr": )"
+           << std::get<expression_ptr>(pattern.value)->to_string() << "}";
+        break;
+    }
+    case match_pattern::kind::array_pattern:
+    {
+        auto patterns = std::get<std::vector<match_pattern>>(pattern.value);
+        ss << R"({"type": "array_pattern", "patterns": [)";
+        for (size_t i = 0; i < patterns.size(); i++)
+        {
+            ss << match_pattern_to_string(patterns[i]);
+            if (i < patterns.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+        ss << "]}";
+        break;
+    }
+    }
+    return ss.str();
+}
+
 std::string match_expression::to_string() const noexcept
 {
     std::stringstream ss;
@@ -155,22 +197,8 @@ std::string match_expression::to_string() const noexcept
         const auto& branch = branches[i];
         ss << R"({ "condition": )"
            << (branch.condition ? branch.condition->to_string() : "null")
-           << R"(, "body": )" << branch.body->to_string() << R"(, "pattern": )";
-
-        switch (branch.pattern.kind)
-        {
-        case match_pattern::kind::wildcard: ss << R"("wildcard")"; break;
-        case match_pattern::kind::capture:
-            ss << R"({ "type": "capture", "identifier": )"
-               << branch.pattern.value->to_string() << "}";
-            break;
-        case match_pattern::kind::expr:
-            ss << R"({ "type": "expr", "expr": )"
-               << branch.pattern.value->to_string() << "}";
-            break;
-        }
-
-        ss << "}";
+           << R"(, "body": )" << branch.body->to_string() << R"(, "pattern": )"
+           << match_pattern_to_string(branch.pattern) << "}";
         if (i < branches.size() - 1)
         {
             ss << ", ";

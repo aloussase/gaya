@@ -322,6 +322,10 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
 
         return object::equals(target, expr);
     }
+    case ast::match_pattern::kind::array_pattern:
+    {
+        assert(0 && "not implemented");
+    }
     }
 }
 

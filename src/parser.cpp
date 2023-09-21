@@ -594,7 +594,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
             {
                 parser_error(
                     lcurly.span,
-                    "Expected an expression after '=>' in function");
+                    "Expected an expression after '=>' in function literal");
                 return nullptr;
             }
 
@@ -1306,6 +1306,57 @@ parser::match_pattern(const token& pattern_token) noexcept
             };
         }
     }
+    case token_type::lparen:
+    {
+        /*
+         * We are reusing the array syntax for array matches.
+         *
+         * This means we cannot match on dictionaries. I'll change this
+         * according to how useful it proves to match on dictionaries.
+         */
+        std::vector<ast::match_pattern> patterns;
+
+        for (;;)
+        {
+            auto t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    pattern_token.span,
+                    "Expected a pattern after '(' in match branch");
+                return {};
+            }
+
+            if (match(t, token_type::rparen))
+            {
+                _lexer.push_back(t.value());
+                break;
+            }
+
+            auto pattern = match_pattern(t.value());
+            if (!pattern) return {};
+
+            patterns.push_back(pattern.value());
+
+            if (!match(token_type::comma))
+            {
+                break;
+            }
+        }
+
+        if (!match(token_type::rparen))
+        {
+            parser_error(
+                pattern_token.span,
+                "Expected a ')' after array pattern in case branch");
+            return {};
+        }
+
+        return ast::match_pattern {
+            ast::match_pattern::kind::array_pattern,
+            patterns,
+        };
+    }
     default:
     {
         /* Otherwise, the pattern is an arbitrary expression. */
@@ -1469,9 +1520,13 @@ ast::expression_ptr parser::match_expression(token target)
     }
 
     /* A mandatory end token. */
-    if (!match(token_type::end))
+    if (auto end = _lexer.next_token(); !match(end, token_type::end))
     {
-        parser_error(target.span, "Expected 'end' after match expression");
+        parser_error(
+            target.span,
+            fmt::format(
+                "Expected 'end' after match expression, but got '{}'",
+                end ? end->span.to_string() : "nothing"));
         return nullptr;
     }
 
