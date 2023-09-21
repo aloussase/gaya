@@ -97,6 +97,14 @@ bool parser::is_local_stmt(token token)
     if (token.type == token_type::while_) return true;
     if (token.type != token_type::identifier) return false;
 
+    /*
+     * NOTE:
+     *
+     * Callers should call _lexer.next_token() before calling this function.
+     * Otherwise, if the caller instead call _lexer.peek_token(), we would be
+     * reading the same token here and this would never be true.
+     *
+     */
     auto t = _lexer.peek_token();
     return t && t->type == token_type::back_arrow;
 }
