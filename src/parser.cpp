@@ -1272,6 +1272,51 @@ ast::expression_ptr parser::case_expression(token cases)
         otherwise);
 }
 
+[[nodiscard]] std::optional<ast::match_pattern>
+parser::match_pattern(const token& pattern_token) noexcept
+{
+    switch (pattern_token.type)
+    {
+    case token_type::underscore:
+    {
+        return ast::match_pattern { ast::match_pattern::kind::wildcard };
+    }
+    case token_type::identifier:
+    {
+        if (auto t = _lexer.peek_token(); match(t, token_type::lparen))
+        {
+            /* Not an identifier, a function call. */
+            auto e = expression(pattern_token);
+            if (!e) return {};
+
+            return ast::match_pattern { ast::match_pattern::kind::expr, e };
+        }
+        else
+        {
+            /* Here we have an identifier. */
+            auto identifier = ast::make_node<ast::identifier>(
+                pattern_token.span,
+                pattern_token.span.to_string());
+
+            define(identifier->key);
+
+            return ast::match_pattern {
+                ast::match_pattern::kind::capture,
+                identifier,
+            };
+        }
+    }
+    default:
+    {
+        /* Otherwise, the pattern is an arbitrary expression. */
+        auto e = expression(pattern_token);
+        if (!e) return {};
+
+        return ast::match_pattern { ast::match_pattern::kind::expr, e };
+    }
+    }
+}
+
 ast::expression_ptr parser::match_expression(token target)
 {
     auto target_expr = expression(target);
@@ -1286,12 +1331,14 @@ ast::expression_ptr parser::match_expression(token target)
     std::vector<ast::match_branch> branches;
     for (;;)
     {
-        auto given_token = _lexer.next_token();
-        if (!given_token) break;
+        /* Begin a new scope for the current branch. */
+        begin_scope();
 
+        auto given_token = _lexer.next_token();
         if (!match(given_token, token_type::given))
         {
-            _lexer.push_back(given_token.value());
+            if (given_token) _lexer.push_back(given_token.value());
+            end_scope();
             break;
         }
 
@@ -1300,62 +1347,18 @@ ast::expression_ptr parser::match_expression(token target)
         {
             parser_error(
                 given_token->span,
-                "Expected a pattern after given in match expression");
+                "Expected a pattern after 'given' in match expression");
+            end_scope();
             return nullptr;
         }
 
-        auto is_capture_pattern = false;
-        auto pattern            = ([&]() -> std::optional<ast::match_pattern> {
-            if (pattern_token->type == token_type::underscore)
-            {
-                return ast::match_pattern {
-                    ast::match_pattern::kind::wildcard
-                };
-            }
-            else if (pattern_token->type == token_type::identifier)
-            {
-                if (auto t = _lexer.peek_token(); match(t, token_type::lparen))
-                {
-                    /* Not an identifier, a function call. */
-                    auto e = expression(pattern_token.value());
-                    if (!e) return {};
-                    return ast::match_pattern {
-                        ast::match_pattern::kind::expr,
-                        e,
-                    };
-                }
-                else
-                {
-                    /* Here we have an identifier. */
-                    auto identifier = ast::make_node<ast::identifier>(
-                        pattern_token->span,
-                        pattern_token->span.to_string());
-                    is_capture_pattern = true;
-                    begin_scope();
-                    define(identifier->key);
-                    return ast::match_pattern {
-                        ast::match_pattern::kind::capture,
-                        identifier,
-                    };
-                }
-            }
-            else
-            {
-                /* Otherwise, the pattern is an arbitrary expression. */
-                auto e = expression(pattern_token.value());
-                if (!e) return {};
-                return ast::match_pattern {
-                    ast::match_pattern::kind::expr,
-                    e,
-                };
-            }
-        })();
-
+        auto pattern = match_pattern(pattern_token.value());
         if (!pattern)
         {
             parser_error(
                 given_token->span,
                 "Expected a pattern in match branch");
+            end_scope();
             return nullptr;
         }
 
@@ -1369,7 +1372,9 @@ ast::expression_ptr parser::match_expression(token target)
             {
                 parser_error(
                     given_token->span,
-                    "Expected an expression after when in match expression");
+                    "Expected an expression after when in match "
+                    "expression");
+                end_scope();
                 return nullptr;
             }
 
@@ -1378,7 +1383,9 @@ ast::expression_ptr parser::match_expression(token target)
             {
                 parser_error(
                     given_token->span,
-                    "Expected an expression after when in match expression");
+                    "Expected an expression after when in match "
+                    "expression");
+                end_scope();
                 return nullptr;
             }
 
@@ -1391,6 +1398,7 @@ ast::expression_ptr parser::match_expression(token target)
             parser_error(
                 given_token->span,
                 "Expected a '=>' in match expression branch");
+            end_scope();
             return nullptr;
         }
 
@@ -1401,6 +1409,7 @@ ast::expression_ptr parser::match_expression(token target)
             parser_error(
                 given_token->span,
                 "Expected an expression after '=>' in match branch");
+            end_scope();
             return nullptr;
         }
 
@@ -1410,13 +1419,12 @@ ast::expression_ptr parser::match_expression(token target)
             parser_error(
                 given_token->span,
                 "Expected an expression after '=>' in match branch");
+            end_scope();
             return nullptr;
         }
 
-        if (is_capture_pattern)
-        {
-            end_scope();
-        }
+        /* End the scope for the branch. */
+        end_scope();
 
         branches.emplace_back(pattern.value(), expr, condition);
     }
@@ -1532,7 +1540,8 @@ ast::expression_ptr parser::do_expression(token token)
             "Expected 'end' after last expression in do block");
         parser_hint(
             token.span,
-            "Check that you don't have leftover expressions in the do block");
+            "Check that you don't have leftover expressions in the do "
+            "block");
         return nullptr;
     }
 
@@ -1738,7 +1747,8 @@ ast::expression_ptr parser::array(token lparen) noexcept
         parser_error(
             lparen.span,
             fmt::format(
-                "Expected a ')' after last expression in array literal, but "
+                "Expected a ')' after last expression in array literal, "
+                "but "
                 "got {}",
                 rparen ? '\'' + rparen->span.to_string() + '\'' : "nothing"));
         return nullptr;
@@ -1799,7 +1809,8 @@ parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
             {
                 parser_error(
                     lparen.span,
-                    "Expected an expression after comma in dictionary literal");
+                    "Expected an expression after comma in dictionary "
+                    "literal");
                 return nullptr;
             }
 
@@ -1833,7 +1844,8 @@ parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
         parser_error(
             lparen.span,
             fmt::format(
-                "Expected a ')' after last expression in dictionary literal, "
+                "Expected a ')' after last expression in dictionary "
+                "literal, "
                 "but got {}",
                 rparen ? '\'' + rparen->span.to_string() + '\'' : "nothing"));
         return nullptr;
@@ -1844,5 +1856,4 @@ parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
         std::move(keys),
         std::move(values));
 }
-
 }

@@ -296,70 +296,78 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     return object::create_unit(cases.span_);
 }
 
+[[nodiscard]] static bool match_pattern(
+    interpreter& interp,
+    object::object& target,
+    const ast::match_pattern& pattern) noexcept
+{
+    switch (pattern.kind)
+    {
+    case ast::match_pattern::kind::wildcard:
+    {
+        return true;
+    }
+    case ast::match_pattern::kind::capture:
+    {
+        auto& value     = pattern.value;
+        auto identifier = std::static_pointer_cast<ast::identifier>(value);
+        interp.define(identifier->value, target);
+        return true;
+    }
+    case ast::match_pattern::kind::expr:
+    {
+        auto expr = pattern.value->accept(interp);
+        if (!object::is_valid(expr)) return false;
+
+        return object::equals(target, expr);
+    }
+    }
+}
+
+[[nodiscard]] static bool match_case_branch(
+    interpreter& interp,
+    object::object& target,
+    const ast::match_branch& branch,
+    object::object* out) noexcept
+{
+    auto pattern_matches = match_pattern(interp, target, branch.pattern);
+    auto condition_holds = true;
+
+    if (branch.condition != nullptr)
+    {
+        auto c          = branch.condition->accept(interp);
+        condition_holds = object::is_truthy(c);
+    }
+
+    if (pattern_matches && condition_holds)
+    {
+        auto result = branch.body->accept(interp);
+        if (!object::is_valid(result)) return false;
+
+        *out = result;
+        return true;
+    }
+
+    return false;
+}
+
 object::object interpreter::visit_match_expression(ast::match_expression& expr)
 {
     auto target = expr.target->accept(*this);
     RETURN_IF_INVALID(target);
 
+    object::object result = object::invalid;
     for (const auto& branch : expr.branches)
     {
-        auto pattern_matches    = false;
-        auto condition_holds    = true;
-        auto is_capture_pattern = false;
+        begin_scope(env { std::make_shared<env>(environment()) });
 
-        switch (branch.pattern.kind)
+        if (match_case_branch(*this, target, branch, &result))
         {
-        case ast::match_pattern::kind::wildcard:
-        {
-            pattern_matches = true;
-            break;
-        }
-        case ast::match_pattern::kind::capture:
-        {
-            pattern_matches    = true;
-            is_capture_pattern = true;
-            auto identifier    = std::static_pointer_cast<ast::identifier>(
-                branch.pattern.value);
-            begin_scope(env { std::make_shared<env>(environment()) });
-            define(identifier->value, target);
-            break;
-        }
-        case ast::match_pattern::kind::expr:
-        {
-            auto expr = branch.pattern.value->accept(*this);
-            RETURN_IF_INVALID(expr);
-
-            pattern_matches = object::equals(target, expr);
-            break;
-        }
-        }
-
-        if (branch.condition != nullptr)
-        {
-            auto c = branch.condition->accept(*this);
-            if (is_capture_pattern)
-            {
-                end_scope();
-                return object::invalid;
-            }
-
-            condition_holds = object::is_truthy(c);
-        }
-
-        if (pattern_matches && condition_holds)
-        {
-            auto result = branch.body->accept(*this);
-            if (is_capture_pattern)
-            {
-                end_scope();
-            }
+            end_scope();
             return result;
         }
 
-        if (is_capture_pattern)
-        {
-            end_scope();
-        }
+        end_scope();
     }
 
     if (expr.otherwise != nullptr)
