@@ -78,11 +78,6 @@ public:
      */
     [[nodiscard]] std::optional<token> peek_token() noexcept;
 
-    /**
-     * Discard the a token from the back buffer.
-     */
-    void discard_token() noexcept;
-
     [[nodiscard]] std::vector<diagnostic::diagnostic>
     diagnostics() const noexcept;
 

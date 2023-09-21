@@ -72,9 +72,23 @@ void parser::parser_hint(span s, const std::string& message)
         .emplace_back(s, message, diagnostic::severity::hint, _filename);
 }
 
-bool parser::match(std::optional<token> t, token_type tt) const noexcept
+bool parser::match(std::optional<token> t, token_type tt) noexcept
 {
     return t && t->type == tt;
+}
+
+bool parser::match(token_type tt) noexcept
+{
+    auto t = _lexer.peek_token();
+    if (!t) return false;
+
+    if (t->type == tt)
+    {
+        (void)_lexer.next_token();
+        return true;
+    }
+
+    return false;
 }
 
 bool parser::is_local_stmt(token token)
@@ -83,16 +97,8 @@ bool parser::is_local_stmt(token token)
     if (token.type == token_type::while_) return true;
     if (token.type != token_type::identifier) return false;
 
-    auto lookahead = _lexer.next_token();
-    auto ret       = false;
-
-    if (match(lookahead, token_type::back_arrow))
-    {
-        ret = true;
-    }
-
-    _lexer.push_back(lookahead.value());
-    return ret;
+    auto t = _lexer.peek_token();
+    return t && t->type == token_type::back_arrow;
 }
 
 void parser::begin_scope() noexcept
@@ -238,8 +244,8 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
 
 ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
 {
-    if (auto back_arrow = _lexer.next_token();
-        !match(back_arrow, token_type::back_arrow))
+    assert(identifier.type == token_type::identifier);
+    if (!match(token_type::back_arrow))
     {
         parser_error(
             identifier.span,
@@ -247,8 +253,8 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
         return nullptr;
     }
 
-    auto token = _lexer.next_token();
-    if (!token)
+    auto expression_token = _lexer.next_token();
+    if (!expression_token)
     {
         parser_error(
             identifier.span,
@@ -256,8 +262,14 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
         return nullptr;
     }
 
-    auto expr = expression(token.value());
-    if (!expr) return nullptr;
+    auto expr = expression(expression_token.value());
+    if (!expr)
+    {
+        parser_error(
+            identifier.span,
+            "Expected an expression after '<-' in assignment statement");
+        return nullptr;
+    }
 
     auto ident = std::make_unique<ast::identifier>(
         identifier.span,
@@ -291,21 +303,23 @@ ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
 
 ast::stmt_ptr parser::while_stmt(token while_) noexcept
 {
+    assert(while_.type == token_type::while_);
+
     begin_scope();
 
-    auto span  = while_.span;
-    auto token = _lexer.next_token();
-    if (!token)
+    auto span            = while_.span;
+    auto condition_token = _lexer.next_token();
+    if (!condition_token)
     {
         parser_error(span, "Expected a condition after 'while'");
         end_scope();
         return nullptr;
     }
 
-    auto condition             = expression(token.value());
+    auto condition             = expression(condition_token.value());
     ast::stmt_ptr continuation = nullptr;
 
-    if (auto colon = _lexer.next_token(); match(colon, token_type::colon))
+    if (match(token_type::colon))
     {
         auto stmt_token = _lexer.next_token();
         if (!stmt_token || !is_local_stmt(stmt_token.value()))
@@ -319,21 +333,17 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 
         continuation = local_stmt(stmt_token.value());
     }
-    else if (colon)
-    {
-        _lexer.push_back(colon.value());
-    }
 
     std::vector<ast::stmt_ptr> body;
 
     for (;;)
     {
-        auto token = _lexer.next_token();
-        if (!token) break;
+        auto stmt_token = _lexer.next_token();
+        if (!stmt_token) break;
 
-        if (is_local_stmt(token.value()))
+        if (is_local_stmt(stmt_token.value()))
         {
-            auto stmt = local_stmt(token.value());
+            auto stmt = local_stmt(stmt_token.value());
             if (!stmt)
             {
                 end_scope();
@@ -344,16 +354,21 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         }
         else
         {
-            _lexer.push_back(token.value());
+            _lexer.push_back(stmt_token.value());
             break;
         }
     }
 
     end_scope();
 
-    if (auto end = _lexer.next_token(); !match(end, token_type::end))
+    if (auto end_token = _lexer.next_token();
+        !match(end_token, token_type::end))
     {
-        parser_error(span, "Expected 'end' after while body");
+        parser_error(
+            span,
+            fmt::format(
+                "Expected 'end' after while body, but got '{}'",
+                end_token ? end_token->span.to_string() : "nothing"));
         parser_hint(span, "You can only use local statements in while body");
         return nullptr;
     }
@@ -400,6 +415,7 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
 
 ast::stmt_ptr parser::expression_stmt(token discard)
 {
+    assert(discard.type == token_type::discard);
     auto token = _lexer.next_token();
     if (!token)
     {
@@ -510,6 +526,8 @@ ast::expression_ptr parser::expression(token token)
 
 ast::expression_ptr parser::function_expression(token lcurly)
 {
+    assert(lcurly.type == token_type::lcurly);
+
     begin_scope();
 
     std::vector<ast::identifier> params;
@@ -532,26 +550,21 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
         params.push_back(std::move(ident));
 
-        auto comma = _lexer.next_token();
-        if (!comma) break;
-
-        if (!match(comma, token_type::comma))
+        if (!match(token_type::comma))
         {
-            _lexer.push_back(comma.value());
             break;
         }
     }
 
-    auto arrow = _lexer.next_token();
-    if (!match(arrow, token_type::arrow))
+    if (!match(token_type::arrow))
     {
         parser_error(lcurly.span, "Expected '=>' after function params");
         end_scope();
         return nullptr;
     }
 
-    auto token = _lexer.next_token();
-    if (!token)
+    auto rcurly = _lexer.next_token();
+    if (!rcurly)
     {
         parser_error(lcurly.span, "Expected a '}' after function body");
         end_scope();
@@ -559,13 +572,13 @@ ast::expression_ptr parser::function_expression(token lcurly)
     }
 
     auto expr = ([&]() -> ast::expression_ptr {
-        if (match(token, token_type::rcurly))
+        if (match(rcurly, token_type::rcurly))
         {
-            return ast::make_node<ast::unit>(token->span);
+            return ast::make_node<ast::unit>(rcurly->span);
         }
         else
         {
-            auto expr = expression(token.value());
+            auto expr = expression(rcurly.value());
             if (!expr)
             {
                 parser_error(
@@ -574,8 +587,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
                 return nullptr;
             }
 
-            if (auto rcurly = _lexer.next_token();
-                !match(rcurly, token_type::rcurly))
+            if (!match(token_type::rcurly))
             {
                 parser_error(lcurly.span, "Expected a '}' after function body");
                 return nullptr;
@@ -710,12 +722,12 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
 
     for (;;)
     {
-        auto pipe = _lexer.next_token();
-        if (!match(pipe, token_type::pipe))
+        auto pipe_token = _lexer.next_token();
+        if (!match(pipe_token, token_type::pipe))
         {
-            if (pipe)
+            if (pipe_token)
             {
-                _lexer.push_back(pipe.value());
+                _lexer.push_back(pipe_token.value());
             }
             break;
         }
@@ -737,7 +749,10 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
 
         assert(lhs && rhs);
 
-        lhs = ast::make_node<ast::binary_expression>(lhs, pipe.value(), rhs);
+        lhs = ast::make_node<ast::binary_expression>(
+            lhs,
+            pipe_token.value(),
+            rhs);
     }
 
     return lhs;
@@ -805,7 +820,6 @@ ast::expression_ptr parser::term_expression(token token) noexcept
  */
 ast::expression_ptr parser::factor_expression(token token) noexcept
 {
-
     auto lhs = unary_expression(token);
     if (!lhs) return nullptr;
 
@@ -886,6 +900,7 @@ ast::expression_ptr parser::not_expression(token op) noexcept
 
 ast::expression_ptr parser::perform_expression(token op) noexcept
 {
+    assert(op.type == token_type::perform);
     auto token = _lexer.next_token();
     if (!token)
     {
@@ -924,7 +939,13 @@ ast::expression_ptr parser::call_expression(token starttoken)
             if (match(lparen, token_type::lcurly))
             {
                 auto function = function_expression(lparen.value());
-                if (!function) return nullptr;
+                if (!function)
+                {
+                    parser_error(
+                        starttoken.span,
+                        "Expected a trailing function in call expression");
+                    return nullptr;
+                }
                 args.push_back(function);
                 has_argument_list = false;
             }
@@ -953,42 +974,28 @@ ast::expression_ptr parser::call_expression(token starttoken)
 
             args.push_back(std::move(arg));
 
-            auto comma = _lexer.next_token();
-            if (!comma) break;
-
-            if (!match(comma, token_type::comma))
+            if (!match(token_type::comma))
             {
-                _lexer.push_back(comma.value());
                 break;
             }
         }
 
-        if (auto rparen = _lexer.next_token();
-            !match(rparen, token_type::rparen))
+        if (!match(token_type::rparen) && has_argument_list)
         {
-            if (has_argument_list)
-            {
-                parser_error(
-                    starttoken.span,
-                    "Missing ')' after function call");
-                return nullptr;
-            }
-            else
-            {
-                _lexer.push_back(rparen.value());
-            }
+            parser_error(starttoken.span, "Missing ')' after function call");
+            return nullptr;
         }
 
-        if (auto token = _lexer.next_token();
-            has_argument_list && match(token, token_type::lcurly))
+        if (auto lcurly = _lexer.next_token();
+            match(lcurly, token_type::lcurly) && has_argument_list)
         {
-            auto function = function_expression(lparen.value());
+            auto function = function_expression(lcurly.value());
             if (!function) return nullptr;
             args.push_back(function);
         }
-        else if (token)
+        else if (lcurly)
         {
-            _lexer.push_back(token.value());
+            _lexer.push_back(lcurly.value());
         }
 
         expr = ast::make_node<ast::call_expression>(
@@ -1002,11 +1009,12 @@ ast::expression_ptr parser::call_expression(token starttoken)
 
 ast::expression_ptr parser::let_expression(token let)
 {
+    assert(let.type == token_type::let);
+
     begin_scope();
 
     auto let_binding = [&](token ident) -> std::optional<ast::let_binding> {
-        if (auto equal_sign = _lexer.next_token();
-            !match(equal_sign, token_type::equal))
+        if (!match(token_type::equal))
         {
             parser_error(
                 ident.span,
@@ -1054,12 +1062,8 @@ ast::expression_ptr parser::let_expression(token let)
 
         bindings.push_back(std::move(binding.value()));
 
-        if (auto comma = _lexer.next_token(); !match(comma, token_type::comma))
+        if (!match(token_type::comma))
         {
-            if (comma)
-            {
-                _lexer.push_back(comma.value());
-            }
             break;
         }
     }
@@ -1073,7 +1077,7 @@ ast::expression_ptr parser::let_expression(token let)
         return nullptr;
     }
 
-    if (auto in = _lexer.next_token(); !match(in, token_type::in))
+    if (!match(token_type::in))
     {
         parser_error(
             let.span,
@@ -1125,14 +1129,13 @@ ast::expression_ptr parser::case_expression(token cases)
             }
         }
 
-        token = _lexer.next_token();
-        if (!token) return nullptr;
+        auto condition_token = _lexer.next_token();
+        if (!condition_token) return nullptr;
 
-        auto condition = expression(token.value());
+        auto condition = expression(condition_token.value());
         if (!condition) return nullptr;
 
-        token = _lexer.next_token();
-        if (!match(token, token_type::arrow))
+        if (!match(token_type::arrow))
         {
             parser_error(cases.span, "Expected a '=>' after condition in case");
             return nullptr;
@@ -1155,37 +1158,28 @@ ast::expression_ptr parser::case_expression(token cases)
         });
     }
 
-    auto token = _lexer.next_token();
-    if (!token) return nullptr;
-
     ast::expression_ptr otherwise = nullptr;
 
-    if (match(token, token_type::otherwise))
+    if (match(token_type::otherwise))
     {
-        token = _lexer.next_token();
-        if (!match(token, token_type::arrow))
+        if (!match(token_type::arrow))
         {
             parser_error(cases.span, "Expected '=>' after otherwise");
             return nullptr;
         }
 
-        token = _lexer.next_token();
-        if (!token)
+        auto expression_token = _lexer.next_token();
+        if (!expression_token)
         {
-            parser_error(cases.span, "Expected and expression after otherwise");
+            parser_error(cases.span, "Expected an expression after otherwise");
             return nullptr;
         }
 
-        otherwise = expression(token.value());
+        otherwise = expression(expression_token.value());
         if (!otherwise) return nullptr;
     }
-    else
-    {
-        _lexer.push_back(token.value());
-    }
 
-    token = _lexer.next_token();
-    if (!match(token, token_type::end))
+    if (!match(token_type::end))
     {
         parser_error(cases.span, "Expected 'end' after case");
         return nullptr;
@@ -1239,10 +1233,7 @@ ast::expression_ptr parser::match_expression(token target)
             }
             else if (pattern_token->type == token_type::identifier)
             {
-                auto lparen = _lexer.next_token();
-                if (lparen) _lexer.push_back(lparen.value());
-
-                if (match(lparen, token_type::lparen))
+                if (auto t = _lexer.peek_token(); match(t, token_type::lparen))
                 {
                     /* Not an identifier, a function call. */
                     auto e = expression(pattern_token.value());
@@ -1289,15 +1280,14 @@ ast::expression_ptr parser::match_expression(token target)
 
         /* An optional when clause. */
         ast::expression_ptr condition = nullptr;
-        auto when_token               = _lexer.next_token();
 
-        if (match(when_token, token_type::when))
+        if (match(token_type::when))
         {
             auto when_expr_token = _lexer.next_token();
             if (!when_expr_token)
             {
                 parser_error(
-                    when_token->span,
+                    given_token->span,
                     "Expected an expression after when in match expression");
                 return nullptr;
             }
@@ -1306,21 +1296,16 @@ ast::expression_ptr parser::match_expression(token target)
             if (!when_expr)
             {
                 parser_error(
-                    when_token->span,
+                    given_token->span,
                     "Expected an expression after when in match expression");
                 return nullptr;
             }
 
             condition = when_expr;
         }
-        else if (when_token)
-        {
-            _lexer.push_back(when_token.value());
-        }
 
         /* A mandatory arrow. */
-        auto arrow = _lexer.next_token();
-        if (!match(arrow, token_type::arrow))
+        if (!match(token_type::arrow))
         {
             parser_error(
                 given_token->span,
@@ -1357,28 +1342,33 @@ ast::expression_ptr parser::match_expression(token target)
 
     /* An optional otherwise brach. */
     ast::expression_ptr otherwise = nullptr;
-    auto t                        = _lexer.next_token();
+    auto otherwise_token          = _lexer.next_token();
 
-    if (match(t, token_type::otherwise))
+    if (match(otherwise_token, token_type::otherwise))
     {
-        auto arrow = _lexer.next_token();
-        if (!match(arrow, token_type::arrow))
+        if (!match(token_type::arrow))
         {
-            parser_error(t->span, "Expected a '=>' after otherwise");
+            parser_error(
+                otherwise_token->span,
+                "Expected a '=>' after otherwise");
             return nullptr;
         }
 
         auto expr_token = _lexer.next_token();
         if (!expr_token)
         {
-            parser_error(t->span, "Expected an expression after otherwise");
+            parser_error(
+                otherwise_token->span,
+                "Expected an expression after otherwise");
             return nullptr;
         }
 
         auto expr = expression(expr_token.value());
         if (!expr)
         {
-            parser_error(t->span, "Expected an expression after otherwise");
+            parser_error(
+                otherwise_token->span,
+                "Expected an expression after otherwise");
             return nullptr;
         }
 
@@ -1386,12 +1376,11 @@ ast::expression_ptr parser::match_expression(token target)
     }
     else
     {
-        _lexer.push_back(t.value());
+        _lexer.push_back(otherwise_token.value());
     }
 
     /* A mandatory end token. */
-    auto end_token = _lexer.next_token();
-    if (!match(end_token, token_type::end))
+    if (!match(token_type::end))
     {
         parser_error(target.span, "Expected 'end' after match expression");
         return nullptr;
@@ -1455,7 +1444,7 @@ ast::expression_ptr parser::do_expression(token token)
 
     end_scope();
 
-    if (auto tk = _lexer.next_token(); !match(tk, token_type::end))
+    if (!match(token_type::end))
     {
         parser_error(
             token.span,
@@ -1521,16 +1510,13 @@ ast::expression_ptr parser::primary_expression(token token)
     }
     case token_type::lparen:
     {
-        if (auto t = _lexer.next_token(); match(t, token_type::thin_arrow))
+        if (match(token_type::thin_arrow))
         {
             return dictionary(token, nullptr);
         }
         else
         {
-            if (t)
-            {
-                _lexer.push_back(t.value());
-            }
+            // TODO: push_back
             return array(token);
         }
     }
@@ -1631,16 +1617,16 @@ ast::expression_ptr parser::array(token lparen) noexcept
 
     for (;;)
     {
-        auto token = _lexer.next_token();
-        if (!token) break;
+        auto expression_token = _lexer.next_token();
+        if (!expression_token) break;
 
-        if (match(token, token_type::rparen))
+        if (match(expression_token, token_type::rparen))
         {
-            _lexer.push_back(token.value());
+            _lexer.push_back(expression_token.value());
             break;
         }
 
-        auto expr = expression(token.value());
+        auto expr = expression(expression_token.value());
         if (!expr)
         {
             parser_error(
@@ -1653,20 +1639,15 @@ ast::expression_ptr parser::array(token lparen) noexcept
          * If we see a '->' after the first expression, that means we are
          * parsing a dictionary literal.
          */
-        if (auto t = _lexer.next_token(); match(t, token_type::thin_arrow))
+        if (match(token_type::thin_arrow))
         {
             return dictionary(lparen, expr);
-        }
-        else
-        {
-            _lexer.push_back(t.value());
         }
 
         elems.push_back(std::move(expr));
 
-        if (auto comma = _lexer.next_token(); !match(comma, token_type::comma))
+        if (!match(token_type::comma))
         {
-            _lexer.push_back(comma.value());
             break;
         }
     }
@@ -1700,15 +1681,15 @@ parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
     {
         /* Parse the next value */
 
-        auto t = _lexer.next_token();
-        if (!t) break;
-        if (match(t, token_type::rparen))
+        auto expression_token = _lexer.next_token();
+        if (!expression_token) break;
+        if (match(expression_token, token_type::rparen))
         {
-            _lexer.push_back(t.value());
+            _lexer.push_back(expression_token.value());
             break;
         }
 
-        auto expr = expression(t.value());
+        auto expr = expression(expression_token.value());
         if (!expr)
         {
             parser_error(
@@ -1721,7 +1702,7 @@ parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
 
         /* Parse an optional comma */
 
-        if (auto comma = _lexer.next_token(); match(comma, token_type::comma))
+        if (match(token_type::comma))
         {
             /* Parse the next key */
 
@@ -1753,11 +1734,6 @@ parser::dictionary(token lparen, ast::expression_ptr first_key) noexcept
                     "Expected a '->' after key in dictionary literal");
                 return nullptr;
             }
-        }
-        else if (comma)
-        {
-            _lexer.push_back(comma.value());
-            break;
         }
         else
         {
