@@ -324,7 +324,26 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     }
     case ast::match_pattern::kind::array_pattern:
     {
-        assert(0 && "not implemented");
+        if (!IS_ARRAY(target)) return false;
+
+        auto a               = AS_ARRAY(target);
+        using match_patterns = std::vector<ast::match_pattern>;
+        auto patterns        = std::get<match_patterns>(pattern.value);
+
+        if (a.size() != patterns.size()) return false;
+
+        for (size_t i = 0; i < a.size(); i++)
+        {
+            auto elem    = a[i];
+            auto pattern = patterns[i];
+
+            if (!match_pattern(interp, elem, pattern))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
     }
 }
