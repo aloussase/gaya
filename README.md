@@ -1,6 +1,4 @@
-<p align="center">
-  <h3>Gaya</h3>
-</p>
+<h3 align="center">🐱 Gaya</h3>
 
 ```ocaml
 "  Gaya is cool  "

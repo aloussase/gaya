@@ -1,6 +1,22 @@
-# Literals
+# Basic Syntax
 
-## Strings
+## Coments
+
+Comments are OCaml style:
+
+```ocaml
+(* This is a comment *)
+
+(*
+  Works across multiple lines as well.
+*)
+```
+
+Not much more to comment here.
+
+## Literals
+
+### Strings
 
 Gaya has string literals that support escape sequences (but no unicode):
 
@@ -12,9 +28,10 @@ Gaya has string literals that support escape sequences (but no unicode):
 "\x1b[31mHello Red\n\x1b[m"
 ```
 
-## Numbers
+### Numbers
 
-Numbers are as you would expect in other programming languages:
+Numbers map to C++ `double` values and work pretty much as you would expect in
+other programming languages:
 
 ```ocaml
 42
@@ -24,7 +41,7 @@ Numbers are as you would expect in other programming languages:
 
 There is no exponent notation though.
 
-## Unit
+### Unit
 
 The unit value is represented by the `unit` keyword.
 
@@ -32,7 +49,7 @@ The unit value is represented by the `unit` keyword.
 unit
 ```
 
-## Arrays
+### Arrays
 
 Arrays are comma-separated lists of expression enclosed in parenthesis:
 
@@ -46,7 +63,7 @@ Arrays are comma-separated lists of expression enclosed in parenthesis:
 
 More on arrays on their dedicated chapter.
 
-## Dictionaries
+### Dictionaries
 
 Dictionaries are much like arrays, but the values are key-value pairs separated
 by a '->':
@@ -58,3 +75,26 @@ by a '->':
 (* Nesting is supported as well. *)
 (1 -> 2, "Hello" -> "World", (3 -> 4))
 ```
+
+## Keywords
+
+Here's a list of Gaya keywords:
+
+- let
+- in
+- do
+- unit
+- cases
+- given
+- otherwise
+- end
+- while
+- not
+- perform
+- and
+- or
+- include
+- when
+
+That's a grand total of 15 (13 if you don't count `and` and `or`, since they
+are technically operators).

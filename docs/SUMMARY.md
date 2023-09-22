@@ -4,12 +4,10 @@
 
 # Language Reference
 
-- [Comments](./reference/comments.md)
-- [Literals](./reference/literals.md)
+- [Basic Syntax](reference/basic-syntax.md)
 - [Discarding values and performing statements](./reference/perform.md)
 - [Truthiness](./reference/truthiness.md)
-- [Arithmetic](./reference/arithmetic.md)
-- [Comparison](./reference/comparison.md)
+- [Operators](reference/operators.md)
 - [Functions](./reference/function.md)
 - [Let Expression](./reference/let-expression.md)
 - [Cases Expression](./reference/cases-expression.md)
@@ -18,7 +16,6 @@
 - [While loops](./reference/while-loops.md)
 - [Assignment](./reference/assignment.md)
 - [Closures](./reference/closures.md)
-- [Pipe Operator](./reference/pipe-operator.md)
 - [Include Statements](./reference/include.md)
 
 # Types

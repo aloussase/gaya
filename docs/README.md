@@ -10,7 +10,7 @@ make it usable. Some of these optimizations are:
 - Resolving identifiers statically
 
 These optimizations are important because I wanted to use
-the language for (Advent of Code)[https://adventofcode.com/]
+the language for [Advent of Code](https://adventofcode.com/)
 and without them it was ridiculously slow.
 
 ## Motivation
