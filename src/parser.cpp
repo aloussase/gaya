@@ -1154,54 +1154,56 @@ ast::expression_ptr parser::let_expression(token let)
 
     begin_scope();
 
-    auto let_binding = [&](token ident) -> std::optional<ast::let_binding> {
+    auto let_binding = [&](token p_t) -> std::optional<ast::let_binding> {
+        auto p = match_pattern(p_t, false);
+        if (!p) return {};
+
         if (!match(token_type::equal))
         {
             parser_error(
-                ident.span,
-                "Expected '=' after identifier in let expression");
+                p_t.span,
+                "Expected '=' after pattern in let expression");
             return std::nullopt;
         }
 
-        auto expr_token = _lexer.next_token();
-        if (!expr_token)
+        auto e_t = _lexer.next_token();
+        if (!e_t)
         {
-            parser_error(ident.span, "Expected an expression after '='");
+            parser_error(
+                p_t.span,
+                "Expected an expression after '=' in let expression");
             return std::nullopt;
         }
 
-        auto value = expression(expr_token.value());
-        if (!value) return std::nullopt;
+        auto e = expression(e_t.value());
+        if (!e) return std::nullopt;
 
-        auto identifier = std::make_unique<ast::identifier>(
-            ident.span,
-            ident.span.to_string());
+        if (p->kind == ast::match_pattern::kind::capture)
+        {
+            auto e_    = std::get<ast::expression_ptr>(p->value);
+            auto ident = std::static_pointer_cast<ast::identifier>(e_);
+            define(ident->key);
+        }
 
-        /*
-         * Since we are defining the identifier after evaluating its
-         * value, that means we don't support recursive definitions
-         */
-        define(eval::key::local(identifier->value));
-
-        return ast::let_binding { std::move(identifier), std::move(value) };
+        return ast::let_binding { p_t.span, std::move(*p), std::move(e) };
     };
 
     std::vector<ast::let_binding> bindings;
     for (;;)
     {
-        auto ident = _lexer.next_token();
-        if (!ident) break;
+        auto p_t = _lexer.next_token();
+        if (!p_t) break;
 
-        if (!match(ident, token_type::identifier))
+        if (match(p_t, token_type::in))
         {
-            _lexer.push_back(ident.value());
+            _lexer.push_back(*p_t);
             break;
         }
 
-        auto binding = let_binding(ident.value());
+        auto binding = let_binding(*p_t);
         if (!binding) return nullptr;
 
-        bindings.push_back(std::move(binding.value()));
+        bindings.push_back(std::move(*binding));
 
         if (!match(token_type::comma))
         {
@@ -1222,21 +1224,21 @@ ast::expression_ptr parser::let_expression(token let)
     {
         parser_error(
             let.span,
-            "Expected 'in' after expression in let expression");
+            "Expected 'in' after bindings in let expression");
         end_scope();
         return nullptr;
     }
 
-    auto expr_token = _lexer.next_token();
-    if (!expr_token)
+    auto e_t = _lexer.next_token();
+    if (!e_t)
     {
         parser_error(let.span, "Expected an expression after 'in'");
         end_scope();
         return nullptr;
     }
 
-    auto expr = expression(expr_token.value());
-    if (!expr)
+    auto e = expression(*e_t);
+    if (!e)
     {
         end_scope();
         return nullptr;
@@ -1244,7 +1246,7 @@ ast::expression_ptr parser::let_expression(token let)
 
     end_scope();
 
-    return ast::make_node<ast::let_expression>(std::move(bindings), expr);
+    return ast::make_node<ast::let_expression>(std::move(bindings), e);
 }
 
 ast::expression_ptr parser::case_expression(token cases)
@@ -1332,8 +1334,9 @@ ast::expression_ptr parser::case_expression(token cases)
         otherwise);
 }
 
-std::optional<ast::match_pattern>
-parser::match_pattern(const token& pattern_token) noexcept
+std::optional<ast::match_pattern> parser::match_pattern(
+    const token& pattern_token,
+    bool define_matched_identifier) noexcept
 {
     switch (pattern_token.type)
     {
@@ -1358,7 +1361,27 @@ parser::match_pattern(const token& pattern_token) noexcept
                 pattern_token.span,
                 pattern_token.span.to_string());
 
-            define(identifier->key);
+            /*
+             * Mark it as a local variable so it can be used as the target of
+             * assignment statements.
+             */
+            identifier->key = eval::key::local(identifier->value);
+
+            if (define_matched_identifier)
+            {
+                /*
+                 * We do this conditionally because in let expressions we need
+                 * to define the identifier after evaluating the binding's
+                 * body.
+                 *
+                 * This is because the binding value may be a variable of the
+                 * same name as the capture pattern.
+                 *
+                 * This could also technically happen in match expressions, but
+                 * we'll see.
+                 */
+                define(*identifier);
+            }
 
             return ast::match_pattern {
                 ast::match_pattern::kind::capture,

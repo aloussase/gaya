@@ -320,14 +320,16 @@ struct function_expression final : public expression
 
 struct let_binding
 {
-    let_binding(std::unique_ptr<identifier> i, expression_ptr b)
-        : ident { std::move(i) }
+    let_binding(span s, match_pattern p, expression_ptr b)
+        : span_ { s }
+        , pattern { std::move(p) }
         , value { std::move(b) }
 
     {
     }
 
-    std::unique_ptr<identifier> ident;
+    span span_;
+    match_pattern pattern;
     expression_ptr value;
 };
 

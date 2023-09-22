@@ -384,7 +384,7 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     {
         auto& value     = std::get<ast::expression_ptr>(pattern.value);
         auto identifier = std::static_pointer_cast<ast::identifier>(value);
-        interp.define(identifier->value, target);
+        interp.define(key::local(identifier->value), target);
         return true;
     }
     case ast::match_pattern::kind::expr:
@@ -850,9 +850,23 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
     for (auto& binding : let_expression.bindings)
     {
         auto value = binding.value->accept(*this);
-        RETURN_IF_INVALID(value);
+        if (!object::is_valid(value))
+        {
+            interp_error(
+                binding.span_,
+                "Error while evaluating expression in let");
+            end_scope();
+            return object::invalid;
+        }
 
-        define(key::local(binding.ident->value), value);
+        if (!match_pattern(*this, value, binding.pattern))
+        {
+            interp_error(
+                binding.span_,
+                "Failed to match pattern in let expression");
+            end_scope();
+            return object::invalid;
+        }
     }
 
     auto result = let_expression.expr->accept(*this);
@@ -909,7 +923,13 @@ object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
     /* The parser already checks for undefined identifiers. */
     auto o = environment().get_at(identifier.key, identifier.depth);
-    assert(object::is_valid(o));
+    if (!object::is_valid(o))
+    {
+        interp_error(
+            identifier._span,
+            fmt::format("Unbound identifier: '{}'", identifier.value));
+        return object::invalid;
+    }
     return o;
 }
 

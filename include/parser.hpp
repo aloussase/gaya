@@ -40,7 +40,7 @@ private:
     [[nodiscard]] ast::expression_ptr let_expression(token let);
     [[nodiscard]] ast::expression_ptr case_expression(token cases);
     [[nodiscard]] std::optional<ast::match_pattern>
-    match_pattern(const token&) noexcept;
+    match_pattern(const token&, bool define_matched_identifier = true) noexcept;
     [[nodiscard]] ast::expression_ptr match_expression(token target);
     [[nodiscard]] ast::expression_ptr do_expression(token token);
 

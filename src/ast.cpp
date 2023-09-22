@@ -263,7 +263,8 @@ std::string let_expression::to_string() const noexcept
               bindings,
               [](auto& binding) {
                   std::stringstream ss;
-                  ss << R"({ "identifier": )" << binding.ident->to_string()
+                  ss << R"({ "identifier": )"
+                     << match_pattern_to_string(binding.pattern)
                      << R"(, "value": )" << binding.value->to_string() << "}";
                   return ss.str();
               })

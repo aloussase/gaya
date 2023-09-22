@@ -14,7 +14,7 @@ expression ::= do_expression
              | case_expression
              | logical_expression
 
-let_expression ::= 'let' IDENTIFIER '=' expression 'in' expression
+let_expression ::= 'let' match_pattern '=' expression 'in' expression
 
 function_expression ::= '{' params_list '=>' expression '}'
             

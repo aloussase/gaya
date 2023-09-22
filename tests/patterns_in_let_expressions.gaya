@@ -1,0 +1,11 @@
+let xs = (1, 2, 3) in 
+let (x, y, z) = xs in do
+  assert(x == 1).
+  assert(y == 2).
+  assert(z == 3).
+end.
+
+let "A" = "A" in unit.
+let _ = "A" in unit.
+let x = "A" in assert(x == "A").
+let x = 12, 12 = x in assert(x == 12).
