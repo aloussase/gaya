@@ -53,6 +53,9 @@ parser::parser()
 
     define("seq.next"s);
     define("seq.make"s);
+
+    define("math.ceil"s);
+    define("math.floor"s);
 }
 
 std::vector<diagnostic::diagnostic>& parser::diagnostics() noexcept

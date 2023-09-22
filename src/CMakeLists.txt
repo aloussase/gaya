@@ -27,7 +27,8 @@ add_executable(gaya main.cpp
     builtins/string.cpp
     builtins/array.cpp
     builtins/sequence.cpp
-    builtins/dict.cpp)
+    builtins/dict.cpp
+    builtins/math.cpp)
 
 target_compile_options(gaya PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-O2 -Wno-return-type>

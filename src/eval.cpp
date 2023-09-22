@@ -7,6 +7,7 @@
 #include <builtins/core.hpp>
 #include <builtins/dict.hpp>
 #include <builtins/io.hpp>
+#include <builtins/math.hpp>
 #include <builtins/sequence.hpp>
 #include <builtins/string.hpp>
 #include <eval.hpp>
@@ -73,6 +74,9 @@ interpreter::interpreter()
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
+
+    BUILTIN("math.floor"s, 1, math::floor);
+    BUILTIN("math.ceil"s, 1, math::ceil);
 #undef BUILTIN
 }
 

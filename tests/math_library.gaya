@@ -1,0 +1,6 @@
+
+(* math.ceil *)
+math.ceil(68.5) |> assert(_ == 69).
+
+(* math.floor *)
+math.floor(69.6) |> assert(_ == 69).

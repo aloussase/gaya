@@ -31,10 +31,9 @@ gaya::eval::object::object assert_(
         interp.interp_error(
             span,
             fmt::format(
-                "assertion failed at {}:{}: {} was false ",
+                "assertion failed at {}:{}",
                 interp.current_filename(),
-                span.lineno(),
-                to_string(interp, args[0])));
+                span.lineno()));
         return gaya::eval::object::invalid;
     }
 }
