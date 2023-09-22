@@ -91,6 +91,20 @@ object while_stmt::accept(ast_visitor& v)
     return v.visit_while_stmt(*this);
 }
 
+std::string for_in_stmt::to_string() const noexcept
+{
+    std::stringstream ss;
+    ss << R"({"type": "for_in_stmt", "identifier":)" << ident->to_string()
+       << R"(, "sequence": )" << sequence->to_string() << R"(, "body": [)"
+       << join(body, [](auto& stmt) { return stmt->to_string(); }) << "]}";
+    return ss.str();
+}
+
+object for_in_stmt::accept(ast_visitor& v)
+{
+    return v.visit_for_in_stmt(*this);
+}
+
 std::string include_stmt::to_string() const noexcept
 {
     std::stringstream ss;
@@ -250,11 +264,10 @@ std::string let_expression::to_string() const noexcept
               [](auto& binding) {
                   std::stringstream ss;
                   ss << R"({ "identifier": )" << binding.ident->to_string()
-                     << R"(, "binding": )" << binding.value->to_string()
                      << R"(, "value": )" << binding.value->to_string() << "}";
                   return ss.str();
               })
-       << "]}";
+       << R"(], "expression": )" << expr->to_string() << "}";
     return ss.str();
 }
 

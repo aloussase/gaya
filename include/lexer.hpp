@@ -23,6 +23,7 @@ enum class token_type {
     end,
     equal,
     equal_equal,
+    for_,
     given,
     greater_than,
     greater_than_eq,

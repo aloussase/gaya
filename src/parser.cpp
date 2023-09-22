@@ -249,6 +249,10 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
     {
         return while_stmt(token);
     }
+    case token_type::for_:
+    {
+        return for_in_stmt(token);
+    }
     default:
     {
         return expression_stmt(token);
@@ -395,6 +399,87 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         condition,
         std::move(body),
         continuation);
+}
+
+ast::stmt_ptr parser::for_in_stmt(token for_) noexcept
+{
+    assert(for_.type == token_type::for_);
+
+    begin_scope();
+
+    auto ident = _lexer.next_token();
+    if (!match(ident, token_type::identifier))
+    {
+        parser_error(for_.span, "Expected an identifier after 'for'");
+        end_scope();
+        return nullptr;
+    }
+
+    auto identifier
+        = ast::make_node<ast::identifier>(ident->span, ident->span.to_string());
+    define(identifier->key);
+
+    if (!match(token_type::in))
+    {
+        parser_error(for_.span, "Expected 'in' after identifier in for-loop");
+        end_scope();
+        return nullptr;
+    }
+
+    auto e_t = _lexer.next_token();
+    if (!e_t)
+    {
+        parser_error(
+            for_.span,
+            "Expected an expression after 'in' in for-loop");
+        end_scope();
+        return nullptr;
+    }
+
+    auto e = expression(*e_t);
+    if (!e)
+    {
+        end_scope();
+        return nullptr;
+    }
+
+    std::vector<ast::stmt_ptr> body;
+
+    for (;;)
+    {
+        auto s_t = _lexer.next_token();
+        if (!s_t) break;
+
+        if (match(s_t, token_type::end))
+        {
+            _lexer.push_back(s_t.value());
+            break;
+        }
+
+        auto stmt = local_stmt(s_t.value());
+        if (!stmt)
+        {
+            parser_error(for_.span, "Expected a local statement in for body");
+            end_scope();
+            return nullptr;
+        }
+
+        body.push_back(std::move(stmt));
+    }
+
+    end_scope();
+
+    if (!match(token_type::end))
+    {
+        parser_error(for_.span, "Expected 'end' after for-loop");
+        return nullptr;
+    }
+
+    return ast::make_node<ast::for_in_stmt>(
+        for_.span,
+        std::move(identifier),
+        std::move(e),
+        std::move(body));
 }
 
 ast::stmt_ptr parser::declaration_stmt(token identifier)
@@ -1533,6 +1618,13 @@ ast::expression_ptr parser::do_expression(token token)
         if (stmt_token->type == token_type::while_)
         {
             auto stmt = while_stmt(stmt_token.value());
+            if (!stmt) return nullptr;
+
+            body.push_back(stmt);
+        }
+        else if (stmt_token->type == token_type::for_)
+        {
+            auto stmt = for_in_stmt(stmt_token.value());
             if (!stmt) return nullptr;
 
             body.push_back(stmt);

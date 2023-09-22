@@ -248,6 +248,11 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
     return object::invalid;
 }
 
+object::object interpreter::visit_for_in_stmt(ast::for_in_stmt&)
+{
+    assert(0 && "not implemented");
+}
+
 object::object interpreter::visit_include_stmt(ast::include_stmt& include_stmt)
 {
     auto filename = _filename;

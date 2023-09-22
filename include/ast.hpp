@@ -125,6 +125,29 @@ struct while_stmt final : public stmt
     stmt_ptr continuation;
 };
 
+struct for_in_stmt final : public stmt
+{
+    for_in_stmt(
+        span s,
+        std::shared_ptr<identifier> i,
+        expression_ptr seq,
+        std::vector<stmt_ptr> b)
+        : span_ { s }
+        , ident { i }
+        , sequence { seq }
+        , body { b }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    object accept(ast_visitor&) override;
+
+    span span_;
+    std::shared_ptr<identifier> ident;
+    expression_ptr sequence;
+    std::vector<stmt_ptr> body;
+};
+
 struct include_stmt final : public stmt
 {
     include_stmt(span s, const std::string& f, ast::node_ptr p)

@@ -32,6 +32,7 @@ private:
     [[nodiscard]] ast::stmt_ptr local_stmt(token token) noexcept;
     [[nodiscard]] ast::stmt_ptr assignment_stmt(token identifier) noexcept;
     [[nodiscard]] ast::stmt_ptr while_stmt(token while_) noexcept;
+    [[nodiscard]] ast::stmt_ptr for_in_stmt(token for_) noexcept;
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
     [[nodiscard]] ast::stmt_ptr include_stmt(token include) noexcept;
 

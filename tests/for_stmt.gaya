@@ -1,0 +1,7 @@
+let sum = 0 in do
+  for x in 10
+    sum <- sum + x
+  end
+
+  assert(sum == 45)
+end.

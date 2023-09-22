@@ -73,6 +73,7 @@ public:
     object::object visit_expression_stmt(ast::expression_stmt&) override;
     object::object visit_assignment_stmt(ast::assignment_stmt&) override;
     object::object visit_while_stmt(ast::while_stmt&) override;
+    object::object visit_for_in_stmt(ast::for_in_stmt&) override;
     object::object visit_include_stmt(ast::include_stmt&) override;
     object::object visit_do_expression(ast::do_expression&) override;
     object::object visit_case_expression(ast::case_expression&) override;

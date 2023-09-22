@@ -17,6 +17,7 @@ public:
     virtual eval::object::object visit_expression_stmt(expression_stmt&)   = 0;
     virtual eval::object::object visit_assignment_stmt(assignment_stmt&)   = 0;
     virtual eval::object::object visit_while_stmt(while_stmt&)             = 0;
+    virtual eval::object::object visit_for_in_stmt(for_in_stmt&)           = 0;
     virtual eval::object::object visit_include_stmt(include_stmt&)         = 0;
 
     /* Expressions */
