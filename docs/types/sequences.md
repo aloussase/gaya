@@ -8,6 +8,11 @@ created from a number of other objects using the `tosequence` builtin function.
 include "sequences"
 
 seq.range(1, 10000000).
+
+seq.range(1, 10000000)
+  |> seq.take(_, 3)
+  |> seq.toarray(_)
+  |> assert(_ == (1, 2, 3))
 ```
 
 This creates a sequence over the numbers from 1 to 10000000, but doesn't

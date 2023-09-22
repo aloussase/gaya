@@ -43,7 +43,7 @@ problems, surely I can write such a language myself". And here we are now.
 - Hack pipes: The language has Hack style pipes, which are pipes in which the
   result of the first expression can be piped into any arbitrary expression,
   not just function calls. To learn more, read the
-  [documentation](#documentation).
+  [documentation](./docs/SUMMARY.md).
 
 #### Installing
 
@@ -60,11 +60,11 @@ much slower.
 
 #### Documentation <a name="documentation" />
 
-You can read the language documentation [here](./docs/toc.md).
+You can read the language documentation [here](./docs/SUMMARY.md).
 
 For examples, take a look at the `examples` directory or at the standard
-library at `runtime/stdlib.gaya`. You can also peek at the tests if you want,
-though they may not use the latest features of the language.
+library under the `runtime` directory. You can also peek at the tests if you
+want, though they may not use the latest features of the language.
 
 #### Feedback & Contributing
 
