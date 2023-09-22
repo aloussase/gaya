@@ -666,14 +666,6 @@ ast::expression_ptr parser::logical_expression(token token) noexcept
     return lhs;
 }
 
-/*
- * comparison_expression ::= pipe_expression '<' pipe_expression
- *                         | pipe_expression '>' pipe_expression
- *                         | pipe_expression '<=' pipe_expression
- *                         | pipe_expression '>=' pipe_expression
- *                         | pipe_expression '==' pipe_expression
- *                         | pipe_expression
- */
 ast::expression_ptr parser::comparison_expression(token token) noexcept
 {
     auto lhs = pipe_expression(token);
@@ -818,12 +810,6 @@ ast::expression_ptr parser::bitwise_expression(token token) noexcept
     return lhs;
 }
 
-/**
- * term_expression ::= factor_expression '+' factor_expression
- *                   | factor_expression '-' factor_expression
- *                   | factor_expression '<>' factor_expression
- *                   | factor_expression
- */
 ast::expression_ptr parser::term_expression(token token) noexcept
 {
     auto lhs = factor_expression(token);
@@ -873,11 +859,6 @@ ast::expression_ptr parser::term_expression(token token) noexcept
     return lhs;
 }
 
-/**
- * factor_expression ::= unary_expression '*' unary_expression
- *                     | unary_expression '/' unary_expression
- *                     | unary_expression
- */
 ast::expression_ptr parser::factor_expression(token token) noexcept
 {
     auto lhs = unary_expression(token);
@@ -926,9 +907,6 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
     return lhs;
 }
 
-/*
- * unary_expression ::= 'not' call_expression
- */
 ast::expression_ptr parser::unary_expression(token op) noexcept
 {
     switch (op.type)
@@ -996,13 +974,6 @@ ast::expression_ptr parser::perform_expression(token op) noexcept
     return ast::make_node<ast::perform_expression>(op, stmt);
 }
 
-/*
- * call_expression ::= primary_expression '(' args_list ')'
- *                   | primary_expression
- *
- * args_list ::= expression
- *             | expression ',' args_list
- */
 ast::expression_ptr parser::call_expression(token starttoken)
 {
     auto expr = primary_expression(starttoken);
@@ -1651,12 +1622,6 @@ ast::expression_ptr parser::do_expression(token token)
     return ast::make_node<ast::do_expression>(token.span, std::move(body));
 }
 
-/*
- * primary_expression ::= NUMBER
- *                      | IDENTIFIER
- *                      | STRING
- *                      | UNIT
- */
 ast::expression_ptr parser::primary_expression(token token)
 {
     switch (token.type)
