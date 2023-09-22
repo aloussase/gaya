@@ -1,4 +1,6 @@
-# While loops
+# Control Flow
+
+## While loops
 
 While loops work as you'd expect in other programming languages:
 
@@ -33,11 +35,15 @@ this is too much of a problem, feel free to open an issue on the
 
 ## For loops
 
-There are no for-loops in Gaya. If you need to iterate over a sequence, use
-`seq.foreach`:
+For loops in Gaya are used to iterate over sequences. For example:
 
 ```
-seq.foreach((1, 2, 3)) { n =>
-  io.println(n)
-}
+for x in 42
+  io.println(x).
+end
 ```
+
+This would print the numbers from 0 to 41.
+
+Just like with while loops, the body of a for-loop should consist only of
+statements.

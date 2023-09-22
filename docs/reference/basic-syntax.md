@@ -80,21 +80,22 @@ by a '->':
 
 Here's a list of Gaya keywords:
 
-- let
-- in
-- do
-- unit
-- cases
-- given
-- otherwise
-- end
-- while
-- not
-- perform
 - and
-- or
+- cases
+- do
+- end
+- for
+- given
+- in
 - include
+- let
+- not
+- or
+- otherwise
+- perform
+- unit
 - when
+- while
 
-That's a grand total of 15 (13 if you don't count `and` and `or`, since they
+That's a grand total of 16 (13 if you don't count `and` and `or`, since they
 are technically operators).
