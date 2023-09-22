@@ -25,11 +25,13 @@
 - [Dictionaries](types/dictionaries.md)
 - [Sequences](types/sequences.md)
 
-# Builtin libraries
+# Standard Library
 
-- [Core]()
-- [IO]()
-- [Strings]()
-- [Arrays]()
-- [Dictionaries]()
-- [Sequences]()
+- [Core](std/core.md)
+- [IO](std/io.md)
+- [Strings](std/strings.md)
+- [Arrays](std/arrays.md)
+- [Dictionaries](std/dictionaries.md)
+- [Sequences](std/sequences.md)
+- [Functions](std/functions.md)
+- [Math](std/math.md)
