@@ -31,11 +31,12 @@ add :: { x, y => x + y }
 add(1, 2). (* Output: 3 *)
 ```
 
-`::` is used to declare variables at the top level. You could also store it
-using a `let` expression since functions are first-class citizens in Gaya.
+`::` is used to declare variables at the top level. You could also store it in
+a local binding using a `let` expression, since functions are first-class
+citizens in Gaya.
 
 Finally, if the last argument to function call is itself a function, you can
-put it outside the parenthesis (a so called trailing function):
+put it outside the parenthesis (a so called _trailing function_):
 
 ```
 (1, 2, 3, 4)
@@ -46,4 +47,4 @@ put it outside the parenthesis (a so called trailing function):
 ```
 
 **NOTE** To use the functions in this snippet, you need to `include
-"sequences"`. More on include statements later and sequences.
+"sequences"`. More on include statements and sequences later.

@@ -12,4 +12,4 @@ end.
 ```
 
 The assignment operator can only be used in _local statements_, meaning `do`
-blocks, the body of `while` loops, and the argument to `perform`.
+blocks, the body of `while` and `for` loops, and the argument to `perform`.

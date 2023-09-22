@@ -35,7 +35,8 @@ this is too much of a problem, feel free to open an issue on the
 
 ## For loops
 
-For loops in Gaya are used to iterate over sequences. For example:
+For loops in Gaya are used to iterate over sequences. Just like with while
+loops, the body of a for-loop should consist only of statements. For example:
 
 ```
 for x in 42
@@ -45,5 +46,14 @@ end
 
 This would print the numbers from 0 to 41.
 
-Just like with while loops, the body of a for-loop should consist only of
-statements.
+Note that the above example may also be written by using the `seq.foreach`
+function from the `sequences` library:
+
+```
+seq.foreach(42) { x =>
+  io.println(x).
+}.
+```
+
+The only difference is that the for-loop is a statement and the function call
+is an expression, so they are used differently in different contexts.

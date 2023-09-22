@@ -27,3 +27,18 @@ I made the language with a focus on elegance first and performance second (you
 can't ask for much from a tree-walk interpreter). I wanted to make something
 that makes me feel pleasure every time I use it. I hope this way I can give
 pleasure to you too.
+
+## Installing
+
+You can install Gaya by building it from source:
+
+```
+git clone https://github.com/aloussase/gaya
+cd gaya
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
+```
+
+The process should be straightforward, I do it always when working on the
+language ;).

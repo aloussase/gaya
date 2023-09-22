@@ -1,8 +1,8 @@
 # Do Expression
 
 A `do` expression is simply a way to group statements. All but the last element
-in the body must statements. If the last element is an expression, its value is
-return, else, if it's a statement, unit is returned.
+in the body _must_ be statements. If the last element is an expression, its
+value is returned, else, if it's a statement, unit is returned.
 
 ```ocaml
 (* Results in 42*)

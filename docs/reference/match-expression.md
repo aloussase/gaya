@@ -23,7 +23,7 @@ A branch is considered to match is the pattern matches and the conditon, if
 given, is truthy.
 
 An optional `otherwise` branch may be given as a fallback in case no other
-branch matches. In the case no branch matches and no `otherwise` branch is
+branch matches. In the case that no branch matches and no `otherwise` branch is
 given, the result of the match expression is `unit`.
 
 A pattern can be one of the following:
@@ -32,8 +32,10 @@ A pattern can be one of the following:
 - **An identifier**: for example 'x', which also matches everything but
   additionally binds the target to the name of the identifier.
 - **An array pattern**: which is an arbitrarily nested series of
-  comma-separated patterns surrounded by '(' and ')' like and array. This will
+  comma-separated patterns surrounded by '(' and ')', like and array. This will
   match if the target is an array and every one of its elements matches the
   corresponding pattern.
 - **An arbitrary expression**: which will be compared for equality with the
   target.
+
+Patterns can be used in other places in Gaya, such as in let expressions.

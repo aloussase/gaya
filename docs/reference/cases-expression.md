@@ -22,7 +22,7 @@ end
 ```
 
 With the major difference that `cases` is an expression, so you can use it as
-value. For example, a function that return the greater of two numbers may be
+value. For example, a function that returns the greater of two numbers may be
 written like this:
 
 ```ocaml
