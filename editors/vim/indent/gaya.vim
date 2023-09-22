@@ -25,15 +25,27 @@ function! GayaIndent(lnum)
     let previous_linum = current_linum - 1
     let previous_line = getline(previous_linum)
 
+    if current_line =~ '^\s*end\s*$'
+      \ && (
+        \ previous_line =~ 'do\s*$'
+        \ || previous_line =~ 'cases\s*$'
+        \ || previous_line =~ '^\s*for'
+        \ || previous_line =~ '^\s*while'
+        \ )
+        return indent(previous_linum)
+    endif
+
+    if current_line =~ '^\s*end\s*$'
+       \ || previous_line =~ '^\s*otherwise'
+        return indent(previous_linum) - 2
+    endif
+
     if previous_line =~ '=>\s*$'
        \ || previous_line =~ 'do\s*$'
        \ || previous_line =~ 'cases\s*$'
-       \ || previous_line =~ 'discard\s*$'
+       \ || previous_line =~ '^\s*for'
+       \ || previous_line =~ '^\s*while'
         return indent(previous_linum) + 2
-    endif
-
-    if current_line =~ "end\s*$" || previous_line =~ '^\s*otherwise'
-        return indent(previous_linum) - 2
     endif
 
     return indent(current_linum)

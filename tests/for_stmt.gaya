@@ -5,3 +5,31 @@ let sum = 0 in do
 
   assert(sum == 45)
 end.
+
+(* Check that the binding is not available outside the for scope. *)
+let x = 69 in do
+  for x in 10
+  end
+
+  assert(x == 69).
+end.
+
+(* Check that it works for arrays. *)
+let sum = 0 in do
+  for x in (1, 2, 3)
+    sum <- sum + x
+  end
+
+  assert(sum == 6)
+end.
+
+(* Check that closures capture the loop variable. *)
+let closures = () in do
+  for x in (1, 2, 3)
+    array.push(closures, { => x }).
+  end
+
+  assert(closures(0)() == 1).
+  assert(closures(1)() == 2).
+  assert(closures(2)() == 3).
+end.

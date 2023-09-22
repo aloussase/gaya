@@ -228,29 +228,89 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
     for (;;)
     {
         auto test = while_stmt.condition->accept(*this);
-        RETURN_IF_INVALID(test);
+        if (!object::is_valid(test))
+        {
+            end_scope();
+            return object::invalid;
+        }
 
         if (!object::is_truthy(test)) break;
 
         for (auto& stmt : while_stmt.body)
         {
             stmt->accept(*this);
-            if (had_error()) return object::invalid;
+            if (had_error())
+            {
+                end_scope();
+                return object::invalid;
+            }
         }
 
         if (while_stmt.continuation)
         {
             while_stmt.continuation->accept(*this);
-            if (had_error()) return object::invalid;
+            if (had_error())
+            {
+                end_scope();
+                return object::invalid;
+            }
         }
     }
+
     end_scope();
     return object::invalid;
 }
 
-object::object interpreter::visit_for_in_stmt(ast::for_in_stmt&)
+object::object interpreter::visit_for_in_stmt(ast::for_in_stmt& for_)
 {
-    assert(0 && "not implemented");
+    begin_scope(env { std::make_shared<env>(environment()) });
+
+    auto o = for_.sequence->accept(*this);
+    if (!object::is_valid(o))
+    {
+        end_scope();
+        return object::invalid;
+    }
+
+    if (!object::is_sequence(o))
+    {
+        interp_error(for_.span_, "for-loops can only be used with sequences");
+        end_scope();
+        return object::invalid;
+    }
+
+    auto sequence = object::to_sequence(*this, o);
+    auto& ident   = for_.ident;
+
+    for (;;)
+    {
+        auto next = object::next(*this, AS_SEQUENCE(sequence));
+        if (!object::is_valid(next))
+        {
+            end_scope();
+            return object::invalid;
+        }
+
+        if (next.type == object::object_type_unit)
+        {
+            break;
+        }
+
+        define(ident->key, next);
+
+        for (auto& stmt : for_.body)
+        {
+            stmt->accept(*this);
+            if (had_error())
+            {
+                end_scope();
+                return object::invalid;
+            }
+        }
+    }
+
+    end_scope();
+    return object::invalid;
 }
 
 object::object interpreter::visit_include_stmt(ast::include_stmt& include_stmt)
@@ -277,7 +337,11 @@ object::object interpreter::visit_do_expression(ast::do_expression& do_expr)
     for (size_t i = 0; i < do_expr.body.size() - 1; i++)
     {
         do_expr.body[i]->accept(*this);
-        if (had_error()) return object::invalid;
+        if (had_error())
+        {
+            end_scope();
+            return object::invalid;
+        }
     }
     auto result = do_expr.body.back()->accept(*this);
     end_scope();
@@ -872,5 +936,4 @@ object::object interpreter::visit_placeholder(ast::placeholder& p)
         return object::invalid;
     }
 }
-
 }

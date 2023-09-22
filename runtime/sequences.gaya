@@ -1,6 +1,7 @@
 (* This file contains functions for working on sequences. *)
 
 include "base"
+include "functions"
 
 (*
   Call the provided function for each element in the sequence, discarding
@@ -73,6 +74,72 @@ seq.all :: { xs, pred => do
 
         success
     end
+  end
+}
+
+(*
+  Return the greatest element in a sequence according to the '>' operator.
+  If the sequence is empty, unit is returned.
+  @param xs <sequence> The sequence.
+*)
+seq.max :: { xs => do
+  xs |> issequence(_) |> assert(_).
+  let xs = tosequence(xs),
+      next = seq.next(xs),
+      max = next
+   in do
+        while next /= unit : next <- seq.next(xs)
+          max <- fn.max(max, next)
+        end
+
+        max
+      end
+  end
+}
+
+(*
+  Return the least element in a sequence according to the '<' operator.
+  If the sequence is empty, unit is returned.
+  @param xs <sequence> The sequence.
+*)
+seq.min :: { xs => do
+  xs |> issequence(_) |> assert(_).
+  let xs = tosequence(xs),
+      next = seq.next(xs),
+      min = next
+   in do
+        while next /= unit : next <- seq.next(xs)
+          min <- fn.min(min, next)
+        end
+
+        min
+      end
+  end
+}
+
+(*
+  Return an array containing the least and greatest elements in a sequence
+  according to the '<' and '>' operators respectively. 
+  If the sequence is empty, unit is returned.
+  @param xs <sequence> The sequence.
+*)
+seq.minmax :: { xs => do
+  xs |> issequence(_) |> assert(_).
+  let xs = tosequence(xs),
+      next = seq.next(xs),
+      min = next,
+      max = next
+   in do
+        while next /= unit : next <- seq.next(xs)
+          max <- fn.max(max, next)
+          min <- fn.min(min, next)
+        end
+
+        cases (min, max)
+          given (unit, unit) => unit
+          given a            => a
+        end
+      end
   end
 }
 
@@ -208,9 +275,8 @@ seq.range :: { start, finish => do
 }
 
 (* 
-  Return a sequence that yields 2 element arrays where the
-  first element is the index of the second element from the
-  provided sequence.
+  Return a sequence that yields 2 element arrays where the first element is the
+  index of the second element from the provided sequence.
 *)
 seq.enumerate :: { xs => do
     xs |> issequence(_) |> assert(_).

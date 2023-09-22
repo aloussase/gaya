@@ -1705,12 +1705,9 @@ ast::expression_ptr parser::do_expression(token token)
                 "Expected 'end' after last expression in do block, but got "
                 "'{}'",
                 end ? end->span.to_string() : "nothing"));
-
         parser_hint(
             token.span,
-            "Check that you don't have leftover expressions in the do "
-            "block");
-
+            "Check that you didn't forget a '.' after an expression");
         return nullptr;
     }
 
