@@ -24,7 +24,7 @@ highlight link gayaIdentifier Identifier
 syntax match gayaOperator /::/
 syntax match gayaOperator /=>/
 syntax match gayaOperator /\v\s+\<-\s+/
-syntax match gayaOperator /\s\+\(==\|>=\|<=\)\s\+/
+syntax match gayaOperator /\s\+\(==\|\/=\|>=\|<=\)\s\+/
 syntax match gayaOperator /\v\s+[+-=/*><]\s+/
 syntax match gayaOperator /|>/
 syntax match gayaOperator /->/
