@@ -2,6 +2,12 @@
 
 [Introduction](README.md)
 
+# Getting Started
+
+- [Installing Gaya](getting-started/installing.md)
+- [Tooling](getting-started/tooling.md)
+- [Hello, Gaya!](getting-started/hello-gaya.md)
+
 # Language Reference
 
 - [Basic Syntax](reference/basic-syntax.md)

@@ -12,7 +12,7 @@ seq.range(1, 10000000).
 seq.range(1, 10000000)
   |> seq.take(_, 3)
   |> seq.toarray(_)
-  |> assert(_ == (1, 2, 3))
+  |> assert(_ == (1, 2, 3)).
 ```
 
 This creates a sequence over the numbers from 1 to 10000000, but doesn't
