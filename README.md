@@ -2,7 +2,7 @@
   <img src="./assets/logo/logo256x256.png" alt="gaya-logo" />
 </p>
 
-<h3 align="center">🐱 Gaya</h3>
+<h3 align="center">Gaya</h3>
 
 ```ocaml
 "  Gaya is cool  "
