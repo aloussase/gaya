@@ -201,3 +201,23 @@ string.
 ```
 @param xs <sequence> The sequence.
 ```
+
+### `seq.sum`
+
+Return the sum of the numbers in the provided sequence.
+
+This function consumes the provided sequence.
+
+```
+@param xs <sequence> The sequence.
+```
+
+### `seq.count`
+
+Return the number of elements in a sequence.
+
+This function consumes the provided sequence.
+
+```
+@param xs <sequence> The sequence.
+```

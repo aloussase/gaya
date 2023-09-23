@@ -323,3 +323,30 @@ seq.tostring :: { xs => do
   end
 }
 
+(*
+  Return the sum of the numbers in the provided sequence.
+
+  This function consumes the provided sequence.
+  @param xs <sequence> The sequence.
+*)
+seq.sum :: { xs => seq.reduce(xs, 0, fn.add) }
+
+(*
+  Return the number of elements in a sequence.
+
+  This function consumes the provided sequence.
+  @param xs <sequence> The sequence.
+*)
+seq.count :: { xs => do
+    assert(issequence(xs)).
+    let count = 0,
+        xs = tosequence(xs),
+        x = seq.next(xs) in do
+      while x /= unit : x <- seq.next(xs)
+        count <- count + 1
+      end
+
+      count
+    end
+  end
+}
