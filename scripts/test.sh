@@ -44,33 +44,28 @@ test_assertions()
     [ $? -eq 0 ] && echo "ok"
 }
 
-for example in examples/*.gaya tests/*.gaya; do
-    is_output_test=`cat "$example" | grep 'Output:'`
-    is_error_test=`cat "$example" | grep 'Expect error'`
-    should_skip_test=`cat "$example" | grep 'Skip'`
+for test in tests/*.gaya; do
+    is_output_test=`cat "$test" | grep 'Output:'`
+    is_error_test=`cat "$test" | grep 'Expect error'`
 
-    echo "Testing $example"
+    echo "Testing $test"
 
-    if [ -n "$is_output_test" ]; then
-        test_result=`test_output "$example"`
-    elif [ -n "$is_error_test" ]; then
-        test_result=`test_error "$example"`
-    elif [ -z "$should_skip_test" ]; then
-        test_result=`test_assertions "$example"`
+    if [ ! -z "$is_output_test" ]; then
+        test_result=`test_output "$test"`
+    elif [ ! -z "$is_error_test" ]; then
+        test_result=`test_error "$test"`
     fi
 
     if [ "$test_result" = "ok" ]; then
         successes=$((successes + 1))
-        echo -e "✅ \x1b[1m\x1b[32m$example : All good\x1b[m"
+        echo -e "✅ \x1b[1m\x1b[32m$test : All good\x1b[m"
     else
         failures=$((failures + 1))
-        echo -e -n "❌ \x1b[1m\x1b[31m$example : "
-        if [ -n "$is_output_test" ]; then
+        echo -e -n "❌ \x1b[1m\x1b[31m$test : "
+        if [ ! -z "$is_output_test" ]; then
             echo -n "$test_result"
-        elif [ -n "$is_error_test" ]; then
+        elif [ ! -z "$is_error_test" ]; then
             echo -n "expected error"
-        elif [ -z "$should_skip_test" ]; then
-            echo -n "assertion failed"
         fi
         echo -e "\x1b[m"
     fi

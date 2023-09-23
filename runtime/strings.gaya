@@ -29,29 +29,33 @@ string.contains :: { s, pattern => string.index(s, pattern) /= unit }
   @param s <string> The string to split.
   @param pattern <string> The pattern to split the string on. *)
 string.split :: { s, pattern =>
-  let i = 0, j = 0 in seq.make { =>
-    let found = false, result = unit in do
-      while i < string.length(s) and not found
-        let substr = string.substring(s, i, string.length(s)) in
-        cases
-          given string.startswith(substr, pattern) => do
-            result <- string.substring(s, j, i)
-            found <- true
-            i <- i + string.length(pattern)
-            j <- i
+  cases 
+    given string.isempty(pattern) => tosequence(s) |> seq.toarray(_)
+    otherwise => 
+      let i = 0, j = 0 in seq.make { =>
+        let found = false, result = unit in do
+          while i < string.length(s) and not found
+            let substr = string.substring(s, i, string.length(s)) in
+            cases
+              given string.startswith(substr, pattern) => do
+                result <- string.substring(s, j, i)
+                found <- true
+                i <- i + string.length(pattern)
+                j <- i
+              end
+              otherwise => perform i <- i + 1
+            end.
           end
-          otherwise => perform i <- i + 1
-        end.
-      end
-      cases
-        given result /= unit => result
-        given i == string.length(s) => do
-          i <- i + 1
-          string.substring(s, j, i - 1)
+          cases
+            given result /= unit => result
+            given i == string.length(s) => do
+              i <- i + 1
+              string.substring(s, j, i - 1)
+            end
+          end
         end
-      end
-    end
-  }
+      }
+  end
 }
 
 (* Return whether a string is a whitespace character.
