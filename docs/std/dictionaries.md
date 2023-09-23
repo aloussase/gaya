@@ -54,3 +54,18 @@ Return a sequence over the keys of the provided dictionary.
 ### `dict.values`
 
 Return a sequence over the values of the provided dictionary.
+
+### `dict.setdefault`
+
+Set the value for a given key in the provided dictionary, or a default value
+if the key is not found.
+
+The new value if computed from the old value by applying to it a
+transformation function.
+
+```
+@param dict <dictionary> The dictionary.
+@param key <object> The key.
+@param valueFunc <function> The function to compute the new value.
+@param default <object> The default value in case the key is not found.
+```

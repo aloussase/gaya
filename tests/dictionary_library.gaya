@@ -44,3 +44,12 @@ end.
   |> dict.values(_)
   |> seq.toarray(_)
   |> assert(_ == (2, 4, 6)).
+
+(* dict.setdefault *)
+(->)
+  |> dict.setdefault(_, 1, { n => n + 1 }, 2)
+  |> assert(_ == (1 -> 2)).
+
+(1 -> 2)
+  |> dict.setdefault(_, 1, { n => n + 1}, 69)
+  |> assert(_ == (1 -> 3)).
