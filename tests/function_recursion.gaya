@@ -1,0 +1,8 @@
+f :: { n =>
+  cases
+    given n < 10 => n + f(n + 1)
+    otherwise    => n
+  end
+}
+
+assert(f(1) == 55).

@@ -498,6 +498,10 @@ ast::stmt_ptr parser::declaration_stmt(token identifier)
     /*
      * Here we are defining the identifier before evaluating its expression,
      * which means that we do support top level recursive declarations.
+     *
+     * NOTE: We still need to add support for this in the evaluator.
+     * NOTE: I might not have updated this comment since adding support to the
+     *       evaluator.
      */
     define(*ident);
 

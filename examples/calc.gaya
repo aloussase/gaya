@@ -1,0 +1,79 @@
+(* Skip *)
+
+include "base"
+include "strings"
+
+tokenize :: { input => input |> string.split(_, " ") |> seq.toarray(_) }
+
+parse :: { tokens => 
+  let current = 0 in
+  let advance = { =>
+    cases
+      given current < array.length(tokens) =>
+        let token = tokens(current) in do
+          current <- current + 1
+          token
+        end
+    end
+  } in
+  let peek = { =>
+    cases
+      given current < array.length(tokens) => tokens(current)
+    end
+  } in
+  let parse_primary = { => advance() } in
+  let parse_factor = { =>
+    let lhs = parse_primary() in do
+      while peek() == "*" or peek() == "/"
+        let op = advance() in
+        let rhs = parse_primary() in perform
+        lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
+      end
+
+      lhs
+    end
+  } in
+  let parse_term = { =>
+    let lhs = parse_factor() in do
+      while peek() == "+" or peek() == "-" 
+        let op = advance() in
+        let rhs = parse_factor() in perform
+        lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
+      end
+
+      lhs
+    end
+  } in
+  parse_term()
+}
+
+eval :: { ast =>
+  cases
+    given typeof(ast) == "string" => string.tonumber(ast)
+    otherwise =>
+      cases ast("op")
+        given "+" => eval(ast("lhs")) + eval(ast("rhs"))
+        given "-" => eval(ast("lhs")) - eval(ast("rhs"))
+        given "*" => eval(ast("lhs")) * eval(ast("rhs"))
+        given "/" => eval(ast("lhs")) / eval(ast("rhs"))
+      end
+  end
+}
+
+let line = "", done = false in do
+  while not done
+    io.print("> ").
+    line <- io.readline()
+    cases line
+      given ".quit" => perform done <- true
+      given line when not string.isempty(line) => do
+        let tokens = tokenize(line) in
+        let ast = parse(tokens) in
+        let result = eval(ast) in
+        io.println(result)
+      end
+    end.
+  end
+
+  io.println("Bye-bye!").
+end.

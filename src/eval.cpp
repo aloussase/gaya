@@ -182,10 +182,19 @@ object::object interpreter::visit_program(ast::program& program)
 object::object
 interpreter::visit_declaration_stmt(ast::declaration_stmt& declaration_stmt)
 {
+    auto ident = declaration_stmt.ident->value;
     auto value = declaration_stmt.expr->accept(*this);
     RETURN_IF_INVALID(value);
 
-    define(key::global(declaration_stmt.ident->value), value);
+    if (IS_FUNCTION(value))
+    {
+        /* A hack to support recursive functions. */
+        auto function = AS_FUNCTION(value);
+        auto key      = key::global(ident);
+        function.closed_over_env->set(std::move(key), value);
+    }
+
+    define(ident, value);
 
     return object::invalid;
 }
@@ -790,11 +799,9 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
             fmt::format(
                 "Expected a callable but got: {}",
                 object::to_string(*this, o)));
-
         interp_hint(
             cexpr.span_,
             "To define a function, do f :: { <args> => <expr> }");
-
         return object::invalid;
     }
 
