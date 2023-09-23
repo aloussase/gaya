@@ -30,22 +30,36 @@ problems, surely I can write such a language myself". And here we are now.
 
 #### Features
 
-- _Blazingly Fast_ (for a tree-walk interpreter): Gaya implements a number of
-  optimizations that make it go brrr. Some of these optimizations are:
+- **_Blazingly Fast_ (for a tree-walk interpreter):** Gaya implements a number
+  of optimizations that make it go brrr. Some of these optimizations are:
 
   - NaN Boxing
   - Uses an efficient hash table for the environment
   - Hash keys are precomputed in AST nodes
   - Resolving identifiers statically
 
-- Sequence protocol: You can build data processing or algorithmic pipelines
-  using the functions and data structures from the sequence protocol. The first
+- **Sequences:** You can build data processing or algorithmic pipelines using
+  the functions and data structures from the sequence protocol. The first
   snippet in this readme is an example of that.
 
-- Hack pipes: The language has Hack style pipes, which are pipes in which the
-  result of the first expression can be piped into any arbitrary expression,
+- **Pattern matching:** Gaya supports a limited form of pattern matching that
+  is good for most purposes. For example:
+
+  ```
+  let xs = (1, 2, 3) in
+  let (x, y, z) = xs in do
+    assert(x == 1).
+    assert(y == 2).
+    assert(z == 3).
+  end.
+  ```
+
+  Visit the documentation to learn more about it.
+
+- **Hack pipes:** The language has Hack style pipes, which are pipes in which
+  the result of the first expression can be piped into an arbitrary expression,
   not just function calls. To learn more, read the
-  [documentation](./docs/SUMMARY.md).
+  [documentation](#documentation).
 
 #### Installing
 
@@ -82,6 +96,16 @@ Areas in which you can help are:
 
 Of course, if something you thought about isn't on that list, feel free to
 open an issue or PR about is anyway!
+
+### Acknowledgements
+
+- [zuiderkwast](https://github.com/zuiderkwast) for their [nanbox
+  library](https://github.com/zuiderkwast/nanbox).
+- [martinus](https://github.com/martinus) for their [awesome hash
+  table](https://github.com/martinus/robin-hood-hashing).
+- The Programming Languages discord community for all their help and support.
+- Bob Nystrom for his book [Crafting
+  Interpreters](http://craftinginterpreters.com/).
 
 #### License
 
