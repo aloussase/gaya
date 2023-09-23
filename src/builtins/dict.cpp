@@ -35,7 +35,7 @@ set(interpreter& interp, span span, const std::vector<object>& args) noexcept
         return invalid;
     }
 
-    AS_DICT(d).insert({ k, v });
+    AS_DICT(d).insert_or_assign(k, v);
 
     return d;
 }
