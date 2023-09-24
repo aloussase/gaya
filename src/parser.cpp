@@ -334,7 +334,14 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         return nullptr;
     }
 
-    auto condition             = expression(condition_token.value());
+    auto condition = expression(condition_token.value());
+    if (!condition)
+    {
+        parser_error(span, "Expected a condition after 'while'");
+        end_scope();
+        return nullptr;
+    }
+
     ast::stmt_ptr continuation = nullptr;
 
     if (match(token_type::colon))
@@ -528,6 +535,7 @@ ast::stmt_ptr parser::expression_stmt(token token)
         parser_error(
             token.span,
             "Expected '.' after expression in expression statement");
+        parser_hint(token.span, "Try adding a '.' after the expression");
         return nullptr;
     }
 
@@ -662,7 +670,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
     if (!match(token_type::arrow))
     {
-        parser_error(lcurly.span, "Expected '=>' after function params");
+        parser_error(lcurly.span, "Expected '=>' after function parameters");
         end_scope();
         return nullptr;
     }
@@ -1259,45 +1267,48 @@ ast::expression_ptr parser::case_expression(token cases)
 
     for (;;)
     {
-        auto token = _lexer.next_token();
-        if (!token) break;
+        auto g_t = _lexer.next_token();
+        if (!g_t) break;
 
-        if (!match(token, token_type::given))
+        if (!match(g_t, token_type::given))
         {
-            if (match(token, token_type::otherwise)
-                || match(token, token_type::end))
+            if (match(g_t, token_type::otherwise)
+                || match(g_t, token_type::end))
             {
-                _lexer.push_back(token.value());
+                _lexer.push_back(g_t.value());
                 break;
             }
             else
             {
-                return match_expression(token.value());
+                return match_expression(g_t.value());
             }
         }
 
-        auto condition_token = _lexer.next_token();
-        if (!condition_token) return nullptr;
-
-        auto condition = expression(condition_token.value());
-        if (!condition) return nullptr;
+        auto c_t       = _lexer.next_token();
+        auto condition = c_t ? expression(*c_t) : nullptr;
+        if (!condition)
+        {
+            parser_error(
+                g_t->span,
+                "Expected an expression after 'given' in cases");
+            return nullptr;
+        }
 
         if (!match(token_type::arrow))
         {
-            parser_error(cases.span, "Expected a '=>' after condition in case");
+            parser_error(g_t->span, "Expected a '=>' after condition in case");
             return nullptr;
         }
 
-        token = _lexer.next_token();
-        if (!token)
+        auto e_t  = _lexer.next_token();
+        auto body = e_t ? expression(*e_t) : nullptr;
+        if (!body)
         {
             parser_error(
-                cases.span,
+                g_t->span,
                 "Expected an expression after condition in case");
             return nullptr;
         }
-
-        auto body = expression(token.value());
 
         branches.push_back(ast::case_branch {
             std::move(condition),
@@ -1315,20 +1326,18 @@ ast::expression_ptr parser::case_expression(token cases)
             return nullptr;
         }
 
-        auto expression_token = _lexer.next_token();
-        if (!expression_token)
+        auto e_t  = _lexer.next_token();
+        otherwise = e_t ? expression(*e_t) : nullptr;
+        if (!otherwise)
         {
             parser_error(cases.span, "Expected an expression after otherwise");
             return nullptr;
         }
-
-        otherwise = expression(expression_token.value());
-        if (!otherwise) return nullptr;
     }
 
     if (!match(token_type::end))
     {
-        parser_error(cases.span, "Expected 'end' after case");
+        parser_error(cases.span, "Expected 'end' after cases");
         return nullptr;
     }
 
@@ -1702,7 +1711,16 @@ ast::expression_ptr parser::do_expression(token token)
         else
         {
             auto expr = expression(stmt_token.value());
-            if (!expr) return nullptr;
+            if (!expr)
+            {
+                parser_error(
+                    stmt_token->span,
+                    fmt::format(
+                        "Expected an expression in do block body, but got '{}'",
+                        stmt_token->span.to_string()));
+                end_scope();
+                return nullptr;
+            }
 
             if (match(token_type::dot))
             {

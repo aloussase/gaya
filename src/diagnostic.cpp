@@ -33,23 +33,36 @@ std::string diagnostic::to_string() const noexcept
 
     std::stringstream ss;
 
-    ss << fmt::format(
-        "{} at {}{}: {}\n\n",
-        diagnostic_kind,
-        _filename != "" ? fmt::format("{}:", _filename) : "",
-        _span.lineno(),
-        _message);
+    ss << fmt::format("{}", diagnostic_kind);
 
     if (_severity == severity::error)
     {
-        const char* newline = strchr(_span.start(), '\n');
+        ss << fmt::format(
+            " at {}{}",
+            _filename != "" ? fmt::format("{}:", _filename) : "",
+            _span.lineno());
+    }
+
+    ss << fmt::format(": {}\n\n", _message);
+
+    if (_severity == severity::error)
+    {
+        auto error_location = _span.to_string();
+        const char* newline = strchr(_span.end(), '\n');
         auto line           = std::accumulate(
-            _span.start(),
-            newline ? newline : strchr(_span.start(), '\0'),
+            _span.end(),
+            newline ? newline : strchr(_span.end(), '\0'),
             std::string(),
             [](auto acc, char c) { return acc + c; });
-        ss << fmt::format("    Here --> \x1b[4:3m{}\x1b[m\n\n", line);
+
+        ss << fmt::format(
+            "    \x1b[38:5:145m{} |\x1b[m \x1b[31m\x1b[4:3m{}\x1b[m{}\n",
+            _span.lineno(),
+            error_location,
+            line);
     }
+
+    ss << "\n";
 
     return ss.str();
 }
