@@ -220,13 +220,19 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
     auto depth = assignment.ident->depth;
     auto& key  = assignment.ident->key;
 
-    /*
-     * The parser already checks that the identifier is found and that it is
-     * a valid assignment target.
-     */
-    [[maybe_unused]] auto ok
-        = environment().update_at(std::move(key), new_val, depth);
-    assert(ok);
+    auto ok = environment().update_at(std::move(key), new_val, depth);
+    if (!ok)
+    {
+        interp_error(
+            assignment.ident->_span,
+            fmt::format(
+                "Tried to assign to {}",
+                key.kind == identifier_kind::global ? "global variable"
+                                                    : "function parameter"));
+        interp_hint(
+            assignment.ident->_span,
+            "You can only assign to local variables");
+    }
 
     return object::invalid;
 }
@@ -378,10 +384,10 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     return object::create_unit(cases.span_);
 }
 
-[[nodiscard]] static bool match_pattern(
-    interpreter& interp,
+bool interpreter::match_pattern(
     object::object& target,
-    const ast::match_pattern& pattern) noexcept
+    const ast::match_pattern& pattern,
+    std::function<key(const std::string&)> to_key) noexcept
 {
     switch (pattern.kind)
     {
@@ -393,13 +399,13 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     {
         auto& value     = std::get<ast::expression_ptr>(pattern.value);
         auto identifier = std::static_pointer_cast<ast::identifier>(value);
-        interp.define(key::local(identifier->value), target);
+        define(to_key(identifier->value), target);
         return true;
     }
     case ast::match_pattern::kind::expr:
     {
         auto value = std::get<ast::expression_ptr>(pattern.value);
-        auto expr  = value->accept(interp);
+        auto expr  = value->accept(*this);
         if (!object::is_valid(expr)) return false;
 
         return object::equals(target, expr);
@@ -419,7 +425,7 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
             auto elem    = a[i];
             auto pattern = patterns[i];
 
-            if (!match_pattern(interp, elem, pattern))
+            if (!match_pattern(elem, pattern, to_key))
             {
                 return false;
             }
@@ -436,7 +442,7 @@ object::object interpreter::visit_case_expression(ast::case_expression& cases)
     const ast::match_branch& branch,
     object::object* out) noexcept
 {
-    auto pattern_matches = match_pattern(interp, target, branch.pattern);
+    auto pattern_matches = interp.match_pattern(target, branch.pattern);
     auto condition_holds = true;
 
     if (branch.condition != nullptr)
@@ -834,18 +840,11 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
 object::object
 interpreter::visit_function_expression(ast::function_expression& fexpr)
 {
-    std::vector<key> params;
-    std::transform(
-        fexpr.params.begin(),
-        fexpr.params.end(),
-        std::back_inserter(params),
-        [](auto& param) { return key::param(param.value); });
-
     return object::create_function(
         *this,
         fexpr._span,
         std::make_unique<env>(environment()),
-        std::move(params),
+        fexpr.params,
         fexpr.body);
 }
 
@@ -866,7 +865,7 @@ interpreter::visit_let_expression(ast::let_expression& let_expression)
             return object::invalid;
         }
 
-        if (!match_pattern(*this, value, binding.pattern))
+        if (!match_pattern(value, binding.pattern))
         {
             interp_error(
                 binding.span_,

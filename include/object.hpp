@@ -33,13 +33,13 @@
 namespace gaya::ast
 {
 struct expression;
+struct match_pattern;
 }
 
 namespace gaya::eval
 {
 class interpreter;
 class env;
-struct key;
 }
 
 namespace gaya::eval::object
@@ -121,7 +121,7 @@ struct function final
 {
     size_t arity;
     std::shared_ptr<env> closed_over_env;
-    std::vector<key> params;
+    std::vector<ast::match_pattern> params;
     std::shared_ptr<ast::expression> body;
 };
 
@@ -247,7 +247,7 @@ create_array(interpreter&, span, const std::vector<object>&) noexcept;
     interpreter&,
     span,
     std::unique_ptr<env>,
-    std::vector<key>,
+    std::vector<ast::match_pattern>,
     std::shared_ptr<ast::expression>);
 
 /**

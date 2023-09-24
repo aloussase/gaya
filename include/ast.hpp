@@ -302,7 +302,10 @@ struct call_expression final : public expression
 
 struct function_expression final : public expression
 {
-    function_expression(span s, std::vector<identifier>&& p, expression_ptr b)
+    function_expression(
+        span s,
+        std::vector<match_pattern>&& p,
+        expression_ptr b)
         : _span { s }
         , params { std::move(p) }
         , body { std::move(b) }
@@ -310,11 +313,10 @@ struct function_expression final : public expression
     }
 
     std::string to_string() const noexcept override;
-
     object accept(ast_visitor&) override;
 
     span _span;
-    std::vector<identifier> params;
+    std::vector<match_pattern> params;
     std::shared_ptr<expression> body;
 };
 

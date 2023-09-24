@@ -13,10 +13,21 @@ object call_function(
     const std::vector<object>& args) noexcept
 {
     interp.begin_scope(env { func.closed_over_env });
+
     for (size_t i = 0; i < args.size(); i++)
     {
-        interp.define(func.params[i], args[i]);
+        auto arg = args[i];
+        auto pat = func.params[i];
+
+        if (!interp.match_pattern(arg, pat, &key::param))
+        {
+            interp.interp_error(
+                arg.span,
+                "Failed to match pattern with argument in function");
+            return invalid;
+        }
     }
+
     auto ret = func.body->accept(interp);
     interp.end_scope();
     return ret;

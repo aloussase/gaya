@@ -35,7 +35,7 @@ add(1, 2). (* Output: 3 *)
 a local binding using a `let` expression, since functions are first-class
 citizens in Gaya.
 
-Finally, if the last argument to function call is itself a function, you can
+If the last argument to a function call is itself a function, you can
 put it outside the parenthesis (a so called _trailing function_):
 
 ```
@@ -48,3 +48,15 @@ put it outside the parenthesis (a so called _trailing function_):
 
 **NOTE** To use the functions in this snippet, you need to `include
 "sequences"`. More on include statements and sequences later.
+
+Finally, the parameters of a function can be an arbitrary pattern, not just
+identifiers. You can use this feature, for example, to destructure an array
+parameter:
+
+```
+(1 -> 2, 3 -> 3)
+  |> seq.foreach(_) { (key, value) => io.println(tostring(key) <> ":" <> value) }
+```
+
+See the section on match expression for a more detailed introduction to
+pattern matching in Gaya.

@@ -66,6 +66,14 @@ public:
      */
     [[nodiscard]] parser& get_parser() noexcept;
 
+    /**
+     * Execute a match pattern. Exposed for object::function::call.
+     */
+    [[nodiscard]] bool match_pattern(
+        object::object&,
+        const ast::match_pattern&,
+        std::function<key(const std::string&)> to_key = &key::local) noexcept;
+
     /* Visitor pattern */
 
     object::object visit_program(ast::program&) override;

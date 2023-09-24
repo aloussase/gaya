@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <memory>
 
@@ -642,25 +641,28 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
     begin_scope();
 
-    std::vector<ast::identifier> params;
+    std::vector<ast::match_pattern> params;
 
     for (;;)
     {
-        auto identifier = _lexer.next_token();
-        if (!identifier) break;
-
-        if (!match(identifier, token_type::identifier))
+        auto p_t = _lexer.next_token();
+        if (!p_t || match(p_t, token_type::arrow))
         {
-            _lexer.push_back(identifier.value());
+            if (p_t) _lexer.push_back(*p_t);
             break;
         }
 
-        auto span             = identifier->span;
-        ast::identifier ident = { span, span.to_string() };
+        auto p = match_pattern(*p_t, true, &eval::key::param);
+        if (!p)
+        {
+            parser_error(
+                p_t->span,
+                "Expected a pattern in function parameter list");
+            end_scope();
+            return nullptr;
+        }
 
-        define(ident);
-
-        params.push_back(std::move(ident));
+        params.push_back(std::move(*p));
 
         if (!match(token_type::comma))
         {
@@ -675,47 +677,45 @@ ast::expression_ptr parser::function_expression(token lcurly)
         return nullptr;
     }
 
-    auto rcurly = _lexer.next_token();
-    if (!rcurly)
+    if (auto r_t = _lexer.next_token(); match(r_t, token_type::rcurly))
+    {
+        end_scope();
+        return ast::make_node<ast::function_expression>(
+            lcurly.span,
+            std::move(params),
+            ast::make_node<ast::unit>(r_t->span));
+    }
+    else if (r_t)
+    {
+        auto e = expression(*r_t);
+        if (!e)
+        {
+            parser_error(
+                lcurly.span,
+                "Expected an expression after '=>' in function literal");
+            end_scope();
+            return nullptr;
+        }
+
+        if (!match(token_type::rcurly))
+        {
+            parser_error(lcurly.span, "Expected a '}' after function body");
+            end_scope();
+            return nullptr;
+        }
+
+        end_scope();
+        return ast::make_node<ast::function_expression>(
+            lcurly.span,
+            std::move(params),
+            std::move(e));
+    }
+    else
     {
         parser_error(lcurly.span, "Expected a '}' after function body");
         end_scope();
         return nullptr;
     }
-
-    auto expr = ([&]() -> ast::expression_ptr {
-        if (match(rcurly, token_type::rcurly))
-        {
-            return ast::make_node<ast::unit>(rcurly->span);
-        }
-        else
-        {
-            auto expr = expression(rcurly.value());
-            if (!expr)
-            {
-                parser_error(
-                    lcurly.span,
-                    "Expected an expression after '=>' in function literal");
-                return nullptr;
-            }
-
-            if (!match(token_type::rcurly))
-            {
-                parser_error(lcurly.span, "Expected a '}' after function body");
-                return nullptr;
-            }
-            return expr;
-        }
-    })();
-
-    end_scope();
-
-    if (!expr) return nullptr;
-
-    return ast::make_node<ast::function_expression>(
-        lcurly.span,
-        std::move(params),
-        expr);
 }
 
 ast::expression_ptr parser::logical_expression(token token) noexcept
@@ -1349,7 +1349,8 @@ ast::expression_ptr parser::case_expression(token cases)
 
 std::optional<ast::match_pattern> parser::match_pattern(
     const token& pattern_token,
-    bool define_matched_identifier) noexcept
+    bool define_matched_identifier,
+    std::function<eval::key(const std::string&)> to_key) noexcept
 {
     switch (pattern_token.type)
     {
@@ -1373,12 +1374,7 @@ std::optional<ast::match_pattern> parser::match_pattern(
             auto identifier = ast::make_node<ast::identifier>(
                 pattern_token.span,
                 pattern_token.span.to_string());
-
-            /*
-             * Mark it as a local variable so it can be used as the target of
-             * assignment statements.
-             */
-            identifier->key = eval::key::local(identifier->value);
+            identifier->key = to_key(identifier->value);
 
             if (define_matched_identifier)
             {

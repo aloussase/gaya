@@ -297,7 +297,7 @@ object create_function(
     interpreter& interp,
     span span,
     std::unique_ptr<env> env,
-    std::vector<key> params,
+    std::vector<ast::match_pattern> params,
     std::shared_ptr<ast::expression> body)
 {
     function function = { params.size(), std::move(env), params, body };
