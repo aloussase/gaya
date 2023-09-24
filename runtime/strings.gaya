@@ -35,9 +35,8 @@ string.split :: { s, pattern =>
       let i = 0, j = 0 in seq.make { =>
         let found = false, result = unit in do
           while i < string.length(s) and not found
-            let substr = string.substring(s, i, string.length(s)) in
             cases
-              given string.startswith(substr, pattern) => do
+              given string.startswith(s, pattern, i) => do
                 result <- string.substring(s, j, i)
                 found <- true
                 i <- i + string.length(pattern)

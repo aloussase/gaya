@@ -16,8 +16,6 @@ Return the length of the string.
 
 Return the concatenation of the second string onto the first one.
 
-**NOTE:** This function mutates its first argument.
-
 ```
 @param s1 <string> The first string.
 @param s2 <string> The string to tack onto the end of the first one.
@@ -63,6 +61,7 @@ Return whether a string starts with the given pattern.
 ```
 @param s <string> The string to test.
 @param pattern <string> The pattern to search for in s.
+@param pos <number> The position in s from where to start testing.
 ```
 
 ### `string.endswith`

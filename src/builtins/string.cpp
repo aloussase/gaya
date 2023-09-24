@@ -38,9 +38,10 @@ gaya::eval::object::object concat(
     auto& s1 = AS_STRING(args[0]);
     auto s2
         = IS_STRING(args[1]) ? AS_STRING(args[1]) : to_string(interp, args[1]);
-    s1.append(s2);
 
-    return args[0];
+    s2.insert(s2.begin(), s1.begin(), s1.end());
+
+    return create_string(interp, span, std::move(s2));
 }
 
 gaya::eval::object::object tonumber(
@@ -108,16 +109,23 @@ gaya::eval::object::object substring(
         return invalid;
     }
 
-    auto pos   = AS_NUMBER(start);
-    auto count = AS_NUMBER(finish) - pos;
+    auto pos   = static_cast<int>(AS_NUMBER(start));
+    auto count = static_cast<int>(AS_NUMBER(finish) - pos);
 
-    if (pos < 0 || pos > AS_STRING(s).size() || count < 0
-        || pos + count > AS_STRING(s).size())
+    if (pos < 0                                           //
+        || static_cast<size_t>(pos) > AS_STRING(s).size() //
+        || count < 0                                      //
+        || static_cast<size_t>(pos) + count > AS_STRING(s).size())
     {
         return create_unit(span);
     }
 
-    return create_string(interp, span, AS_STRING(s).substr(pos, count));
+    auto substr = std::string_view {
+        AS_STRING(s).data() + pos,
+        static_cast<size_t>(count),
+    };
+
+    return create_string(interp, span, std::move(substr));
 }
 
 gaya::eval::object::object startswith(
@@ -127,11 +135,25 @@ gaya::eval::object::object startswith(
 {
     auto& s       = args[0];
     auto& pattern = args[1];
+    auto& pos     = args[2];
 
     if (!IS_STRING(s) || !IS_STRING(pattern))
     {
-        interp.interp_error(span, "Expected both arguments to be strings");
+        interp.interp_error(
+            span,
+            "Expected the first 2 arguments to be strings");
         return invalid;
+    }
+
+    if (!IS_NUMBER(pos))
+    {
+        interp.interp_error(span, "Expected the 3rd argument to be a number");
+        return invalid;
+    }
+
+    if (AS_NUMBER(pos) < 0 || AS_NUMBER(pos) > AS_STRING(s).size())
+    {
+        return create_unit(span);
     }
 
     if (AS_STRING(s).size() < AS_STRING(pattern).size())
@@ -140,7 +162,7 @@ gaya::eval::object::object startswith(
     }
 
     auto cmp = std::memcmp(
-        AS_STRING(s).c_str(),
+        AS_STRING(s).c_str() + static_cast<size_t>(AS_NUMBER(pos)),
         AS_STRING(pattern).c_str(),
         AS_STRING(pattern).size());
 

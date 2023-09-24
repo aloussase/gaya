@@ -57,7 +57,7 @@ interpreter::interpreter()
     BUILTIN("string.tonumber"s, 1, string::tonumber);
     BUILTIN("string.index"s, 2, string::index);
     BUILTIN("string.substring"s, 3, string::substring);
-    BUILTIN("string.startswith"s, 2, string::startswith);
+    BUILTIN("string.startswith"s, 3, string::startswith);
     BUILTIN("string.endswith"s, 2, string::endswith);
     BUILTIN("string.trim"s, 1, string::trim);
 

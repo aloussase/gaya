@@ -315,7 +315,7 @@ seq.tostring :: { xs => do
     xs |> issequence(_) |> assert(_).
     let xs = tosequence(xs), x = seq.next(xs), s = "" in do
       while x /= unit : x <- seq.next(xs)
-        x |> tostring(_) |> string.concat(s, _).
+        s <- x |> tostring(_) |> string.concat(s, _)
       end
 
       s

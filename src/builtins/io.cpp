@@ -77,6 +77,6 @@ gaya::eval::object::object readfile(
     assert(contents);
     std::string contents_as_string(contents);
 
-    return create_string(interp, span, contents);
+    return create_string(interp, span, std::string { contents });
 }
 }

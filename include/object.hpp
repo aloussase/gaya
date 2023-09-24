@@ -223,6 +223,8 @@ struct heap_object
  */
 [[nodiscard]] object
 create_string(interpreter&, span, const std::string&) noexcept;
+[[nodiscard]] object
+create_string(interpreter&, span, const std::string_view&) noexcept;
 
 /**
  * Create an array object.

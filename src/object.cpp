@@ -2,6 +2,7 @@
 
 #include <fmt/core.h>
 #include <nanbox.h>
+#include <robin_hood.h>
 
 #include <env.hpp>
 #include <eval.hpp>
@@ -12,6 +13,17 @@ namespace gaya::eval::object
 
 static int bytes_allocated   = 0;
 static int next_gc_threshold = 1024 * 1024;
+
+/*
+ * String pool
+ *
+ * NOTE 1: For this to work, strings need to be treated as immutable values.
+ *
+ * NOTE 2: As of now, strings never get freed. This should not be a problem for
+ * short lived programs like Advent of Code solutions. Implement some sort of
+ * weak references if it becomes a problem.
+ */
+static robin_hood::unordered_map<size_t, object> strings;
 
 static void mark(heap_object* o);
 
@@ -135,7 +147,8 @@ static void sweep(heap_object* heap_objects)
     auto** o = &heap_objects;
     while (*o)
     {
-        if ((*o)->marked)
+        /* NOTE: We don't collect strings. */
+        if ((*o)->marked || (*o)->type == object_type_string)
         {
             (*o)->marked = 0;
             o            = &(*o)->next;
@@ -200,11 +213,31 @@ object create_string(
     span span,
     const std::string& string) noexcept
 {
+    return create_string(interp, span, std::string_view { string });
+}
+
+[[nodiscard]] object create_string(
+    interpreter& interp,
+    span span,
+    const std::string_view& sv) noexcept
+{
+    auto hash = robin_hood::hash<std::string_view> {}(sv);
+
+    if (auto it = strings.find(hash); it != strings.end())
+    {
+        return it->second;
+    }
+
     auto* ptr = create_heap_object(interp);
-    new (ptr) heap_object { .type = object_type_string, .as_string = string };
+    new (ptr) heap_object {
+        .type      = object_type_string,
+        .as_string = std::string { sv },
+    };
 
     auto o = create_object(object_type_string, span);
     o.box  = nanbox_from_pointer(ptr);
+
+    strings.insert({ hash, o });
 
     return o;
 }

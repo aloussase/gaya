@@ -27,10 +27,10 @@ array.join :: { a, sep => do
     assert(typeof(sep) == "string").
     let i = 0, result = "" in do
       while i < array.length(a) : i <- i + 1
-        string.concat(result, tostring(a(i))).
+        result <- string.concat(result, tostring(a(i)))
         cases
           given i < array.length(a) - 1 => 
-            string.concat(result, sep)
+            perform result <- string.concat(result, sep)
         end.
       end
 

@@ -4,8 +4,8 @@ include "strings"
 include "sequences"
 
 (* startswith *)
-io.println(string.startswith("Gaya", "Ga")).
-io.println(string.startswith("Gaya", "ya")).
+io.println(string.startswith("Gaya", "Ga", 0)).
+io.println(string.startswith("Gaya", "ya", 0)).
 
 (* endswith *)
 io.println(string.endswith("Gaya", "ya")).
