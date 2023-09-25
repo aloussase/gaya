@@ -7,9 +7,7 @@
 #include <eval.hpp>
 #include <file_reader.hpp>
 #include <parser.hpp>
-#include <repl.hpp>
 
-static bool run_repl_flag   = false;
 static bool show_usage_flag = false;
 static bool print_ast_flag  = false;
 
@@ -80,12 +78,11 @@ print_ast(const char* filename, const char* source) noexcept
 
 [[noreturn]] static void usage()
 {
-    printf("gaya lang -- version 1.0\n"
-           "usage: gaya [--repl] [--help] [--print-ast] [inputfile]\n"
+    printf("gaya -- version 1.0\n"
+           "usage: gaya [--help] [--print-ast] [filename]\n"
            "arguments:\n"
-           "    inputfile    a file to evaluate\n"
+           "    filename     a file to evaluate\n"
            "options:\n"
-           "    --repl       run the repl\n"
            "    --help       show this help\n"
            "    --print-ast  do not run the program, print the ast\n");
     exit(EXIT_SUCCESS);
@@ -97,17 +94,18 @@ auto main(int argc, char** argv) -> int
     for (i = 1; i < argc; i++)
     {
         char* arg = argv[i];
-        if (strcmp(arg, "--repl") == 0)
-        {
-            run_repl_flag = true;
-        }
-        else if (strcmp(arg, "--help") == 0)
+        if (strcmp(arg, "--help") == 0)
         {
             show_usage_flag = true;
         }
         else if (strcmp(arg, "--print-ast") == 0)
         {
             print_ast_flag = true;
+        }
+        else if (strncmp(arg, "-", 1) == 0 || strncmp(arg, "--", 2) == 0)
+        {
+            fprintf(stderr, "Invalid option: '%s'\n\n", arg);
+            usage();
         }
         else
         {
@@ -129,11 +127,6 @@ auto main(int argc, char** argv) -> int
     if (remaining_args == 1)
     {
         process_file(argv[i]);
-    }
-
-    if (run_repl_flag)
-    {
-        gaya::repl::run();
     }
 
     usage();
