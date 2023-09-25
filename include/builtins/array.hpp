@@ -47,4 +47,14 @@ pop(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 sort(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * Replace the element at the specified position with the provided object.
+ * @param a <array> The array.
+ * @param index <number> The index at which to replace the element.
+ * @param o <object> The object to replace the element with.
+ * @return The provided array.
+ */
+gaya::eval::object::object
+set(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

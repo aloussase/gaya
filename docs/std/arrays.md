@@ -81,3 +81,14 @@ array by the given separator.
 @param a <array> The array to join.
 @param sep <string> The separator to use
 ```
+
+### `array.set`
+
+Replace the element at the specified position with the provided object.
+
+```
+@param a <array> The array.
+@param index <number> The index at which to replace the element.
+@param o <object> The object to replace the element with.
+@return The provided array.
+```

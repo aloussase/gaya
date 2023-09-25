@@ -107,4 +107,40 @@ sort(interpreter& interp, span span, const std::vector<object>& args) noexcept
     return a;
 }
 
+gaya::eval::object::object
+set(interpreter& interp, span span, const std::vector<object>& args) noexcept
+{
+    auto& a     = args[0];
+    auto& index = args[1];
+    auto& o     = args[2];
+
+    if (!IS_ARRAY(a))
+    {
+        interp.interp_error(span, "Expected the first argument to be an array");
+        return invalid;
+    }
+
+    if (!IS_NUMBER(index))
+    {
+        interp.interp_error(
+            span,
+            "Expected the second argument to be a number");
+        return invalid;
+    }
+
+    if (AS_NUMBER(index) < 0 || AS_NUMBER(index) > AS_ARRAY(a).size())
+    {
+        interp.interp_error(
+            span,
+            fmt::format(
+                "Invalid index {} for array of size {}",
+                AS_NUMBER(index),
+                AS_ARRAY(a).size()));
+    }
+
+    AS_ARRAY(a)[AS_NUMBER(index)] = o;
+
+    return a;
+}
+
 }
