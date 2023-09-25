@@ -56,3 +56,7 @@ string.trim("Hello  \n\t") |> assert(_ == "Hello").
 (* tonumber *)
 string.tonumber("42") |> assert(_ == 42).
 string.tonumber("Gaya") |> assert(_ == unit).
+
+(* string.splitArray *)
+string.splitArray("Hello", "") |> assert(_ == ("H", "e", "l", "l", "o")).
+string.splitArray("Hello World !", " ") |> assert(_ == ("Hello", "World", "!")).

@@ -12,6 +12,14 @@ Return the length of an array.
 @param a <array> The array.
 ```
 
+### `array.isempty`
+
+Return whether the given array is empty.
+
+```
+@param a <array> The array.
+```
+
 ### `array.concat`
 
 Append the elements of the second array to the end first one.

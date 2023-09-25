@@ -112,6 +112,15 @@ Splits a string on the given pattern and returns a sequence over the parts.
 @param pattern <string> The pattern to split the string on.
 ```
 
+### `string.splitArray`
+
+Like string.split, but return an array instead of a sequence.
+
+```
+@param s <string> The string to split.
+@param pattern <string> The pattern to split the string on
+```
+
 ### `string.iswhitespace`
 
 Return whether a string is a whitespace character.

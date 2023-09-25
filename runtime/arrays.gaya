@@ -1,5 +1,11 @@
 (* This file contains functions that work on arrays. *)
 
+(*
+  Return whether the given array is empty.
+  @param a <array> The array.
+*)
+array.isempty :: { a => array.length(a) == 0 }
+
 (* Return an array with the numbers from start to finish exclusive. 
   @param start <number> The start of the range.
   @param finish <number> The non-inclusive end of the range. *)
