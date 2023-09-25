@@ -16,10 +16,10 @@ object call_function(
 
     for (size_t i = 0; i < args.size(); i++)
     {
-        auto arg = args[i];
-        auto pat = func.params[i];
+        auto arg   = args[i];
+        auto param = func.params[i];
 
-        if (!interp.match_pattern(arg, pat, &key::param))
+        if (!interp.match_pattern(arg, param.pattern, &key::param))
         {
             interp.interp_error(
                 arg.span,

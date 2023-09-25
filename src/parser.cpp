@@ -641,7 +641,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
     begin_scope();
 
-    std::vector<ast::match_pattern> params;
+    std::vector<ast::function_param> params;
 
     for (;;)
     {
@@ -662,7 +662,8 @@ ast::expression_ptr parser::function_expression(token lcurly)
             return nullptr;
         }
 
-        params.push_back(std::move(*p));
+        ast::function_param param = { std::move(*p) };
+        params.push_back(std::move(param));
 
         if (!match(token_type::comma))
         {

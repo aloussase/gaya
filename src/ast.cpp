@@ -247,7 +247,9 @@ std::string function_expression::to_string() const noexcept
     ss << R"({"type": "function_expression", "params": [)"
        << join(
               params,
-              [](auto& param) { return match_pattern_to_string(param); })
+              [](auto& param) {
+                  return match_pattern_to_string(param.pattern);
+              })
        << R"(], "body": )" << body->to_string() << "}";
     return ss.str();
 }

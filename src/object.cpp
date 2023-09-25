@@ -99,6 +99,7 @@ static void mark(heap_object* o)
         break;
     }
     case object_type_function:
+    /* TODO: I might need to mark the closed over env. */
     case object_type_builtin_function:
     case object_type_string:
     case object_type_unit:
@@ -297,7 +298,7 @@ object create_function(
     interpreter& interp,
     span span,
     std::unique_ptr<env> env,
-    std::vector<ast::match_pattern> params,
+    std::vector<ast::function_param> params,
     std::shared_ptr<ast::expression> body)
 {
     function function = { params.size(), std::move(env), params, body };

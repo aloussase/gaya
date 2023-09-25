@@ -300,11 +300,23 @@ struct call_expression final : public expression
     std::vector<gaya::eval::object::object> oargs;
 };
 
+struct function_param final
+{
+    function_param(match_pattern p, expression_ptr dv = nullptr)
+        : pattern { std::move(p) }
+        , default_value { dv }
+    {
+    }
+
+    match_pattern pattern;
+    expression_ptr default_value = nullptr;
+};
+
 struct function_expression final : public expression
 {
     function_expression(
         span s,
-        std::vector<match_pattern>&& p,
+        std::vector<function_param>&& p,
         expression_ptr b)
         : _span { s }
         , params { std::move(p) }
@@ -316,7 +328,7 @@ struct function_expression final : public expression
     object accept(ast_visitor&) override;
 
     span _span;
-    std::vector<match_pattern> params;
+    std::vector<function_param> params;
     std::shared_ptr<expression> body;
 };
 
