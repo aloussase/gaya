@@ -221,3 +221,11 @@ This function consumes the provided sequence.
 ```
 @param xs <sequence> The sequence.
 ```
+
+### `seq.first`
+
+Return the first element in the sequence, or unit if there are none.
+
+```
+@param xs <sequence> The sequence.
+```

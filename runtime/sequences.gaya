@@ -350,3 +350,13 @@ seq.count :: { xs => do
     end
   end
 }
+
+(*
+  Return the first element in the sequence, or unit if there are none.
+  @param xs <sequence> The sequence.
+*)
+seq.first :: { xs => do
+    assert(issequence(xs)).
+    let xs = tosequence(xs) in seq.next(xs)
+  end
+}
