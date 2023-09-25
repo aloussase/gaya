@@ -3,7 +3,7 @@ authors = ["Alexander Goussas"]
 language = "en"
 multilingual = false
 src = "."
-title = "Gaya Language"
+title = "The Gaya Language Book"
 
 [output.html]
 git-repository-url = "https://github.com/aloussase/gaya"

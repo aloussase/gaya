@@ -227,20 +227,29 @@ struct match_pattern final
 {
     enum class kind { wildcard, capture, expr, array_pattern };
 
-    match_pattern(kind k, expression_ptr v = nullptr)
+    match_pattern(
+        kind k,
+        expression_ptr v                = nullptr,
+        std::shared_ptr<identifier> a_p = nullptr)
         : kind { k }
         , value { v }
+        , as_pattern { a_p }
     {
     }
 
-    match_pattern(kind k, std::vector<match_pattern> v)
+    match_pattern(
+        kind k,
+        std::vector<match_pattern> v,
+        std::shared_ptr<identifier> a_p = nullptr)
         : kind { k }
         , value { std::move(v) }
+        , as_pattern { a_p }
     {
     }
 
     kind kind;
     std::variant<expression_ptr, std::vector<match_pattern>> value;
+    std::shared_ptr<identifier> as_pattern = nullptr;
 };
 
 struct match_branch final
@@ -254,7 +263,6 @@ struct match_branch final
 
     match_pattern pattern;
     expression_ptr body;
-    // optional
     expression_ptr condition = nullptr;
 };
 

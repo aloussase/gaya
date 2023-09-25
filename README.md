@@ -64,7 +64,7 @@ problems, surely I can write such a language myself". And here we are now.
 #### Installing
 
 ```
-git clone https://github.com/aloussase/gaya
+git clone --recurse-submodules https://github.com/aloussase/gaya
 cd gaya
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 cmake --build build

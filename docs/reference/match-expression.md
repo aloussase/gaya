@@ -26,6 +26,8 @@ An optional `otherwise` branch may be given as a fallback in case no other
 branch matches. In the case that no branch matches and no `otherwise` branch is
 given, the result of the match expression is `unit`.
 
+## Patterns
+
 A pattern can be one of the following:
 
 - **A wildcard**: '\_' which matches everything.
@@ -38,4 +40,19 @@ A pattern can be one of the following:
 - **An arbitrary expression**: which will be compared for equality with the
   target.
 
-Patterns can be used in other places in Gaya, such as in let expressions.
+Sometimes you may want to match an array and also capture the whole array. You
+can do this with _as patterns_:
+
+```
+cases someFunc()
+  given xs@(x, y, z) => (* do something *)
+end
+```
+
+You introduce an as-pattern by using an identifier followed by an `@` before
+the pattern. The whole match will be available under the name of the
+identifier.
+
+Finally, patterns can be used in a number of places in Gaya, such as in let
+expressions and function parameters. See the corresponding chapters for more on
+that.

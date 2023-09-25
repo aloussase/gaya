@@ -135,6 +135,7 @@ std::optional<token> lexer::next_token() noexcept
     case '^': return mk_token(token_type::xor_);
     case '~': return mk_token(token_type::lnot);
     case '.': return mk_token(token_type::dot);
+    case '@': return mk_token(token_type::at);
     case '0':
     case '1':
     case '2':

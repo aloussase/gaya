@@ -390,10 +390,14 @@ bool interpreter::match_pattern(
     const ast::match_pattern& pattern,
     std::function<key(const std::string&)> to_key) noexcept
 {
+#define DEFINE_AS_PATTERN \
+    if (pattern.as_pattern) define(to_key(pattern.as_pattern->value), target);
+
     switch (pattern.kind)
     {
     case ast::match_pattern::kind::wildcard:
     {
+        DEFINE_AS_PATTERN;
         return true;
     }
     case ast::match_pattern::kind::capture:
@@ -401,6 +405,7 @@ bool interpreter::match_pattern(
         auto& value     = std::get<ast::expression_ptr>(pattern.value);
         auto identifier = std::static_pointer_cast<ast::identifier>(value);
         define(to_key(identifier->value), target);
+        DEFINE_AS_PATTERN;
         return true;
     }
     case ast::match_pattern::kind::expr:
@@ -409,7 +414,13 @@ bool interpreter::match_pattern(
         auto expr  = value->accept(*this);
         if (!object::is_valid(expr)) return false;
 
-        return object::equals(target, expr);
+        if (object::equals(target, expr))
+        {
+            DEFINE_AS_PATTERN;
+            return true;
+        }
+
+        return false;
     }
     case ast::match_pattern::kind::array_pattern:
     {
@@ -432,9 +443,11 @@ bool interpreter::match_pattern(
             }
         }
 
+        DEFINE_AS_PATTERN;
         return true;
     }
     }
+#undef DEFINE_AS_PATTERN
 }
 
 [[nodiscard]] static bool match_case_branch(

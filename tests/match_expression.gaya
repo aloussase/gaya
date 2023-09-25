@@ -50,9 +50,7 @@ assert(test1(69) == "nice").
 assert(test1(15) == "dunno").
 
 assert(test2(42) == "life").
-assert(test2(69) == "nice").
-assert(test2(15) == "dunno").
-
+assert(test2(69) == "nice"). assert(test2(15) == "dunno").
 assert(test3(42) == "life").
 assert(test3(69) == "nice").
 assert(test3(15) == "dunno").
@@ -67,3 +65,17 @@ assert(test5((1, 2)) == "It was 1 and 2").
 assert(test6((42, 69, (42, 69))) == 42).
 assert(test6(((42, 69), 69, 42)) == 69).
 assert(test6(42) == "dunno").
+
+test7 :: { x => 
+  cases x
+    given whole@(x, y) => whole
+    given num@42 => num + 1
+    given str@"42" => str <> "!"
+    given y@z => tostring(y) <> " & " <> z
+  end
+}
+
+assert(test7((1, 2)) == (1, 2)).
+assert(test7(42) == 43).
+assert(test7("42") == "42!").
+assert(test7(69) == "69 & 69").

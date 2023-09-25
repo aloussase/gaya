@@ -1382,13 +1382,23 @@ ast::expression_ptr parser::case_expression(token cases)
 std::optional<ast::match_pattern> parser::match_pattern(
     const token& pattern_token,
     bool define_matched_identifier,
-    std::function<eval::key(const std::string&)> to_key) noexcept
+    std::function<eval::key(const std::string&)> to_key,
+    std::shared_ptr<ast::identifier> as_pattern) noexcept
 {
+#define DEFINE_AS_PATTERN                        \
+    if (as_pattern && define_matched_identifier) \
+        define(to_key(as_pattern->value));
+
     switch (pattern_token.type)
     {
     case token_type::underscore:
     {
-        return ast::match_pattern { ast::match_pattern::kind::wildcard };
+        DEFINE_AS_PATTERN;
+        return ast::match_pattern {
+            ast::match_pattern::kind::wildcard,
+            nullptr,
+            as_pattern,
+        };
     }
     case token_type::identifier:
     {
@@ -1398,7 +1408,12 @@ std::optional<ast::match_pattern> parser::match_pattern(
             auto e = expression(pattern_token);
             if (!e) return {};
 
-            return ast::match_pattern { ast::match_pattern::kind::expr, e };
+            DEFINE_AS_PATTERN;
+            return ast::match_pattern {
+                ast::match_pattern::kind::expr,
+                e,
+                as_pattern,
+            };
         }
         else
         {
@@ -1407,6 +1422,23 @@ std::optional<ast::match_pattern> parser::match_pattern(
                 pattern_token.span,
                 pattern_token.span.to_string());
             identifier->key = to_key(identifier->value);
+
+            if (match(token_type::at))
+            {
+                auto t = _lexer.next_token();
+                if (!t)
+                {
+                    parser_error(
+                        pattern_token.span,
+                        "Expected a pattern after '@'");
+                    return {};
+                }
+                return match_pattern(
+                    *t,
+                    define_matched_identifier,
+                    to_key,
+                    identifier);
+            }
 
             if (define_matched_identifier)
             {
@@ -1424,9 +1456,12 @@ std::optional<ast::match_pattern> parser::match_pattern(
                 define(*identifier);
             }
 
+            DEFINE_AS_PATTERN;
+
             return ast::match_pattern {
                 ast::match_pattern::kind::capture,
                 identifier,
+                as_pattern,
             };
         }
     }
@@ -1476,9 +1511,12 @@ std::optional<ast::match_pattern> parser::match_pattern(
             return {};
         }
 
+        DEFINE_AS_PATTERN;
+
         return ast::match_pattern {
             ast::match_pattern::kind::array_pattern,
             patterns,
+            as_pattern,
         };
     }
     default:
@@ -1487,9 +1525,16 @@ std::optional<ast::match_pattern> parser::match_pattern(
         auto e = expression(pattern_token);
         if (!e) return {};
 
-        return ast::match_pattern { ast::match_pattern::kind::expr, e };
+        DEFINE_AS_PATTERN;
+
+        return ast::match_pattern {
+            ast::match_pattern::kind::expr,
+            e,
+            as_pattern,
+        };
     }
     }
+#undef DEFINE_AS_PATTERN
 }
 
 ast::expression_ptr parser::match_expression(token target)

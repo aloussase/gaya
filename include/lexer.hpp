@@ -11,6 +11,7 @@
 enum class token_type {
     and_,
     arrow,
+    at,
     back_arrow,
     cases,
     colon,
