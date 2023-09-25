@@ -106,6 +106,16 @@ provided sequence.
 @param f <function> The transformation function.
 ```
 
+### `seq.mapWithIndex`
+
+Like map, but the callback function additionally receives the element index
+as its first argument.
+
+```
+@param xs <sequence> The sequence.
+@param func <function> The transformation function.
+```
+
 ### `seq.filter`
 
 Return a new sequence that filters out elements for which the provided

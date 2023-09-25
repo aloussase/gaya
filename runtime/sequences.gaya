@@ -159,6 +159,28 @@ seq.map :: { s, func => do
 }
 
 (*
+  Like map, but the callback function additionally receives the element index
+  as its first argument.
+  @param xs <sequence> The sequence.
+  @param func <function> The transformation function.
+*)
+seq.mapWithIndex :: { xs, func => do
+    xs |> issequence(_) |> assert(_).
+    let xs = tosequence(xs), i = 0 in
+    seq.make { =>
+      let next = seq.next(xs) in
+      cases 
+        given next /= unit =>
+        let result = func(i, next) in do
+          i <- i + 1
+          result
+        end
+      end
+    }
+  end
+}
+
+(*
   Return a new sequence that filters out elements for which the provided
   predicate function returns false.
 *)
