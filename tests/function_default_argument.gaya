@@ -1,0 +1,13 @@
+greet :: { name = "John" => "Hello " <> name <> "!" }
+greet2 :: { name = "Gaya", age = 4 => name <> " is " <> age <> " years old" }
+greet3 :: { (name, age) = ("Gaya", 4) => greet2(name, age) }
+
+greet("Gaya") |> assert(_ == "Hello Gaya!").
+greet() |> assert(_ == "Hello John!").
+
+greet2() |> assert(_ == "Gaya is 4 years old").
+greet2("Dodo") |> assert(_ == "Dodo is 4 years old").
+greet2("Dodo", 6) |> assert(_ == "Dodo is 6 years old").
+
+greet3() |> assert(_ == "Gaya is 4 years old").
+greet3(("Dodo", 8)) |> assert(_ == "Dodo is 8 years old").

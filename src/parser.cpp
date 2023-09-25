@@ -643,6 +643,8 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
     std::vector<ast::function_param> params;
 
+    bool parsed_default_argument = false;
+
     for (;;)
     {
         auto p_t = _lexer.next_token();
@@ -662,7 +664,35 @@ ast::expression_ptr parser::function_expression(token lcurly)
             return nullptr;
         }
 
-        ast::function_param param = { std::move(*p) };
+        ast::expression_ptr d_a = nullptr;
+
+        if (match(token_type::equal))
+        {
+            auto d_t = _lexer.next_token();
+            auto d   = d_t ? expression(*d_t) : nullptr;
+
+            if (!d)
+            {
+                parser_error(
+                    lcurly.span,
+                    "Expected an expression after '=' in default argument");
+                end_scope();
+                return nullptr;
+            }
+
+            d_a                     = d;
+            parsed_default_argument = true;
+        }
+        else if (parsed_default_argument)
+        {
+            parser_error(
+                lcurly.span,
+                "Positional parameters cannot follow default arguments");
+            end_scope();
+            return nullptr;
+        }
+
+        ast::function_param param = { std::move(*p), d_a };
         params.push_back(std::move(param));
 
         if (!match(token_type::comma))

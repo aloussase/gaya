@@ -49,6 +49,15 @@ put it outside the parenthesis (a so called _trailing function_):
 **NOTE** To use the functions in this snippet, you need to `include
 "sequences"`. More on include statements and sequences later.
 
+Functions may also have default arguments. If present, default arguments should
+go at the end of the parameter list.
+
+```
+greet :: { name = "Gaya" =>
+  "Hello " <> name <> "!"
+}
+```
+
 Finally, the parameters of a function can be an arbitrary pattern, not just
 identifiers. You can use this feature, for example, to destructure an array
 parameter:

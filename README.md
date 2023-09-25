@@ -82,6 +82,10 @@ For examples, take a look at the `examples` directory or at the standard
 library under the `runtime` directory. You can also peek at the tests if you
 want, though they may not use the latest features of the language.
 
+Finally, you can take a look at [this
+repo](https://github.com/aloussase/advent-of-code) where I'm solving Advent of
+Code puzzles using Gaya.
+
 #### Feedback & Contributing
 
 Please feel free to open an issue or PR if you think you can make Gaya better!

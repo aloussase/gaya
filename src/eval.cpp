@@ -811,27 +811,46 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
         return object::invalid;
     }
 
-    auto arity   = object::arity(o);
-    size_t nargs = cexpr.args.size();
+    size_t arity        = object::arity(o);
+    size_t nargs        = cexpr.args.size();
+    size_t bound_params = 0;
 
-    if (arity != nargs)
+    for (; bound_params < nargs; bound_params++)
+    {
+        auto result = cexpr.args[bound_params]->accept(*this);
+        RETURN_IF_INVALID(result);
+
+        cexpr.oargs[bound_params] = std::move(result);
+    }
+
+    if (IS_FUNCTION(o))
+    {
+        auto function = AS_FUNCTION(o);
+        cexpr.oargs.resize(arity, object::invalid);
+
+        for (; bound_params < arity; bound_params++)
+        {
+            auto param = function.params[bound_params];
+            if (param.default_value == nullptr) break;
+
+            auto arg = param.default_value->accept(*this);
+            RETURN_IF_INVALID(arg);
+
+            cexpr.oargs[bound_params] = std::move(arg);
+        }
+    }
+
+    if (bound_params != arity)
     {
         interp_error(
             cexpr.span_,
             fmt::format(
-                "Wrong number of arguments provided to callable, {} {} "
-                "expected",
+                "Wrong number of arguments provided to callable: {} {} "
+                "expected, got {}",
                 arity,
-                arity == 1 ? "was" : "were"));
+                arity == 1 ? "was" : "were",
+                bound_params));
         return object::invalid;
-    }
-
-    for (size_t i = 0; i < nargs; i++)
-    {
-        auto result = cexpr.args[i]->accept(*this);
-        RETURN_IF_INVALID(result);
-
-        cexpr.oargs[i] = std::move(result);
     }
 
     return object::call(o, *this, cexpr.span_, cexpr.oargs);
