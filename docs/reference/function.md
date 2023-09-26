@@ -84,8 +84,9 @@ Possible types are:
 - Number
 - Sequence
 - String
+- Unit
 
-The type `sequence` denotes any sequence-convertible type, such as `String` and
+The type `Sequence` denotes any sequence-convertible type, such as `String` and
 `Number`.
 
 You can also define your custom types with a _type declaration_:

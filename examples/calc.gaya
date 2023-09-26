@@ -1,9 +1,9 @@
 include "base"
 include "strings"
 
-tokenize :: { input => input |> string.split(_, " ") |> seq.toarray(_) }
+tokenize :: { input: String => input |> string.split(_, " ") |> seq.toarray(_) }
 
-parse :: { tokens => 
+parse :: { tokens: Array => 
   let current = 0 in
   let advance = { =>
     cases
@@ -45,7 +45,7 @@ parse :: { tokens =>
   parse_term()
 }
 
-eval :: { ast =>
+eval :: { ast: Dictionary =>
   cases
     given typeof(ast) == "String" => string.tonumber(ast)
     otherwise =>

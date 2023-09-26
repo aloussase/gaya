@@ -90,12 +90,15 @@ Here's a list of Gaya keywords:
 - include
 - let
 - not
+- of
 - or
 - otherwise
 - perform
+- type
 - unit
 - when
 - while
+- with
 
-That's a grand total of 16 (13 if you don't count `and` and `or`, since they
+That's a grand total of 19 (17 if you don't count `and` and `or`, since they
 are technically operators).

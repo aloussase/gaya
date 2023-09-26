@@ -1,8 +1,8 @@
 (* Output: 'Gaya\nGaya\nDoes not understand\nGaya' *)
 
 (* Take 1: Using a closure. *)
-Person :: { name =>
-  { msg =>
+Person :: { name: String =>
+  { msg: String =>
     cases
       given msg == "getName" => name
       given msg == "print"   => io.println(name)
@@ -18,7 +18,7 @@ p :: Person("Gaya")
 "someOtherMessage" |> p(_).
 
 (* Take 2: Using a dict with functions. *)
-Person :: { name =>
+Person :: { name: String =>
   (* We can't handle receiving unwanted messages. *)
   ( "getName" -> name
   , "print" -> { => io.println(name) }

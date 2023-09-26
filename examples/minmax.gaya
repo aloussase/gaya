@@ -1,13 +1,13 @@
 (* Output: '69\n42' *)
 
-max :: { x, y =>
+max :: { x: Number, y: Number =>
   cases
     given x > y => x
     otherwise   => y
   end
 }
 
-min :: { x, y =>
+min :: { x: Number, y: Number =>
   cases
     given x < y => x
     otherwise   => y

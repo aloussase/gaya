@@ -1,6 +1,6 @@
 (* Output: '45' *)
 
-sumFirstN :: { n =>
+sumFirstN :: { n: Number =>
   let sum = 0, i = 0 in do
     while i < n : i <- i + 1
       sum <- sum + i
