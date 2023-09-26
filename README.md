@@ -18,6 +18,9 @@ favourite cat.
 I wanted to make something that makes me feel pleasure every time I use it. I
 hope this way I can give pleasure to you too.
 
+:warning: This is a work in progress and everything is subject to suffer
+dramatic changes. Use at your own risk.
+
 #### Motivation
 
 It all started when I was trying out [Typst](https://typst.app/). I was writing
