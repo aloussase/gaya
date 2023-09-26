@@ -1,5 +1,3 @@
 (* Output: 'Hello, world!' *)
 
 io.println("Hello, world!").
-
-puts("Hello, World").
