@@ -22,6 +22,15 @@ while x < 10 : x <- x + 1
 end
 ```
 
+Finally, you can also use an initialization statement, which would make Gaya's
+while loops the essentially the same as C's for-loops:
+
+```
+while let i = 0 : i < 10 : i <- i + 1
+  io.println(i).
+end
+```
+
 The body of the while loop should consist entirely of statements. This means
 that if you call a function, you need to discard its result explicitely if you
 are not going to use it.

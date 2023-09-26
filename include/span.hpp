@@ -5,9 +5,14 @@
 
 class span
 {
-  public:
-    constexpr span(size_t lineno, const char* start, const char* end)
-        : _lineno { lineno }
+public:
+    constexpr span(
+        const char* source,
+        size_t lineno,
+        const char* start,
+        const char* end)
+        : _source { source }
+        , _lineno { lineno }
         , _start { start }
         , _end { end }
     {
@@ -28,9 +33,15 @@ class span
         return _end;
     }
 
+    [[nodiscard]] constexpr const char* source() const noexcept
+    {
+        return _source;
+    }
+
     std::string to_string() const noexcept;
 
-  private:
+private:
+    const char* _source;
     size_t _lineno;
     const char* _start;
     const char* _end;

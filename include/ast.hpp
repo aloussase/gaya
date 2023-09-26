@@ -105,12 +105,20 @@ struct assignment_stmt final : public stmt
 
 struct while_stmt final : public stmt
 {
+    struct initializer
+    {
+        std::string ident;
+        expression_ptr value;
+    };
+
     while_stmt(
         span s,
         expression_ptr e,
         std::vector<stmt_ptr>&& b,
-        stmt_ptr c = nullptr)
+        stmt_ptr c                   = nullptr,
+        std::optional<initializer> i = {})
         : span_ { s }
+        , init { i }
         , condition { std::move(e) }
         , body { std::move(b) }
         , continuation { c }
@@ -121,6 +129,7 @@ struct while_stmt final : public stmt
     object accept(ast_visitor&) override;
 
     span span_;
+    std::optional<initializer> init;
     expression_ptr condition;
     std::vector<stmt_ptr> body;
     stmt_ptr continuation;

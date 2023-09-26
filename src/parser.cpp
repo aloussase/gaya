@@ -333,6 +333,65 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 
     begin_scope();
 
+    std::optional<ast::while_stmt::initializer> initializer;
+
+    if (match(token_type::let))
+    {
+        /* Initializer
+         *
+         * NOTE: Using let for while initializers means we can't use it in the
+         * condition without complicating parsing. If it turns out to be a
+         * common case to want to use let in while condition, I'll implement
+         * support for it.
+         */
+        auto i_t = _lexer.next_token();
+        if (!match(i_t, token_type::identifier))
+        {
+            parser_error(
+                while_.span,
+                "Expected an identifier in while statement initializer");
+            end_scope();
+            return nullptr;
+        }
+
+        if (!match(token_type::equal))
+        {
+            parser_error(
+                while_.span,
+                "Expected a '=' after identifier in while statement "
+                "initializer");
+            end_scope();
+            return nullptr;
+        }
+
+        define(eval::key::local(i_t->span.to_string()));
+        auto e_t = _lexer.next_token();
+        auto e   = e_t ? expression(*e_t) : nullptr;
+        if (!e)
+        {
+            parser_error(
+                while_.span,
+                "Expected an expression after '=' in while statement "
+                "initializer");
+            end_scope();
+            return nullptr;
+        }
+
+        initializer = ast::while_stmt::initializer {
+            i_t->span.to_string(),
+            e,
+        };
+
+        if (!match(token_type::colon))
+        {
+            parser_error(
+                while_.span,
+                "Expected a ':' after initializer in while statement");
+            end_scope();
+            return nullptr;
+        }
+    }
+
     auto span            = while_.span;
     auto condition_token = _lexer.next_token();
     if (!condition_token)
@@ -413,7 +472,8 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         span,
         condition,
         std::move(body),
-        continuation);
+        continuation,
+        initializer);
 }
 
 ast::stmt_ptr parser::for_in_stmt(token for_) noexcept
@@ -543,7 +603,7 @@ ast::stmt_ptr parser::expression_stmt(token token)
         parser_error(
             token.span,
             "Expected '.' after expression in expression statement");
-        parser_hint(token.span, "Try adding a '.' after the expression");
+        parser_hint(token.span, "To print a value, use io.println(value)");
         return nullptr;
     }
 

@@ -113,7 +113,7 @@ namespace gaya::eval::object
  */
 static object invalid = object {
     .type = object_type_invalid,
-    .span = { 1, nullptr, nullptr },
+    .span = { nullptr, 1, nullptr, nullptr },
     .box  = { nanbox_empty() },
 };
 

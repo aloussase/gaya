@@ -288,7 +288,7 @@ object create_builtin_function(
         .as_builtin_function = function,
     };
 
-    span span = { 0, nullptr, nullptr };
+    span span = { nullptr, 0, nullptr, nullptr };
     auto o    = create_object(object_type_builtin_function, span);
     o.box     = nanbox_from_pointer(ptr);
 
@@ -316,7 +316,7 @@ object create_foreign_function(
     };
 
     /* TODO: Might want to provide a real span here. */
-    span span = { 0, nullptr, nullptr };
+    span span = { nullptr, 0, nullptr, nullptr };
     auto o    = create_object(object_type_foreign_function, span);
     o.box     = nanbox_from_pointer(ptr);
 

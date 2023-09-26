@@ -241,6 +241,16 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
 {
     begin_scope(env { std::make_shared<env>(environment()) });
+
+    if (while_stmt.init)
+    {
+        auto ident = while_stmt.init->ident;
+        auto value = while_stmt.init->value->accept(*this);
+        RETURN_IF_INVALID(value);
+
+        define(ident, value);
+    }
+
     for (;;)
     {
         auto test = while_stmt.condition->accept(*this);

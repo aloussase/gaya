@@ -61,7 +61,7 @@ bool lexer::is_at_end() const noexcept
 
 token lexer::mk_token(token_type type) const noexcept
 {
-    return token { type, span { _lineno, _start, _current } };
+    return token { type, span { _source, _lineno, _start, _current } };
 }
 
 bool lexer::is_valid_identifier(char c) const noexcept
@@ -88,7 +88,7 @@ std::vector<diagnostic::diagnostic> lexer::diagnostics() const noexcept
 void lexer::lexer_error(const std::string& msg) noexcept
 {
     _diagnostics.emplace_back(
-        span { _lineno, _start, _current },
+        span { _source, _lineno, _start, _current },
         msg,
         diagnostic::severity::error);
 }
@@ -96,7 +96,7 @@ void lexer::lexer_error(const std::string& msg) noexcept
 void lexer::lexer_hint(const std::string& msg) noexcept
 {
     _diagnostics.emplace_back(
-        span { _lineno, _start, _current },
+        span { _source, _lineno, _start, _current },
         msg,
         diagnostic::severity::hint);
 }
@@ -428,7 +428,7 @@ std::optional<token> lexer::string() noexcept
 
     return token {
         token_type::string,
-        span { _lineno, _start + 1, _current - 1 },
+        span { _source, _lineno, _start + 1, _current - 1 },
     };
 }
 

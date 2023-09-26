@@ -1,0 +1,10 @@
+(* Output: '45' *)
+
+let sum = 0 in 
+do
+  while let i = 0 : i < 10 : i <- i + 1
+    sum <- sum + i
+  end
+
+  io.println(sum).
+end.
