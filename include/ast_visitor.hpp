@@ -20,6 +20,8 @@ public:
     virtual eval::object::object visit_for_in_stmt(for_in_stmt&)           = 0;
     virtual eval::object::object visit_include_stmt(include_stmt&)         = 0;
     virtual eval::object::object visit_type_declaration(TypeDeclaration&)  = 0;
+    virtual eval::object::object visit_foreign_declaration(ForeignDeclaration&)
+        = 0;
 
     /* Expressions */
     virtual eval::object::object visit_do_expression(do_expression&)       = 0;

@@ -10,6 +10,7 @@
 #include <robin_hood.h>
 
 #include <span.hpp>
+#include <types.hpp>
 
 #define IS_NUMBER(o) ((o).type == gaya::eval::object::object_type_number)
 #define IS_STRING(o) ((o).type == gaya::eval::object::object_type_string)
@@ -22,6 +23,8 @@
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
 #define IS_BUILTIN_FUNCION(o) \
     ((o).type == gaya::eval::object::object_type_builtin_function)
+#define IS_FOREIGN_FUNCTION(o) \
+    ((o).type == gaya::eval::object::object_type_foreign_function)
 
 #define AS_NUMBER(o) nanbox_to_double((o).box)
 #define AS_HEAP_OBJECT(o) \
@@ -31,6 +34,7 @@
 #define AS_DICT(o)             AS_HEAP_OBJECT(o)->as_dictionary
 #define AS_FUNCTION(o)         AS_HEAP_OBJECT(o)->as_function
 #define AS_BUILTIN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_builtin_function
+#define AS_FOREIGN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_foreign_function
 #define AS_SEQUENCE(o)         AS_HEAP_OBJECT(o)->as_sequence
 
 namespace gaya::ast
@@ -59,6 +63,7 @@ enum object_type {
     object_type_function,
     object_type_builtin_function,
     object_type_sequence,
+    object_type_foreign_function,
 };
 
 struct object
@@ -139,6 +144,26 @@ struct builtin_function
     invoke_t invoke;
 };
 
+struct ForeignFunction final
+{
+    ForeignFunction(
+        const std::string& lname,
+        const std::string& fname,
+        types::ForeignType rt,
+        std::vector<types::ForeignType> at)
+        : libname { lname }
+        , funcname { fname }
+        , return_type { rt }
+        , argument_types { std::move(at) }
+    {
+    }
+
+    std::string libname;
+    std::string funcname;
+    types::ForeignType return_type;
+    std::vector<types::ForeignType> argument_types;
+};
+
 /* Sequences */
 
 struct string_sequence
@@ -203,6 +228,7 @@ struct heap_object
         function as_function;
         builtin_function as_builtin_function;
         sequence as_sequence;
+        ForeignFunction as_foreign_function;
     };
     unsigned char marked     = 0;
     struct heap_object* next = nullptr;
@@ -262,6 +288,16 @@ create_array(interpreter&, span, const std::vector<object>&) noexcept;
     const std::string&,
     size_t,
     builtin_function::invoke_t) noexcept;
+
+/**
+ * Create a foreign function.
+ */
+[[nodiscard]] object create_foreign_function(
+    interpreter&,
+    std::string libname,
+    std::string funcname,
+    types::ForeignType return_type,
+    std::vector<types::ForeignType> argument_types) noexcept;
 
 /**
  * Create an array sequence object.

@@ -127,6 +127,16 @@ object TypeDeclaration::accept(ast_visitor& v)
     return v.visit_type_declaration(*this);
 }
 
+std::string ForeignDeclaration::to_string() const noexcept
+{
+    assert(0 && "not implemented");
+}
+
+object ForeignDeclaration::accept(ast_visitor& v)
+{
+    return v.visit_foreign_declaration(*this);
+}
+
 /* Expressions */
 
 std::string do_expression::to_string() const noexcept

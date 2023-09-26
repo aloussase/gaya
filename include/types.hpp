@@ -1,13 +1,20 @@
 #pragma once
 
+#include <memory>
+#include <optional>
 #include <vector>
-
-#include <env.hpp>
-#include <object.hpp>
 
 namespace gaya::eval
 {
+
 class interpreter;
+class env;
+
+namespace object
+{
+    struct object;
+}
+
 }
 
 namespace gaya::ast
@@ -18,6 +25,16 @@ using expression_ptr = std::shared_ptr<expression>;
 
 namespace gaya::types
 {
+
+/*
+ * A C type.
+ */
+enum class ForeignType {
+    c_Void,
+    c_Pointer,
+};
+
+std::optional<ForeignType> foreign_type_from_string(const std::string&);
 
 struct TypeConstraint
 {

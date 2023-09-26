@@ -44,7 +44,7 @@ target_compile_definitions(gaya PRIVATE
     GAYA_RUNTIME="${GAYA_RUNTIME}"
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>)
 
-target_link_libraries(gaya PRIVATE fmt::fmt)
+target_link_libraries(gaya PRIVATE fmt::fmt ffi dl)
 
 install(
     TARGETS gaya

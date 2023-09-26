@@ -226,6 +226,10 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     {
         return type_declaration(*token);
     }
+    case token_type::foreign:
+    {
+        return foreign_declaration(*token);
+    }
     default:
     {
         return expression_stmt(token.value());
@@ -678,6 +682,99 @@ ast::stmt_ptr parser::type_declaration(token type) noexcept
     _type_declarations.insert({ declared_type, type_declaration });
 
     return type_declaration;
+}
+
+ast::stmt_ptr parser::foreign_declaration(token foreign) noexcept
+{
+    assert(foreign.type == token_type::foreign);
+
+    auto libname = _lexer.next_token();
+    if (!match(libname, token_type::string))
+    {
+        parser_error(foreign.span, "Expected a libary name after 'foreign'");
+        return nullptr;
+    }
+
+    auto funcname = _lexer.next_token();
+    if (!match(funcname, token_type::string))
+    {
+        parser_error(
+            foreign.span,
+            "Expected a function name after the library name");
+        return nullptr;
+    }
+
+    auto return_type = _lexer.next_token();
+    if (!match(return_type, token_type::identifier))
+    {
+        parser_error(
+            foreign.span,
+            "Expected a return type after the function name");
+        return nullptr;
+    }
+
+    auto return_type_name = return_type->span.to_string();
+    auto return_type_type = types::foreign_type_from_string(return_type_name);
+    if (!return_type_type)
+    {
+        parser_error(foreign.span, "Invalid return type");
+        return nullptr;
+    }
+
+    if (!match(token_type::lparen))
+    {
+        parser_error(foreign.span, "Expected a '(' after return type");
+        return nullptr;
+    }
+
+    std::vector<types::ForeignType> argument_types;
+
+    for (;;)
+    {
+        auto i_t = _lexer.next_token();
+        if (!i_t) break;
+        if (match(i_t, token_type::rparen))
+        {
+            _lexer.push_back(*i_t);
+            break;
+        }
+
+        if (!match(i_t, token_type::identifier))
+        {
+            parser_error(foreign.span, "Expected an argument type");
+            return nullptr;
+        }
+
+        auto argument_type_name = i_t->span.to_string();
+        auto argument_type_type
+            = types::foreign_type_from_string(argument_type_name);
+        if (!argument_type_type)
+        {
+            parser_error(i_t->span, "Invalid argument type");
+            return nullptr;
+        }
+
+        argument_types.push_back(*argument_type_type);
+
+        if (!match(token_type::comma))
+        {
+            break;
+        }
+    }
+
+    if (!match(token_type::rparen))
+    {
+        parser_error(foreign.span, "Expected a ')' after parameter types");
+        return nullptr;
+    }
+
+    define(funcname->span.to_string());
+
+    return ast::make_node<ast::ForeignDeclaration>(
+        libname->span.to_string(),
+        funcname->span.to_string(),
+        *return_type_type,
+        argument_types);
 }
 
 ast::expression_ptr parser::expression(token token)

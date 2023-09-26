@@ -98,9 +98,10 @@ static void mark(heap_object* o)
         }
         break;
     }
-    case object_type_function:
     /* TODO: I might need to mark the closed over env. */
+    case object_type_function:
     case object_type_builtin_function:
+    case object_type_foreign_function:
     case object_type_string:
     case object_type_unit:
     case object_type_number:
@@ -289,6 +290,34 @@ object create_builtin_function(
 
     span span = { 0, nullptr, nullptr };
     auto o    = create_object(object_type_builtin_function, span);
+    o.box     = nanbox_from_pointer(ptr);
+
+    return o;
+}
+
+object create_foreign_function(
+    interpreter& interp,
+    std::string libname,
+    std::string funcname,
+    types::ForeignType return_type,
+    std::vector<types::ForeignType> argument_types) noexcept
+{
+    ForeignFunction function = {
+        libname,
+        funcname,
+        return_type,
+        std::move(argument_types),
+    };
+
+    auto* ptr = create_heap_object(interp);
+    new (ptr) heap_object {
+        .type                = object_type_foreign_function,
+        .as_foreign_function = function,
+    };
+
+    /* TODO: Might want to provide a real span here. */
+    span span = { 0, nullptr, nullptr };
+    auto o    = create_object(object_type_foreign_function, span);
     o.box     = nanbox_from_pointer(ptr);
 
     return o;

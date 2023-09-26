@@ -189,6 +189,29 @@ struct TypeDeclaration final : public stmt
     expression_ptr constraint;
 };
 
+struct ForeignDeclaration final : public stmt
+{
+    ForeignDeclaration(
+        const std::string& lname,
+        const std::string& fname,
+        types::ForeignType rt,
+        std::vector<types::ForeignType> at)
+        : libname { lname }
+        , funcname { fname }
+        , return_type { rt }
+        , argument_types { std::move(at) }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    object accept(ast_visitor&) override;
+
+    std::string libname;
+    std::string funcname;
+    types::ForeignType return_type;
+    std::vector<types::ForeignType> argument_types;
+};
+
 /* Expressions */
 
 struct expression : public ast_node

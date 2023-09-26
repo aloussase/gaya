@@ -1,0 +1,3 @@
+foreign "c" "puts" c.Void(c.Pointer)
+
+puts("Hello, World!").

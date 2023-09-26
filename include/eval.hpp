@@ -90,6 +90,7 @@ public:
     object::object visit_for_in_stmt(ast::for_in_stmt&) override;
     object::object visit_include_stmt(ast::include_stmt&) override;
     object::object visit_type_declaration(ast::TypeDeclaration&) override;
+    object::object visit_foreign_declaration(ast::ForeignDeclaration&) override;
     object::object visit_do_expression(ast::do_expression&) override;
     object::object visit_case_expression(ast::case_expression&) override;
     object::object visit_match_expression(ast::match_expression&) override;

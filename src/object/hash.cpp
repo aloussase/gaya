@@ -48,6 +48,7 @@ size_t hash(const object& o) noexcept
     }
     case object_type_function:
     case object_type_builtin_function:
+    case object_type_foreign_function:
     case object_type_sequence:
     {
         return robin_hood::hash<void*> {}(nanbox_to_pointer(o.box));
