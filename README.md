@@ -79,7 +79,8 @@ much slower.
 
 #### Documentation <a name="documentation" />
 
-You can read the language documentation [here](./docs/SUMMARY.md).
+You can read the language documentation
+[here](https://aloussase.github.io/gaya/).
 
 For examples, take a look at the `examples` directory or at the standard
 library under the `runtime` directory. You can also peek at the tests if you
