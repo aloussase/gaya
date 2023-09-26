@@ -1,0 +1,20 @@
+fib :: { n: Number, memo: Dictionary = (->) =>
+  cases memo(n)
+    given cached when cached /= unit => cached
+    given _ when n == 0 => 0
+    given _ when n == 1 => 1
+    otherwise => 
+      let x = fib(n - 1, memo) in
+      let y = fib(n - 2, memo) in do
+        dict.set(memo, n, x + y).
+        x + y
+      end
+  end
+}
+
+let result = fib(44) in
+do
+  assert(result == 701408733).
+  io.println(result).
+end.
+
