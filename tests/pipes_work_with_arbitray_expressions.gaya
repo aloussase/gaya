@@ -1,4 +1,4 @@
-(* Output: 'H\n69\nl\nnumber\n5' *)
+(* Output: 'H\n69\nl\nNumber\n5' *)
 
 io.println(0 |> "Hello"(_)).
 

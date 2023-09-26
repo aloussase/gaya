@@ -14,7 +14,9 @@ next(interpreter& interp, span span, const std::vector<object>& args) noexcept
     if (!IS_SEQUENCE(args[0]))
     {
         auto t = typeof_(args[0]);
-        interp.interp_error(span, fmt::format("Expected {} to be sequence", t));
+        interp.interp_error(
+            span,
+            fmt::format("Expected {} to be a Sequence", t));
         return gaya::eval::object::invalid;
     }
 

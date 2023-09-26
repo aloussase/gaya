@@ -52,6 +52,11 @@ bool Type::check(eval::interpreter& interp, const eval::object::object& o)
         type_ok = IS_STRING(o);
         break;
     }
+    case TypeKind::Unit:
+    {
+        type_ok = IS_UNIT(o);
+        break;
+    }
     }
 
     if (_constraint.condition != nullptr)
@@ -84,6 +89,7 @@ std::string Type::to_string() const noexcept
     case TypeKind::Number: return "Number";
     case TypeKind::Sequence: return "Sequence";
     case TypeKind::String: return "String";
+    case TypeKind::Unit: return "Unit";
     }
 
     assert(0 && "Type::to_string");

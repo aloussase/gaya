@@ -85,7 +85,7 @@ io.println(42 |> _ + 27).
 (* Output: l *)
 io.println(1 |> _ + 2 |> "Hello"(_)).
 
-(* Output: number *)
+(* Output: Number *)
 io.println(1 |> typeof(_)).
 
 (* Output: 5 *)

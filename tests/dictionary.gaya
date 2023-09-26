@@ -10,7 +10,7 @@ io.println((1 -> "Hello", "Hello" -> 1)).
 io.println((->)).
 
 (* typeof dict is dictionary *)
-typeof((->)) |> assert(_ == "dictionary").
+typeof((->)) |> assert(_ == "Dictionary").
 
 (* empty dicts are considered false *)
 cases 

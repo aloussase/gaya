@@ -7,17 +7,17 @@ include "sequences"
 string.isempty :: { s => string.length(s) == 0 }
 
 (* Return the first character in a string, or unit if empty. *)
-string.first :: { s =>
+string.first :: { s: String =>
   cases
-    given typeof(s) == "string" and not string.isempty(s) => 
+    given not string.isempty(s) => 
       s(0)
   end
 }
 
 (* Return the last character in a string, or unit if empty. *)
-string.last :: { s =>
+string.last :: { s: String =>
   cases
-    given typeof(s) == "string" and not string.isempty(s) =>
+    given not string.isempty(s) =>
       s(string.length(s) - 1)
   end
 }

@@ -89,16 +89,16 @@ seq.range(1, 10)
   |> assert(not _).
 
 ("Hello", 42, (1 -> 2))
-  |> seq.any(_) { x => typeof(x) == "dictionary" }
+  |> seq.any(_) { x => typeof(x) == "Dictionary" }
   |> assert(_).
 
 (* seq.all *)
 seq.range(1, 10)
-  |> seq.all(_) { x => typeof(x) == "number" }
+  |> seq.all(_) { x => typeof(x) == "Number" }
   |> assert(_).
 
 (1, 2, 3, "Hola")
-  |> seq.all(_) { x => typeof(x) == "number" }
+  |> seq.all(_) { x => typeof(x) == "Number" }
   |> assert(not _).
 
 (* seq.enumerate *)

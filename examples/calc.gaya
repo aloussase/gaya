@@ -47,7 +47,7 @@ parse :: { tokens =>
 
 eval :: { ast =>
   cases
-    given typeof(ast) == "string" => string.tonumber(ast)
+    given typeof(ast) == "String" => string.tonumber(ast)
     otherwise =>
       cases ast("op")
         given "+" => eval(ast("lhs")) + eval(ast("rhs"))

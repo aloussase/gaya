@@ -544,7 +544,7 @@ static inline object::object interpret_arithmetic_expression(
         interp.interp_error(
             expr.op.span,
             fmt::format(
-                "{} expected {} and {} to be both numbers",
+                "{} expected {} and {} to be both Number",
                 expr.op.span.to_string(),
                 object::typeof_(l),
                 object::typeof_(r)));

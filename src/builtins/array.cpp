@@ -31,7 +31,7 @@ concat(interpreter& interp, span span, const std::vector<object>& args) noexcept
         auto t2 = typeof_(args[1]);
         interp.interp_error(
             span,
-            fmt::format("Expected {} and {} to be both arrays", t1, t2));
+            fmt::format("Expected {} and {} to be both Array", t1, t2));
         return gaya::eval::object::invalid;
     }
 

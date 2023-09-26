@@ -9,32 +9,32 @@ std::string typeof_(const object& o) noexcept
     {
     case object_type_number:
     {
-        return "number";
+        return "Number";
     }
     case object_type_unit:
     {
-        return "unit";
+        return "Unit";
     }
     case object_type_string:
     {
-        return "string";
+        return "String";
     }
     case object_type_array:
     {
-        return "array";
+        return "Array";
     }
     case object_type_dictionary:
     {
-        return "dictionary";
+        return "Dictionary";
     }
     case object_type_function:
     case object_type_builtin_function:
     {
-        return "function";
+        return "Function";
     }
     case object_type_sequence:
     {
-        return "sequence";
+        return "Sequence";
     }
     case object_type_invalid:
     {

@@ -67,7 +67,7 @@ greet :: { name = "Gaya" =>
 Function parameters may be given type hints. These will be used to check at
 runtime that the type of the argument is correct. If it isn't, a runtime error
 will occur. This can be considered a nicer way of doing `assert(typeof(param)
-== "sometype")`. For example:
+== "SomeType")`. For example:
 
 ```
 sum :: { x: Number, y: Number =>

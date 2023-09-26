@@ -33,6 +33,7 @@ enum class TypeKind {
     Number,
     Sequence,
     String,
+    Unit,
 };
 
 class Type final
