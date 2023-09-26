@@ -9,8 +9,7 @@ include "functions"
   @param s <sequence> A sequence.
   @param f <function> A function to call on every element in the sequence.
  *)
-seq.foreach :: { s, f => do
-    s |> issequence(_) |> assert(_).
+seq.foreach :: { s: Sequence, f: Function => do
     let xs = tosequence(s), next = seq.next(xs) in perform
     while next /= unit : next <- seq.next(xs)
       f(next).
@@ -26,8 +25,7 @@ seq.foreach :: { s, f => do
   @param init <object> The initial element.
   @param f <function> The accumulator function.
  *)
-seq.reduce :: { s, init, f => do
-    s |> issequence(_) |> assert(_).
+seq.reduce :: { s: Sequence, init, f: Function => do
     let acc = init, xs = tosequence(s), next = seq.next(xs) in do
       while next /= unit : next <- seq.next(xs)
         acc <- f(acc, next)
@@ -42,8 +40,7 @@ seq.reduce :: { s, init, f => do
   Return true if any element in the provided sequence
   satisfies the given predicate. 
 *)
-seq.any :: { xs, pred => do
-  xs |> issequence(_) |> assert(_).
+seq.any :: { xs: Sequence, pred => do
   let xs = tosequence(xs), 
       x = seq.next(xs),
       found = false, 
@@ -62,8 +59,7 @@ seq.any :: { xs, pred => do
   Returns whether all the elements in the provided sequence satifsy
   the given predicate.
 *)
-seq.all :: { xs, pred => do
-    xs |> issequence(_) |> assert(_).
+seq.all :: { xs: Sequence, pred => do
     let xs = tosequence(xs),
         x = seq.next(xs),
         success = true
@@ -82,8 +78,7 @@ seq.all :: { xs, pred => do
   If the sequence is empty, unit is returned.
   @param xs <sequence> The sequence.
 *)
-seq.max :: { xs => do
-  xs |> issequence(_) |> assert(_).
+seq.max :: { xs: Sequence => do
   let xs = tosequence(xs),
       next = seq.next(xs),
       max = next
@@ -102,8 +97,7 @@ seq.max :: { xs => do
   If the sequence is empty, unit is returned.
   @param xs <sequence> The sequence.
 *)
-seq.min :: { xs => do
-  xs |> issequence(_) |> assert(_).
+seq.min :: { xs: Sequence => do
   let xs = tosequence(xs),
       next = seq.next(xs),
       min = next
@@ -123,8 +117,7 @@ seq.min :: { xs => do
   If the sequence is empty, unit is returned.
   @param xs <sequence> The sequence.
 *)
-seq.minmax :: { xs => do
-  xs |> issequence(_) |> assert(_).
+seq.minmax :: { xs: Sequence => do
   let xs = tosequence(xs),
       next = seq.next(xs),
       min = next,
@@ -147,8 +140,7 @@ seq.minmax :: { xs => do
   Return a new sequence that maps the given function over the elements of the
   provided sequence. 
 *)
-seq.map :: { s, func => do
-    s |> issequence(_) |> assert(_).
+seq.map :: { s: Sequence, func: Function => do
     let xs = tosequence(s) in seq.make { =>
       let next = seq.next(xs) in
       cases 
@@ -164,8 +156,7 @@ seq.map :: { s, func => do
   @param xs <sequence> The sequence.
   @param func <function> The transformation function.
 *)
-seq.mapWithIndex :: { xs, func => do
-    xs |> issequence(_) |> assert(_).
+seq.mapWithIndex :: { xs: Sequence, func: Function => do
     let xs = tosequence(xs), i = 0 in
     seq.make { =>
       let next = seq.next(xs) in
@@ -184,8 +175,7 @@ seq.mapWithIndex :: { xs, func => do
   Return a new sequence that filters out elements for which the provided
   predicate function returns false.
 *)
-seq.filter :: { xs, func => do
-    xs |> issequence(_) |> assert(_).
+seq.filter :: { xs: Sequence, func: Function => do
     let xs = tosequence(xs) in seq.make { => 
       let x = seq.next(xs) in do
         while x /= unit and not func(x)
@@ -202,9 +192,7 @@ seq.filter :: { xs, func => do
   Return a new sequence that applies the provided function to the elements of
   the given sequence in a pairwise manner.
 *)
-seq.zip :: { xs, ys, func => do
-    xs |> issequence(_) |> assert(_).
-    ys |> issequence(_) |> assert(_).
+seq.zip :: { xs: Sequence, ys: Sequence, func: Function => do
     let xs = tosequence(xs), ys = tosequence(ys) in seq.make { =>
       let x = seq.next(xs), y = seq.next(ys) in
       cases 
@@ -218,8 +206,7 @@ seq.zip :: { xs, ys, func => do
   Return a sequence that takes elements from the input sequences as long as
   they satisfy the given predicate.
 *)
-seq.takewhile :: { xs, pred => do
-    xs |> issequence(_) |> assert(_).
+seq.takewhile :: { xs: Sequence, pred: Function => do
     let xs = tosequence(xs) in seq.make { =>
       let x = seq.next(xs) in
       cases
@@ -230,8 +217,7 @@ seq.takewhile :: { xs, pred => do
 }
 
 (* Return a sequence that takes the first n elements of the provided one. *)
-seq.take :: { xs, n => do
-    xs |> issequence(_) |> assert(_).
+seq.take :: { xs: Sequence, n: Number => do
     let xs = tosequence(xs), i = 0 in seq.make { =>
       cases
         given i < n => do
@@ -247,8 +233,7 @@ seq.take :: { xs, n => do
   Return a sequence that drops elements from the input sequence as long as they
   satisfy the given predicate.
 *)
-seq.dropwhile :: { xs, pred => do
-    xs |> issequence(_) |> assert(_).
+seq.dropwhile :: { xs: Sequence, pred: Function => do
     let xs = tosequence(xs), predicateFailed = false in seq.make { =>
       let x = seq.next(xs) in do
         while x /= unit and not predicateFailed
@@ -265,8 +250,7 @@ seq.dropwhile :: { xs, pred => do
 }
 
 (* Return a new sequence that drops the first n elements of the provided one. *)
-seq.drop :: { xs, n => do
-    xs |> issequence(_) |> assert(_).
+seq.drop :: { xs: Sequence, n: Number => do
     let xs = tosequence(xs), i = 1, x = seq.next(xs) in seq.make { => do
         while i < n : i <- i + 1
           x <- seq.next(xs)
@@ -282,8 +266,7 @@ seq.drop :: { xs, n => do
   Create a sequence that yields the numbers from start inclusive to end
   exclusive.
 *)
-seq.range :: { start, finish => do
-    assert(typeof(start) == "number" and typeof(finish) == "number").
+seq.range :: { start: Number, finish: Number => do
     let i = start in seq.make { =>
       cases
         given i < finish =>
@@ -300,8 +283,7 @@ seq.range :: { start, finish => do
   Return a sequence that yields 2 element arrays where the first element is the
   index of the second element from the provided sequence.
 *)
-seq.enumerate :: { xs => do
-    xs |> issequence(_) |> assert(_).
+seq.enumerate :: { xs: Sequence => do
     let xs = tosequence(xs), i = 0 in seq.make { =>
       let x = seq.next(xs), pair = (i, x) in 
       cases
@@ -315,8 +297,7 @@ seq.enumerate :: { xs => do
 }
 
 (* Return an array with the elements of the provided sequence. *)
-seq.toarray :: { xs => do
-    xs |> issequence(_) |> assert(_).
+seq.toarray :: { xs: Sequence => do
     let xs = tosequence(xs), x = seq.next(xs), ary = () in do
       while x /= unit : x <- seq.next(xs)
         array.push(ary, x).
@@ -333,8 +314,7 @@ seq.toarray :: { xs => do
   `tostring` is called on every element of the sequence to transform it to a
   string.
 *)
-seq.tostring :: { xs => do
-    xs |> issequence(_) |> assert(_).
+seq.tostring :: { xs: Sequence => do
     let xs = tosequence(xs), x = seq.next(xs), s = "" in do
       while x /= unit : x <- seq.next(xs)
         s <- x |> tostring(_) |> string.concat(s, _)
@@ -359,8 +339,7 @@ seq.sum :: { xs => seq.reduce(xs, 0, fn.add) }
   This function consumes the provided sequence.
   @param xs <sequence> The sequence.
 *)
-seq.count :: { xs => do
-    assert(issequence(xs)).
+seq.count :: { xs: Sequence => do
     let count = 0,
         xs = tosequence(xs),
         x = seq.next(xs) in do
@@ -377,8 +356,7 @@ seq.count :: { xs => do
   Return the first element in the sequence, or unit if there are none.
   @param xs <sequence> The sequence.
 *)
-seq.first :: { xs => do
-    assert(issequence(xs)).
+seq.first :: { xs: Sequence => do
     let xs = tosequence(xs) in seq.next(xs)
   end
 }

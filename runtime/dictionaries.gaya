@@ -3,10 +3,10 @@
 include "sequences"
 
 (* Return a sequence over the keys of the provided dictionary. *)
-dict.keys :: { dict => dict |> seq.map(_) { xs => xs(0) } }
+dict.keys :: { dict: Dictionary => dict |> seq.map(_) { xs => xs(0) } }
 
 (* Return a sequence over the values of the provided dictionary. *)
-dict.values :: { dict => dict |> seq.map(_) { xs => xs(1) } }
+dict.values :: { dict: Dictionary => dict |> seq.map(_) { xs => xs(1) } }
 
 (*
   Set the value for a given key in the provided dictionary, or a default value
@@ -20,7 +20,7 @@ dict.values :: { dict => dict |> seq.map(_) { xs => xs(1) } }
   @param valueFunc <function> The function to compute the new value.
   @param default <object> The default value in case the key is not found.
 *)
-dict.setdefault :: { dict, key, valueFunc, default =>
+dict.setdefault :: { dict: Dictionary, key, valueFunc: Function, default =>
   cases dict(key)
     given unit => dict.set(dict, key, default)
     given value => dict.set(dict, key, valueFunc(value))

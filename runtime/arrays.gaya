@@ -9,9 +9,7 @@ array.isempty :: { a => array.length(a) == 0 }
 (* Return an array with the numbers from start to finish exclusive. 
   @param start <number> The start of the range.
   @param finish <number> The non-inclusive end of the range. *)
-array.range :: { start, finish => do
-    assert(typeof(start) == "number").
-    assert(typeof(finish) == "number").
+array.range :: { start: Number, finish: Number => do
     let i = start, a = () in do
       while i < finish : i <- i + 1
         array.push(a, i).
@@ -28,9 +26,7 @@ array.range :: { start, finish => do
   @param a <array> The array to join.
   @param sep <string> The separator to use
 *)
-array.join :: { a, sep => do
-    assert(typeof(a) == "array").
-    assert(typeof(sep) == "string").
+array.join :: { a: Array, sep: String => do
     let i = 0, result = "" in do
       while i < array.length(a) : i <- i + 1
         result <- string.concat(result, tostring(a(i)))

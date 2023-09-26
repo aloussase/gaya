@@ -28,7 +28,7 @@ string.contains :: { s, pattern => string.index(s, pattern) /= unit }
 (* Splits a string on the given pattern and returns a sequence over the parts. 
   @param s <string> The string to split.
   @param pattern <string> The pattern to split the string on. *)
-string.split :: { s, pattern =>
+string.split :: { s: String, pattern: String =>
   cases 
     given string.isempty(pattern) => tosequence(s) |> seq.toarray(_)
     otherwise => 
