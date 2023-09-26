@@ -35,6 +35,7 @@ private:
     [[nodiscard]] ast::stmt_ptr for_in_stmt(token for_) noexcept;
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
     [[nodiscard]] ast::stmt_ptr include_stmt(token include) noexcept;
+    [[nodiscard]] ast::stmt_ptr type_declaration(token type) noexcept;
 
     [[nodiscard]] ast::expression_ptr expression(token);
     [[nodiscard]] ast::expression_ptr let_expression(token let);
@@ -102,6 +103,9 @@ private:
     std::string _filename;
 
     std::unordered_set<std::string> _included_files;
+
+    using type_declaration_ptr = std::shared_ptr<ast::TypeDeclaration>;
+    std::unordered_map<std::string, type_declaration_ptr> _type_declarations;
 };
 
 }

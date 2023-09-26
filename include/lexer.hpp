@@ -13,6 +13,11 @@ enum class token_type {
     arrow,
     at,
     back_arrow,
+    /* Types */
+    of,
+    type,
+    with,
+    /* End Types */
     cases,
     colon,
     colon_colon,

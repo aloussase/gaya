@@ -19,6 +19,9 @@ std::unordered_map<std::string, token_type> lexer::_keywords = {
     { "or", token_type::or_ },
     { "include", token_type::include },
     { "when", token_type::when },
+    { "of", token_type::of },
+    { "type", token_type::type },
+    { "with", token_type::with },
 };
 
 lexer::lexer(const char* source)

@@ -19,6 +19,28 @@ object call_function(
         auto arg   = args[i];
         auto param = func.params[i];
 
+        /*
+         * NOTE: The parser already checks that the type was previously
+         * declared.
+         *
+         * NOTE: We don't use the param.type directly because it doesn't have
+         * the closed over environment.
+         */
+        if (auto type = interp.get_type(param.type.to_string());
+            !type->check(interp, arg))
+        {
+            interp.interp_error(
+                arg.span,
+                fmt::format(
+                    "Expected an argument of type {}",
+                    param.type.to_string()));
+            interp.interp_hint(
+                arg.span,
+                "Make sure that the provided argument satisfies the type's "
+                "constraints");
+            return invalid;
+        }
+
         if (!interp.match_pattern(arg, param.pattern, &key::param))
         {
             interp.interp_error(

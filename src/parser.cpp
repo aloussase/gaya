@@ -222,6 +222,10 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     {
         return include_stmt(token.value());
     }
+    case token_type::type:
+    {
+        return type_declaration(*token);
+    }
     default:
     {
         return expression_stmt(token.value());
@@ -620,6 +624,62 @@ ast::stmt_ptr parser::include_stmt(token include) noexcept
         ast);
 }
 
+ast::stmt_ptr parser::type_declaration(token type) noexcept
+{
+    assert(type.type == token_type::type);
+
+    auto d_t = _lexer.next_token();
+    if (!match(d_t, token_type::identifier))
+    {
+        parser_error(type.span, "Expected a type identifier after 'type'");
+        return nullptr;
+    }
+
+    if (!match(token_type::of))
+    {
+        parser_error(type.span, "Expected 'of' after type identifier");
+        return nullptr;
+    }
+
+    auto u_t_token = _lexer.next_token();
+    auto u_t = u_t_token ? types::Type::from_string(u_t_token->span.to_string())
+                         : std::nullopt;
+    if (!u_t)
+    {
+        parser_error(type.span, "Expected a type after 'of'");
+        return nullptr;
+    }
+
+    ast::expression_ptr c = nullptr;
+    if (match(token_type::with))
+    {
+        begin_scope();
+        auto e_t = _lexer.next_token();
+        auto e   = e_t ? expression(*e_t) : nullptr;
+        end_scope();
+
+        if (!e)
+        {
+            parser_error(type.span, "Expected an expression after 'with'");
+            return nullptr;
+        }
+
+        c = e;
+    }
+
+    auto declared_type    = d_t->span.to_string();
+    auto type_declaration = ast::make_node<ast::TypeDeclaration>(
+        type.span,
+        declared_type,
+        *u_t,
+        c);
+
+    /* We use this when resolving types in function parameters. */
+    _type_declarations.insert({ declared_type, type_declaration });
+
+    return type_declaration;
+}
+
 ast::expression_ptr parser::expression(token token)
 {
     /*
@@ -665,7 +725,49 @@ ast::expression_ptr parser::function_expression(token lcurly)
             return nullptr;
         }
 
+        types::Type t           = types::Type { types::TypeKind::Any };
         ast::expression_ptr d_a = nullptr;
+
+        if (match(token_type::colon))
+        {
+            auto t_t = _lexer.next_token();
+            if (!match(t_t, token_type::identifier))
+            {
+                parser_error(
+                    lcurly.span,
+                    "Expected a type name after ':' in function parameter");
+                end_scope();
+                return nullptr;
+            }
+
+            auto t_d_s = t_t->span.to_string();
+            auto m_t   = types::Type::from_string(t_d_s);
+            if (!m_t)
+            {
+                if (auto it = _type_declarations.find(t_d_s);
+                    it != _type_declarations.end())
+                {
+                    auto type_declaration = it->second;
+                    auto constraint       = types::TypeConstraint {
+                        nullptr,
+                        type_declaration->constraint,
+                    };
+                    m_t = types::Type {
+                        type_declaration->declared_type,
+                        type_declaration->underlying_type.kind(),
+                        constraint,
+                    };
+                }
+                else
+                {
+                    parser_error(lcurly.span, "Invalid type identifier");
+                    end_scope();
+                    return nullptr;
+                }
+            }
+
+            t = *m_t;
+        }
 
         if (match(token_type::equal))
         {
@@ -693,7 +795,7 @@ ast::expression_ptr parser::function_expression(token lcurly)
             return nullptr;
         }
 
-        ast::function_param param = { std::move(*p), d_a };
+        ast::function_param param = { std::move(*p), t, d_a };
         params.push_back(std::move(param));
 
         if (!match(token_type::comma))

@@ -1,0 +1,15 @@
+include "strings"
+
+type NonNegative of Number with _ > 0
+type NonEmptyString of String with not string.isempty(_)
+
+add :: { x: NonNegative = 42, y: Number = 69 => x + y }
+
+assert(add(1, 2) == 3).
+assert(add() == 111).
+assert(add(1) == 70).
+
+concat :: { s1: NonEmptyString, s2: NonEmptyString => s1 <> s2 }
+
+assert(concat("", "World") == "Hello World").
+

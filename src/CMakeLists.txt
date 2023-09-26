@@ -8,6 +8,7 @@ add_executable(gaya main.cpp
     eval.cpp
     object.cpp
     file_reader.cpp
+    types.cpp
     object/arity.cpp
     object/call.cpp
     object/cmp.cpp

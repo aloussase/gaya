@@ -347,6 +347,31 @@ object::object interpreter::visit_include_stmt(ast::include_stmt& include_stmt)
     return object::invalid;
 }
 
+std::optional<types::Type>
+interpreter::get_type(const std::string& type) const noexcept
+{
+    if (auto it = _declared_types.find(type); it != _declared_types.end())
+    {
+        return it->second;
+    }
+    return {};
+}
+
+object::object
+interpreter::visit_type_declaration(ast::TypeDeclaration& type_declaration)
+{
+    auto type = types::Type {
+        type_declaration.declared_type,
+        type_declaration.underlying_type.kind(),
+        types::TypeConstraint {
+            std::make_shared<env>(environment()),
+            type_declaration.constraint,
+        },
+    };
+    _declared_types.insert({ type_declaration.declared_type, type });
+    return object::invalid;
+}
+
 object::object interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
     begin_scope(env { std::make_shared<env>(environment()) });

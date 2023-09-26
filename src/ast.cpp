@@ -117,6 +117,16 @@ object include_stmt::accept(ast_visitor& v)
     return v.visit_include_stmt(*this);
 }
 
+std::string TypeDeclaration::to_string() const noexcept
+{
+    assert(0 && "not implemented");
+}
+
+object TypeDeclaration::accept(ast_visitor& v)
+{
+    return v.visit_type_declaration(*this);
+}
+
 /* Expressions */
 
 std::string do_expression::to_string() const noexcept

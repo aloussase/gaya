@@ -10,14 +10,17 @@ syntax keyword gayaConstant true false
 highlight link gayaConstant Constant
 
 " Keywords
-syntax keyword gayaKeyword let in do unit cases end given otherwise while perform and or not include when for
+syntax keyword gayaKeyword let in do unit cases end given otherwise while perform and or not include when for type of with
 highlight link gayaKeyword Keyword
+
+syntax match gayaType /\v[A-Z]+[a-z]*/
+highlight link gayaType Type
 
 " Literals
 syntax region gayaString start=/"/ end=/"/ skip=/\\"/
 highlight link gayaString String
 
-syntax match gayaIdentifier /\v[a-zA-Z0-9_.]+/
+syntax match gayaIdentifier /\v[a-z0-9_.]+/
 highlight link gayaIdentifier Identifier
 
 " Operators

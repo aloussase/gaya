@@ -8,6 +8,7 @@
 #include <lexer.hpp>
 #include <object.hpp>
 #include <span.hpp>
+#include <types.hpp>
 
 namespace gaya::eval
 {
@@ -165,6 +166,29 @@ struct include_stmt final : public stmt
     ast::node_ptr parsed_file;
 };
 
+struct TypeDeclaration final : public stmt
+{
+    TypeDeclaration(
+        span s,
+        const std::string& d_t,
+        types::Type u_t,
+        expression_ptr c)
+        : span_ { s }
+        , declared_type { d_t }
+        , underlying_type { u_t }
+        , constraint { c }
+    {
+    }
+
+    std::string to_string() const noexcept override;
+    object accept(ast_visitor&) override;
+
+    span span_;
+    std::string declared_type;
+    types::Type underlying_type;
+    expression_ptr constraint;
+};
+
 /* Expressions */
 
 struct expression : public ast_node
@@ -311,12 +335,22 @@ struct call_expression final : public expression
 struct function_param final
 {
     function_param(match_pattern p, expression_ptr dv = nullptr)
+        : function_param { p, types::Type { types::TypeKind::Any }, dv }
+    {
+    }
+
+    function_param(
+        match_pattern p,
+        types::Type t     = types::Type { types::TypeKind::Any },
+        expression_ptr dv = nullptr)
         : pattern { std::move(p) }
+        , type { t }
         , default_value { dv }
     {
     }
 
     match_pattern pattern;
+    types::Type type;
     expression_ptr default_value = nullptr;
 };
 

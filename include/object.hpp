@@ -11,9 +11,11 @@
 
 #include <span.hpp>
 
-#define IS_NUMBER(o)      ((o).type == gaya::eval::object::object_type_number)
-#define IS_STRING(o)      ((o).type == gaya::eval::object::object_type_string)
-#define IS_ARRAY(o)       ((o).type == gaya::eval::object::object_type_array)
+#define IS_NUMBER(o) ((o).type == gaya::eval::object::object_type_number)
+#define IS_STRING(o) ((o).type == gaya::eval::object::object_type_string)
+#define IS_ARRAY(o)  ((o).type == gaya::eval::object::object_type_array)
+#define IS_DICTIONARY(o) \
+    ((o).type == gaya::eval::object::object_type_dictionary)
 #define IS_SEQUENCE(o)    ((o).type == gaya::eval::object::object_type_sequence)
 #define IS_FUNCTION(o)    ((o).type == gaya::eval::object::object_type_function)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))

@@ -74,6 +74,12 @@ public:
         const ast::match_pattern&,
         std::function<key(const std::string&)> to_key = &key::local) noexcept;
 
+    /**
+     * Get a previously declared type.
+     */
+    [[nodiscard]] std::optional<types::Type>
+    get_type(const std::string&) const noexcept;
+
     /* Visitor pattern */
 
     object::object visit_program(ast::program&) override;
@@ -83,6 +89,7 @@ public:
     object::object visit_while_stmt(ast::while_stmt&) override;
     object::object visit_for_in_stmt(ast::for_in_stmt&) override;
     object::object visit_include_stmt(ast::include_stmt&) override;
+    object::object visit_type_declaration(ast::TypeDeclaration&) override;
     object::object visit_do_expression(ast::do_expression&) override;
     object::object visit_case_expression(ast::case_expression&) override;
     object::object visit_match_expression(ast::match_expression&) override;
@@ -110,6 +117,7 @@ private:
 
     int _placeholders_in_use      = 0;
     bool _had_unused_placeholders = false;
+    std::unordered_map<std::string, types::Type> _declared_types;
 };
 
 }
