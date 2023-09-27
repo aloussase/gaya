@@ -9,11 +9,10 @@ include "functions"
   @param s <sequence> A sequence.
   @param f <function> A function to call on every element in the sequence.
  *)
-seq.foreach :: { s: Sequence, f: Function => do
-    let xs = tosequence(s), next = seq.next(xs) in perform
-    while next /= unit : next <- seq.next(xs)
-      f(next).
-    end
+seq.foreach :: { s: Sequence, f: Function =>
+  let xs = tosequence(s), next = seq.next(xs) in perform
+  while next /= unit : next <- seq.next(xs)
+    f(next).
   end
 }
 
@@ -25,14 +24,14 @@ seq.foreach :: { s: Sequence, f: Function => do
   @param init <object> The initial element.
   @param f <function> The accumulator function.
  *)
-seq.reduce :: { s: Sequence, init, f: Function => do
-    let acc = init, xs = tosequence(s), next = seq.next(xs) in do
-      while next /= unit : next <- seq.next(xs)
-        acc <- f(acc, next)
-      end
-
-      acc
+seq.reduce :: { s: Sequence, init, f: Function =>
+  let acc = init, xs = tosequence(s), next = seq.next(xs) in
+  do
+    while next /= unit : next <- seq.next(xs)
+      acc <- f(acc, next)
     end
+
+    acc
   end
 }
 
@@ -40,18 +39,17 @@ seq.reduce :: { s: Sequence, init, f: Function => do
   Return true if any element in the provided sequence
   satisfies the given predicate. 
 *)
-seq.any :: { xs: Sequence, pred => do
-  let xs = tosequence(xs), 
-      x = seq.next(xs),
-      found = false, 
-   in do
-      while x /= unit and not found 
-        found <- pred(x)
-        x <- seq.next(xs)
-      end
-
-      found
+seq.any :: { xs: Sequence, pred =>
+  let xs = tosequence(xs) in
+  let x = seq.next(xs) in
+  let found = false in
+  do
+    while x /= unit and not found 
+      found <- pred(x)
+      x <- seq.next(xs)
     end
+
+    found
   end
 }
 
@@ -59,17 +57,16 @@ seq.any :: { xs: Sequence, pred => do
   Returns whether all the elements in the provided sequence satifsy
   the given predicate.
 *)
-seq.all :: { xs: Sequence, pred => do
-    let xs = tosequence(xs),
-        x = seq.next(xs),
-        success = true
-     in do
-        while x /= unit and success : x <- seq.next(xs)
-          success <- pred(x)
-        end
-
-        success
+seq.all :: { xs: Sequence, pred =>
+  let xs = tosequence(xs) in
+  let x = seq.next(xs) in
+  let success = true in
+  do
+    while x /= unit and success : x <- seq.next(xs)
+      success <- pred(x)
     end
+
+    success
   end
 }
 
@@ -78,17 +75,16 @@ seq.all :: { xs: Sequence, pred => do
   If the sequence is empty, unit is returned.
   @param xs <sequence> The sequence.
 *)
-seq.max :: { xs: Sequence => do
-  let xs = tosequence(xs),
-      next = seq.next(xs),
-      max = next
-   in do
-        while next /= unit : next <- seq.next(xs)
-          max <- fn.max(max, next)
-        end
+seq.max :: { xs: Sequence =>
+  let xs = tosequence(xs) in
+  let next = seq.next(xs) in
+  let max = next in
+  do
+    while next /= unit : next <- seq.next(xs)
+      max <- fn.max(max, next)
+    end
 
-        max
-      end
+    max
   end
 }
 
@@ -97,17 +93,16 @@ seq.max :: { xs: Sequence => do
   If the sequence is empty, unit is returned.
   @param xs <sequence> The sequence.
 *)
-seq.min :: { xs: Sequence => do
-  let xs = tosequence(xs),
-      next = seq.next(xs),
-      min = next
-   in do
-        while next /= unit : next <- seq.next(xs)
-          min <- fn.min(min, next)
-        end
+seq.min :: { xs: Sequence =>
+  let xs = tosequence(xs) in
+  let next = seq.next(xs) in
+  let min = next in
+  do
+    while next /= unit : next <- seq.next(xs)
+      min <- fn.min(min, next)
+    end
 
-        min
-      end
+    min
   end
 }
 
@@ -117,22 +112,21 @@ seq.min :: { xs: Sequence => do
   If the sequence is empty, unit is returned.
   @param xs <sequence> The sequence.
 *)
-seq.minmax :: { xs: Sequence => do
+seq.minmax :: { xs: Sequence =>
   let xs = tosequence(xs),
       next = seq.next(xs),
       min = next,
-      max = next
-   in do
-        while next /= unit : next <- seq.next(xs)
-          max <- fn.max(max, next)
-          min <- fn.min(min, next)
-        end
+      max = next in
+  do
+    while next /= unit : next <- seq.next(xs)
+      max <- fn.max(max, next)
+      min <- fn.min(min, next)
+    end
 
-        cases (min, max)
-          given (unit, unit) => unit
-          given a            => a
-        end
-      end
+    cases (min, max)
+      given (unit, unit) => unit
+      given a            => a
+    end
   end
 }
 
@@ -140,14 +134,13 @@ seq.minmax :: { xs: Sequence => do
   Return a new sequence that maps the given function over the elements of the
   provided sequence. 
 *)
-seq.map :: { s: Sequence, func: Function => do
-    let xs = tosequence(s) in seq.make { =>
-      let next = seq.next(xs) in
-      cases 
-        given next /= unit => func(next)
-      end
-    }
-  end
+seq.map :: { s: Sequence, func: Function =>
+  let xs = tosequence(s) in seq.make { =>
+    let next = seq.next(xs) in
+    cases 
+      given next /= unit => func(next)
+    end
+  }
 }
 
 (*
@@ -156,19 +149,18 @@ seq.map :: { s: Sequence, func: Function => do
   @param xs <sequence> The sequence.
   @param func <function> The transformation function.
 *)
-seq.mapWithIndex :: { xs: Sequence, func: Function => do
-    let xs = tosequence(xs), i = 0 in
-    seq.make { =>
-      let next = seq.next(xs) in
-      cases 
-        given next /= unit =>
-        let result = func(i, next) in do
-          i <- i + 1
-          result
-        end
+seq.mapWithIndex :: { xs: Sequence, func: Function =>
+  let xs = tosequence(xs), i = 0 in
+  seq.make { =>
+    let next = seq.next(xs) in
+    cases 
+      given next /= unit =>
+      let result = func(i, next) in do
+        i <- i + 1
+        result
       end
-    }
-  end
+    end
+  }
 }
 
 (*
@@ -191,61 +183,57 @@ seq.filter :: { xs: Sequence, func: Function =>
   Return a new sequence that applies the provided function to the elements of
   the given sequence in a pairwise manner.
 *)
-seq.zip :: { xs: Sequence, ys: Sequence, func: Function => do
-    let xs = tosequence(xs), ys = tosequence(ys) in seq.make { =>
-      let x = seq.next(xs), y = seq.next(ys) in
-      cases 
-        given x /= unit and y /= unit => func(x, y)
-      end
-    }
-  end
+seq.zip :: { xs: Sequence, ys: Sequence, func: Function =>
+  let xs = tosequence(xs), ys = tosequence(ys) in seq.make { =>
+    let x = seq.next(xs), y = seq.next(ys) in
+    cases 
+      given x /= unit and y /= unit => func(x, y)
+    end
+  }
 }
 
 (*
   Return a sequence that takes elements from the input sequences as long as
   they satisfy the given predicate.
 *)
-seq.takewhile :: { xs: Sequence, pred: Function => do
-    let xs = tosequence(xs) in seq.make { =>
-      let x = seq.next(xs) in
-      cases
-        given pred(x) => x
-      end
-    }
-  end
+seq.takewhile :: { xs: Sequence, pred: Function =>
+  let xs = tosequence(xs) in seq.make { =>
+    let x = seq.next(xs) in
+    cases
+      given pred(x) => x
+    end
+  }
 }
 
 (* Return a sequence that takes the first n elements of the provided one. *)
-seq.take :: { xs: Sequence, n: Number => do
-    let xs = tosequence(xs), i = 0 in seq.make { =>
-      cases
-        given i < n => do
-          i <- i + 1
-          seq.next(xs)
-        end
+seq.take :: { xs: Sequence, n: Number =>
+  let xs = tosequence(xs), i = 0 in seq.make { =>
+    cases
+      given i < n => do
+        i <- i + 1
+        seq.next(xs)
       end
-    }
-  end
+    end
+  }
 }
 
 (*
   Return a sequence that drops elements from the input sequence as long as they
   satisfy the given predicate.
 *)
-seq.dropwhile :: { xs: Sequence, pred: Function => do
-    let xs = tosequence(xs), predicateFailed = false in seq.make { =>
-      let x = seq.next(xs) in do
-        while x /= unit and not predicateFailed
-          cases
-            given pred(x) => perform x <- seq.next(xs) 
-            otherwise     => perform predicateFailed <- true
-          end.
-        end
-
-        x
+seq.dropwhile :: { xs: Sequence, pred: Function =>
+  let xs = tosequence(xs), predicateFailed = false in seq.make { =>
+    let x = seq.next(xs) in do
+      while x /= unit and not predicateFailed
+        cases
+          given pred(x) => perform x <- seq.next(xs) 
+          otherwise     => perform predicateFailed <- true
+        end.
       end
-    }
-  end
+
+      x
+    end
+  }
 }
 
 (* Return a new sequence that drops the first n elements of the provided one. *)
@@ -267,44 +255,46 @@ seq.drop :: { xs: Sequence, n: Number =>
   Create a sequence that yields the numbers from start inclusive to end
   exclusive.
 *)
-seq.range :: { start: Number, finish: Number => do
-    let i = start in seq.make { =>
-      cases
-        given i < finish =>
-          let previous = i in do
-            i <- i + 1
-            previous
-        end
+seq.range :: { start: Number, finish: Number =>
+  let i = start in seq.make { =>
+    cases
+      given i < finish =>
+        let previous = i in do
+          i <- i + 1
+          previous
       end
-    }
-  end
+    end
+  }
 }
 
 (* 
   Return a sequence that yields 2 element arrays where the first element is the
   index of the second element from the provided sequence.
 *)
-seq.enumerate :: { xs: Sequence => do
-    let xs = tosequence(xs), i = 0 in seq.make { =>
-      let x = seq.next(xs), pair = (i, x) in 
-      cases
-        given x /= unit => do
-          i <- i + 1
-          pair
-        end
+seq.enumerate :: { xs: Sequence =>
+  let xs = tosequence(xs), i = 0 in seq.make { =>
+    let x = seq.next(xs), pair = (i, x) in 
+    cases
+      given x /= unit => do
+        i <- i + 1
+        pair
       end
-    }
-  end
+    end
+  }
 }
 
 (* Return an array with the elements of the provided sequence. *)
-seq.toarray :: { xs: Sequence => do
-    let xs = tosequence(xs), x = seq.next(xs), ary = () in do
-      while x /= unit : x <- seq.next(xs)
-        array.push(ary, x).
-      end
+seq.toarray :: { xs: Sequence =>
+  cases typeof(xs)
+    given "Array" => xs
+    otherwise => do
+      let xs = tosequence(xs), x = seq.next(xs), ary = () in do
+        while x /= unit : x <- seq.next(xs)
+          array.push(ary, x).
+        end
 
-      ary
+        ary
+      end
     end
   end
 }
@@ -315,14 +305,14 @@ seq.toarray :: { xs: Sequence => do
   `tostring` is called on every element of the sequence to transform it to a
   string.
 *)
-seq.tostring :: { xs: Sequence => do
-    let xs = tosequence(xs), x = seq.next(xs), s = "" in do
-      while x /= unit : x <- seq.next(xs)
-        s <- x |> tostring(_) |> string.concat(s, _)
-      end
-
-      s
+seq.tostring :: { xs: Sequence =>
+  let xs = tosequence(xs), x = seq.next(xs), s = "" in
+  do
+    while x /= unit : x <- seq.next(xs)
+      s <- x |> tostring(_) |> string.concat(s, _)
     end
+
+    s
   end
 }
 
@@ -341,21 +331,19 @@ seq.sum :: { xs => seq.reduce(xs, 0, fn.add) }
   @param xs <sequence> The sequence.
 *)
 seq.count :: { xs: Sequence =>
+  let count = 0 in
+  let xs = tosequence(xs) in
   do
-    let count = 0 in
-    let xs = tosequence(xs) in
-    do
-      while seq.next(xs) /= unit
-        count <- count + 1
-      end
-      count
+    while seq.next(xs) /= unit
+      count <- count + 1
     end
+    count
   end
 }
 
 (*
   Return the first element in the sequence, or unit if there are none.
-  @param xs <sequence> The sequence.
+  @param xs <Sequence> The sequence.
 *)
 seq.first :: { xs: Sequence =>
   xs
@@ -369,12 +357,14 @@ seq.first :: { xs: Sequence =>
   @param xs <Sequence> The sequence.
 *)
 seq.inits :: { xs: Sequence => 
-  let count = xs |> seq.copy(_) |> seq.count(_) in
+  let elems = seq.toarray(xs) in
+  let count = array.length(elems) in
   let i = 0 in
   seq.make { =>
     cases
       given i <= count => 
-        let seq = xs |> seq.copy(_) |> seq.take(_, i) in
+        (* TODO: Re-implement this with iteration. *)
+        let seq = elems |> seq.take(_, i) in
         do
           i <- i + 1
           seq
@@ -387,18 +377,16 @@ seq.inits :: { xs: Sequence =>
   Returns a sequence over the final segments of the provided sequence,
   longest first.
 
-  NOTE: Copying the sequence here makes it very, very slow.
-  FIXME: Find a way to make this faster.
-
   @param xs <Sequence> The sequence.
 *)
 seq.tails :: { xs: Sequence =>
-  let count = xs |> seq.copy(_) |> seq.count(_) in
+  let elems = seq.toarray(xs) in
+  let count = array.length(elems) in
   let i = 0 in
   seq.make { =>
     cases
       given i <= count =>
-        let seq = xs |> seq.copy(_) |> seq.drop(_, i) in
+        let seq = elems |> seq.drop(_, i) in
         do
           i <- i + 1
           seq
