@@ -87,7 +87,7 @@ static void mark(heap_object* o)
                  = std::get_if<array_sequence>(&o->as_sequence.seq);
                  array_seq)
         {
-            mark_array(array_seq->elems);
+            mark_array(const_cast<std::vector<object>&>(array_seq->elems));
         }
         else if (auto* dict_seq
                  = std::get_if<dict_sequence>(&o->as_sequence.seq);

@@ -175,17 +175,16 @@ seq.mapWithIndex :: { xs: Sequence, func: Function => do
   Return a new sequence that filters out elements for which the provided
   predicate function returns false.
 *)
-seq.filter :: { xs: Sequence, func: Function => do
-    let xs = tosequence(xs) in seq.make { => 
-      let x = seq.next(xs) in do
-        while x /= unit and not func(x)
-          x <- seq.next(xs)
-        end
-
-        x
+seq.filter :: { xs: Sequence, func: Function =>
+  let xs = tosequence(xs) in seq.make { => 
+    let x = seq.next(xs) in do
+      while x /= unit and not func(x)
+        x <- seq.next(xs)
       end
-    }
-  end
+
+      x
+    end
+  }
 }
 
 (*
@@ -387,6 +386,10 @@ seq.inits :: { xs: Sequence =>
 (*
   Returns a sequence over the final segments of the provided sequence,
   longest first.
+
+  NOTE: Copying the sequence here makes it very, very slow.
+  FIXME: Find a way to make this faster.
+
   @param xs <Sequence> The sequence.
 *)
 seq.tails :: { xs: Sequence =>

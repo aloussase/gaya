@@ -174,7 +174,8 @@ struct string_sequence
 
 struct array_sequence final
 {
-    std::vector<object> elems;
+    /* TODO: Should we keep a copy of this? */
+    const std::vector<object>& elems;
     size_t index = 0;
 };
 
