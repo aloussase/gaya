@@ -17,6 +17,7 @@ static ffi_type* foreign_type_to_ffi_type(types::ForeignType ft)
     {
     case types::ForeignType::c_Void: return &ffi_type_void;
     case types::ForeignType::c_Pointer: return &ffi_type_pointer;
+    case types::ForeignType::c_Int: return &ffi_type_sint;
     }
 }
 
@@ -89,24 +90,35 @@ object call_foreign_function(
         return invalid;
     }
 
-    ffi_arg rc;
-    ffi_call(&ffi, (void (*)())(func_ptr), &rc, ffi_values);
-
-    dlclose(handle);
-    free(ffi_args);
-    free(ffi_values);
+    object result = invalid;
 
     switch (func.return_type)
     {
+    case types::ForeignType::c_Int:
+    {
+        int rc;
+        ffi_call(&ffi, (void (*)())(func_ptr), &rc, ffi_values);
+        result = create_number(span, rc);
+        break;
+    }
     case types::ForeignType::c_Pointer:
     {
         /* TODO */
     }
     case types::ForeignType::c_Void:
     {
-        return create_unit(span);
+        ffi_arg rc;
+        ffi_call(&ffi, (void (*)())(func_ptr), &rc, ffi_values);
+        result = create_unit(span);
+        break;
     }
     }
+
+    dlclose(handle);
+    free(ffi_args);
+    free(ffi_values);
+
+    return result;
 }
 
 object call_function(

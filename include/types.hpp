@@ -30,8 +30,9 @@ namespace gaya::types
  * A C type.
  */
 enum class ForeignType {
-    c_Void,
+    c_Int,
     c_Pointer,
+    c_Void,
 };
 
 std::optional<ForeignType> foreign_type_from_string(const std::string&);
