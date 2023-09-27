@@ -75,6 +75,7 @@ interpreter::interpreter()
 
     BUILTIN("seq.next"s, 1, sequence::next);
     BUILTIN("seq.make"s, 1, sequence::make);
+    BUILTIN("seq.copy"s, 1, sequence::copy);
 
     BUILTIN("math.floor"s, 1, math::floor);
     BUILTIN("math.ceil"s, 1, math::ceil);

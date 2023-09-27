@@ -23,7 +23,7 @@ test_output()
     expected_output=`cat "$example" | perl -n -e "/Output: '(.*)'/ && print \\$1"`
     expected_output=`echo -e $expected_output` # Interpret line breaks.
     actual_output=`${GAYA_EXE} "$example"`
-    if [ "$expected_output" = "$actual_output" ]; then
+    if [ "$expected_output" = "$actual_output" -a $? -eq 0 ]; then
         echo 'ok'
     else
         echo "$actual_output != $expected_output"

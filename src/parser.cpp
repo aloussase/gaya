@@ -53,6 +53,7 @@ parser::parser()
 
     define("seq.next"s);
     define("seq.make"s);
+    define("seq.copy"s);
 
     define("math.ceil"s);
     define("math.floor"s);

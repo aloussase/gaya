@@ -46,6 +46,30 @@ env::env(parent_ptr p)
 {
 }
 
+env env::deep_copy(interpreter& interp, span span) const noexcept
+{
+    env new_env {
+        _parent ? std::make_shared<env>(_parent->deep_copy(interp, span))
+                : _parent,
+    };
+
+    for (auto [k, o] : _bindings)
+    {
+        if (IS_SEQUENCE(o))
+        {
+            new_env.set(
+                std::move(k),
+                object::copy_sequence(interp, span, AS_SEQUENCE(o)));
+        }
+        else
+        {
+            new_env.set(std::move(k), o);
+        }
+    }
+
+    return new_env;
+}
+
 void env::set(key&& k, value_type v) noexcept
 {
     _bindings.insert_or_assign(std::move(k), v);

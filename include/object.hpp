@@ -218,6 +218,12 @@ struct sequence
         seq;
 };
 
+/**
+ * Copy a sequence object.
+ */
+[[nodiscard]] object
+copy_sequence(interpreter&, span, const sequence&) noexcept;
+
 struct heap_object
 {
     object_type type;

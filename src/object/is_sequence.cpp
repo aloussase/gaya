@@ -7,6 +7,7 @@ bool is_sequence(const object& o) noexcept
 {
     switch (o.type)
     {
+    case object_type_unit:
     case object_type_number:
     case object_type_sequence:
     case object_type_string:
@@ -15,7 +16,6 @@ bool is_sequence(const object& o) noexcept
     {
         return true;
     }
-    case object_type_unit:
     case object_type_function:
     case object_type_builtin_function:
     case object_type_foreign_function:

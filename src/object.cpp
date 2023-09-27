@@ -436,4 +436,54 @@ create_user_sequence(span span, interpreter& interp, object next_func) noexcept
     return o;
 }
 
+[[nodiscard]] object
+copy_sequence(interpreter& interp, span span, const sequence& xs) noexcept
+{
+    switch (xs.type)
+    {
+    case sequence_type_string:
+        return create_string_sequence(
+            interp,
+            span,
+            std::get<string_sequence>(xs.seq).string);
+    case sequence_type_number:
+        return create_number_sequence(
+            interp,
+            span,
+            std::get<number_sequence>(xs.seq).upto);
+    case sequence_type_array:
+        return create_array_sequence(
+            interp,
+            span,
+            std::get<array_sequence>(xs.seq).elems);
+    case sequence_type_dict:
+    {
+        const auto& dict_seq = std::get<dict_sequence>(xs.seq);
+        const auto& keys     = dict_seq.keys;
+        const auto& values   = dict_seq.values;
+        robin_hood::unordered_map<object, object> dict;
+
+        for (size_t i = 0; i < keys.size(); i++)
+        {
+            dict.insert({ keys[i], values[i] });
+        }
+
+        return create_dict_sequence(interp, span, dict);
+    }
+    case sequence_type_user:
+    {
+        auto user_seq = std::get<user_defined_sequence>(xs.seq);
+        auto& func    = AS_FUNCTION(user_seq.next_func);
+        auto new_env  = func.closed_over_env->deep_copy(interp, span);
+        auto new_func = create_function(
+            interp,
+            span,
+            std::make_unique<env>(new_env),
+            func.params,
+            func.body);
+        return create_user_sequence(span, interp, new_func);
+    }
+    }
+}
+
 }

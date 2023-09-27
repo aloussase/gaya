@@ -74,6 +74,11 @@ public:
 
     explicit env(parent_ptr p = nullptr);
 
+    /**
+     * Deep copy this environment.
+     */
+    [[nodiscard]] env deep_copy(interpreter&, span) const noexcept;
+
     /// Set a binding in the environment.
     void set(key&&, value_type) noexcept;
 

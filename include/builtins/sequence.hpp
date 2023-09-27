@@ -22,4 +22,12 @@ next(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 make(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * Create a copy of the provided sequence without consuming it.
+ *
+ * @param xs <sequence> The sequence to copy.
+ */
+gaya::eval::object::object
+copy(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

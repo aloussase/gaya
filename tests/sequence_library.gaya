@@ -133,3 +133,60 @@ seq.range(1, 10)
 (1, 2, 3) |> seq.count(_) |> assert(_ == 3).
 () |> seq.count(_) |> assert(_ == 0).
 "Hello" |> seq.count(_) |> assert(_ == 5).
+
+(* seq.inits & seq.tails & seq.concatMap & seq.flatten *)
+
+(* seq.flatten *)
+((1, 2), (3, 4))
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == (1, 2, 3, 4)).
+
+()
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == ()).
+
+(* seq.concatMap *)
+(1, 2, 3)
+  |> seq.concatMap(_) { n => (n, tostring(n)) }
+  |> seq.toarray(_)
+  |> assert(_ == (1, "1", 2, "2", 3, "3")).
+
+()
+  |> seq.concatMap(_) { x => x }
+  |> seq.toarray(_)
+  |> assert(_ == ()).
+
+(* seq.inits *)
+(1, 2, 3)
+  |> seq.inits(_)
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == (1, 1, 2, 1, 2, 3)).
+
+() 
+  |> seq.inits(_) 
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == ()).
+
+(* seq.tails *)
+(1, 2, 3)
+  |> seq.tails(_)
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == (1, 2, 3, 2, 3, 3)).
+
+()
+  |> seq.tails(_)
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == ()).
+
+(1, 2, 3)
+  |> seq.inits(_)
+  |> seq.concatMap(_, seq.tails)
+  |> seq.flatten(_)
+  |> seq.toarray(_)
+  |> assert(_ == (1, 1, 2, 2, 1, 2, 3, 2, 3, 3)).

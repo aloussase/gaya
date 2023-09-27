@@ -250,16 +250,18 @@ seq.dropwhile :: { xs: Sequence, pred: Function => do
 }
 
 (* Return a new sequence that drops the first n elements of the provided one. *)
-seq.drop :: { xs: Sequence, n: Number => do
-    let xs = tosequence(xs), i = 1, x = seq.next(xs) in seq.make { => do
-        while i < n : i <- i + 1
-          x <- seq.next(xs)
-        end
-        
-        seq.next(xs)
+seq.drop :: { xs: Sequence, n: Number =>
+  let xs = tosequence(xs) in
+  let i = 0 in
+  seq.make { => 
+    do
+      while i < n : i <- i + 1
+        seq.next(xs).
       end
-    }
-  end
+      
+      seq.next(xs)
+    end
+  }
 }
 
 (*
@@ -339,14 +341,14 @@ seq.sum :: { xs => seq.reduce(xs, 0, fn.add) }
   This function consumes the provided sequence.
   @param xs <sequence> The sequence.
 *)
-seq.count :: { xs: Sequence => do
-    let count = 0,
-        xs = tosequence(xs),
-        x = seq.next(xs) in do
-      while x /= unit : x <- seq.next(xs)
+seq.count :: { xs: Sequence =>
+  do
+    let count = 0 in
+    let xs = tosequence(xs) in
+    do
+      while seq.next(xs) /= unit
         count <- count + 1
       end
-
       count
     end
   end
@@ -356,7 +358,89 @@ seq.count :: { xs: Sequence => do
   Return the first element in the sequence, or unit if there are none.
   @param xs <sequence> The sequence.
 *)
-seq.first :: { xs: Sequence => do
-    let xs = tosequence(xs) in seq.next(xs)
-  end
+seq.first :: { xs: Sequence =>
+  xs
+  |> tosequence(_)
+  |> seq.next(_)
+}
+
+(*
+  Returns a sequence over the initial elements of the provided sequence,
+  shortest first.
+  @param xs <Sequence> The sequence.
+*)
+seq.inits :: { xs: Sequence => 
+  let count = xs |> seq.copy(_) |> seq.count(_) in
+  let i = 0 in
+  seq.make { =>
+    cases
+      given i <= count => 
+        let seq = xs |> seq.copy(_) |> seq.take(_, i) in
+        do
+          i <- i + 1
+          seq
+        end
+    end
+  }
+}
+
+(*
+  Returns a sequence over the final segments of the provided sequence,
+  longest first.
+  @param xs <Sequence> The sequence.
+*)
+seq.tails :: { xs: Sequence =>
+  let count = xs |> seq.copy(_) |> seq.count(_) in
+  let i = 0 in
+  seq.make { =>
+    cases
+      given i <= count =>
+        let seq = xs |> seq.copy(_) |> seq.drop(_, i) in
+        do
+          i <- i + 1
+          seq
+        end
+      end
+  }
+}
+
+(*
+  Creates a new sequence that flattens one level of the provided sequence.
+  @param xs <sequence> The sequence to flatten.
+*)
+seq.flatten :: { xs: Sequence => 
+  let xs = tosequence(xs) in 
+  let ys = tosequence(seq.next(xs)) in
+  seq.make { =>
+    cases seq.next(ys)
+      given unit =>
+        do
+          ys <- tosequence(seq.next(xs))
+          let y = seq.next(ys) in
+          do
+            while y == unit and ys /= unit
+              ys <- tosequence(seq.next(xs))
+              y <- seq.next(ys)
+            end
+
+            y
+          end
+        end
+      given y => y
+    end
+  }
+}
+
+(*
+  Map a function over the elements of the provided sequence and concatenate
+  the resulting sequences.
+  @param xs <Sequence> The input sequence.
+  @param func <Function> The transformation function that should return a 
+                         sequence.
+*)
+seq.concatMap :: { xs: Sequence, func: Function =>
+  xs
+  |> tosequence(_)
+  |> seq.map(_, func)
+  |> seq.flatten(_)
 }

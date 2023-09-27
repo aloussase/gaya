@@ -10,6 +10,10 @@ object to_sequence(interpreter& interp, object& o) noexcept
 {
     switch (o.type)
     {
+    case object_type_unit:
+    {
+        return o;
+    }
     case object_type_number:
     {
         return create_number_sequence(interp, o.span, AS_NUMBER(o));
@@ -30,7 +34,6 @@ object to_sequence(interpreter& interp, object& o) noexcept
     {
         return create_dict_sequence(interp, o.span, AS_DICT(o));
     }
-    case object_type_unit:
     case object_type_function:
     case object_type_builtin_function:
     case object_type_foreign_function:

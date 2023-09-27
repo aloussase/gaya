@@ -239,3 +239,40 @@ Return the first element in the sequence, or unit if there are none.
 ```
 @param xs <sequence> The sequence.
 ```
+
+### `seq.inits`
+
+Returns a sequence over the initial elements of the provided sequence,
+shortest first.
+
+```
+@param xs <Sequence> The sequence.
+```
+
+### `seq.tails`
+
+Returns a sequence over the final segments of the provided sequence,
+longest first.
+
+```
+@param xs <Sequence> The sequence.
+```
+
+### `seq.flatten`
+
+Creates a new sequence that flattens one level of the provided sequence.
+
+```
+@param xs <sequence> The sequence to flatten.
+```
+
+### `seq.concatMap`
+
+Map a function over the elements of the provided sequence and concatenate
+the resulting sequences.
+
+```
+@param xs <Sequence> The input sequence.
+@param func <Function> The transformation function that should return a
+                       sequence.
+```
