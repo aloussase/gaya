@@ -1,8 +1,6 @@
-(* Output: '42' *)
-
 f :: { x => 
   let x = 42 in
-  io.println(x)
+  x
 }
 
-f(69).
+f(69) |> assert(_ == 42).

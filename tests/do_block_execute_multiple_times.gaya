@@ -1,10 +1,8 @@
-(* Output: 'Ahooy!\nAhooy!' *)
-
 f :: { =>
   do
-    io.println("Ahooy!")
+    "Ahooy!"
   end
 }
 
-f().
-f().
+f() |> assert(_ == "Ahooy!").
+f() |> assert(_ == "Ahooy!").

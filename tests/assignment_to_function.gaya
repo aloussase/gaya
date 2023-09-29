@@ -1,7 +1,5 @@
-(* Output: 'f' *)
-
-f :: { => io.println("f") }
+f :: { => "f" }
 
 g :: f
 
-g().
+g() |> assert(_ == "f").

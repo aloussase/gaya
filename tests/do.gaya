@@ -1,18 +1,7 @@
-(* Output: 'Hello, \nglobal\nWorld!\nglobal' *)
-
 x :: "global"
 
-f :: { =>
-  do
-    io.println("Hello, ").
-    do 
-      io.println(x).
-      let x = "World!" in io.println(x)
-    end
-  end
-}
+f :: { => let x = "World!" in x }
 
-f().
-
-io.println(x).
+f() |> assert(_ == "World!").
+x   |> assert(_ == "global").
 

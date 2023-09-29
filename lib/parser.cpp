@@ -2045,7 +2045,7 @@ ast::expression_ptr parser::do_expression(token token)
             if (auto lparen_or_backarrow = _lexer.peek_token();
                 match(lparen_or_backarrow, token_type::lparen))
             {
-                auto e = call_expression(stmt_token.value());
+                auto e = expression(stmt_token.value());
                 if (!e) return nullptr;
 
                 if (match(token_type::dot))
@@ -2267,6 +2267,7 @@ ast::expression_ptr parser::string(token token) noexcept
             case 'b': result.push_back('\b'); break;
             case 't': result.push_back('\t'); break;
             case '"': result.push_back('\"'); break;
+            case '\'': result.push_back('\''); break;
             case 'x': result.push_back(hex_string_to_int(s, i)); break;
             default:
             {

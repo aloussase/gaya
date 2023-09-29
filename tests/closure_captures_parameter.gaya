@@ -1,9 +1,7 @@
-(* Output: 'Gaya' *)
-
 f :: { name => 
-  { => io.println(name) }
+  { => name }
 }
 
 x :: f("Gaya")()
 
-x.
+assert(x == "Gaya").

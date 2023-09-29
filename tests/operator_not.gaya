@@ -1,9 +1,7 @@
-(* Output: '0\n1\n0\n1\n1' *)
+not "true" |> assert(not _).
+not ""     |> assert(_).
 
-io.println(not "true").
-io.println(not "").
+not 123 |> assert(not _).
+not 0   |> assert(_).
 
-io.println(not 123).
-io.println(not 0).
-
-io.println(not unit).
+not unit |> assert(_).

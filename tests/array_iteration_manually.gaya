@@ -1,8 +1,11 @@
-(* Output: '1\n2\n3' *)
-
 let a = (1, 2, 3) in
-let i = 0 in perform
-while i < array.length(a)
-  io.println(a(i)).
-  i <- i + 1
+let i = 0 in
+let nums = () in
+do
+  while i < array.length(a)
+    array.push(nums, a(i)).
+    i <- i + 1
+  end
+
+  assert(nums == (1, 2, 3)).
 end.

@@ -1,12 +1,9 @@
-(* Output: 'shadow\nclosure' *)
-
 foo :: "closure"
 
 f :: { =>
   let foo = "shadow" in
-  io.println(foo)
+  foo
 }
 
-f().
-
-io.println(foo).
+f() |> assert(_ == "shadow").
+foo |> assert(_ == "closure").

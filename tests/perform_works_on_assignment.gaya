@@ -1,5 +1,3 @@
-(* Output: '52' *)
-
 test :: { =>
   let x = 42 in do
     perform x <- 52 .
@@ -7,4 +5,4 @@ test :: { =>
   end
 }
 
-io.println(test()).
+test() |> assert(_ == 52).

@@ -1,5 +1,3 @@
-(* Output: '' *)
-
 include "sequences"
 include "arrays"
 

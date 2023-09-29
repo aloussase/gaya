@@ -1,11 +1,9 @@
-(* Output: 'Inside array!\nGaya' *)
-
 f :: { name =>
-  { => io.println(name) }
+  { => name }
 }
 
-let xs = ({ => io.println("Inside array!") }) in
+let xs = ({ => "Inside array!" }) in
 let ys = ( f("Gaya") ) in do
-  xs(0)().
-  ys(0)()
+  xs(0)() |> assert(_ == "Inside array!").
+  ys(0)() |> assert(_ == "Gaya").
 end.

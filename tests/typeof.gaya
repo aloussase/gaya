@@ -1,13 +1,3 @@
-(* Output: 'Number\nString\nUnit\nOops' *)
-
-io.println(typeof(42)).
-
-io.println(typeof("Hello")).
-
-io.println(typeof(unit)).
-
-let result = 69 / 0 in
-cases
-  given typeof(result) == "Unit" => io.println("Oops")
-  otherwise                      => io.println(result)
-end.
+typeof(42)      |> assert(_ == "Number").
+typeof("Hello") |> assert(_ == "String").
+typeof(unit)    |> assert(_ == "Unit").

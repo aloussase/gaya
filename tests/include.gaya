@@ -1,9 +1,7 @@
-(* Output: 'From included\nFrom other included' *)
-
 include "./file_to_be_included.gaya"
 include "functions"
 include "file_to_be_included_without_extension"
 
-someFunction().
-fn.add(1, 2).
-someOtherFunction().
+someFunction()      |> assert(_ == "From included").
+fn.add(1, 2)        |> assert(_ == 3).
+someOtherFunction() |> assert(_ == "From other included").

@@ -1,5 +1,3 @@
-(* Output: 'HelloHello' *)
-
 test :: { s1, s2 => string.concat(s1, s2) }
 
-io.println("Hello" |> test(_, _)).
+"Hello" |> test(_, _) |> assert(_ == "HelloHello").

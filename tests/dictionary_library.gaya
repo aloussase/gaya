@@ -1,5 +1,3 @@
-(* Output: '' *)
-
 include "dictionaries"
 
 (* dict.length *)

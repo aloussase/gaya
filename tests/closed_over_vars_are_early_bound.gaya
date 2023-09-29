@@ -1,11 +1,9 @@
-(* Output: '42\n42' *)
-
 x :: 42
 
 f :: { => x }
 
-io.println(f()).
+f() |> assert(_ == 42).
 
 x :: 69
 
-io.println(f()).
+f() |> assert(_ == 42).

@@ -1,9 +1,10 @@
-(* Output: '0\n1\n2\n3\n4' *)
-
+let i = 0 in 
+let nums = () in
 do
-  let i = 0 in perform
-  while i < 5
-    io.println(i).
+  perform while i < 5
+    array.push(nums, i).
     i <- i + 1
-  end
+  end.
+
+  assert(nums == (0, 1, 2, 3, 4)).
 end.

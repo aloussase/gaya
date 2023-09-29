@@ -1,8 +1,11 @@
-(* Output: 'H\no\nl\na' *)
-
 let s = "Hola" in
-let i = 0 in perform
-while i < string.length(s)
-  io.println(s(i)).
-  i <- i + 1
+let i = 0 in
+let chars = () in
+do
+  while i < string.length(s)
+    array.push(chars, s(i)).
+    i <- i + 1
+  end
+
+  assert(chars == ("H", "o", "l", "a"))
 end.

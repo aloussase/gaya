@@ -1,15 +1,13 @@
-(* Output: 't\nt\nf\nf\nf' *)
-
 test :: { x =>
   cases
-    given x   => io.println("t")
-    otherwise => io.println("f")
+    given x   => "t"
+    otherwise => "f"
   end
 }
 
-test(42)    (* Truthy *).
-test("42")  (* Truthy *).
-test(unit)  (* Falsey *).
-test("")    (* Falsey *).
-test(0)     (* Falsey *).
+test(42)  |> assert(_ == "t").
+test("42")|> assert(_ == "t").
+test(unit)|> assert(_ == "f").
+test("")  |> assert(_ == "f").
+test(0)   |> assert(_ == "f").
 

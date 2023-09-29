@@ -1,13 +1,11 @@
-(* Output: '(1 -> "Hello", "Hello" -> 1)\n(->)' *)
-
 include "base"
 include "sequences"
 include "arrays"
 include "functions"
 
 (* testing to_string *)
-io.println((1 -> "Hello", "Hello" -> 1)).
-io.println((->)).
+assert(tostring((1 -> "Hello", "Hello" -> 1)) == "(1 -> \"Hello\", \"Hello\" -> 1)").
+assert(tostring((->)) == "(->)").
 
 (* typeof dict is dictionary *)
 typeof((->)) |> assert(_ == "Dictionary").

@@ -1,5 +1,2 @@
-(* Output: 'unit' *)
-
 f :: { => }
-
-io.println(f()).
+f() |> assert(_ == unit).

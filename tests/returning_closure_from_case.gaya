@@ -1,5 +1,3 @@
-(* Output: '<function-0>\n69' *)
-
 include "functions"
 
 f :: { x =>
@@ -10,6 +8,5 @@ f :: { x =>
   end
 }
 
-io.println(f("")).
-
-io.println(f(27)()).
+f("")   |> tostring(_) |> assert(_ == "<function-0>").
+f(27)() |> assert(_ == 69).

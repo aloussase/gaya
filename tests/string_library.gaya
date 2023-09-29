@@ -1,35 +1,33 @@
-(* Output: '1\n0\n1\n0\nGaya\nGa\n2\n0\nunit\n1\n1\n0\nGay\nGaya\nunit\nunit\n' *)
-
 include "strings"
 include "sequences"
 
 (* startswith *)
-io.println(string.startswith("Gaya", "Ga", 0)).
-io.println(string.startswith("Gaya", "ya", 0)).
+assert(string.startswith("Gaya", "Ga", 0)).
+assert(not string.startswith("Gaya", "ya", 0)).
 
 (* endswith *)
-io.println(string.endswith("Gaya", "ya")).
-io.println(string.endswith("Gaya", "Ga")).
+assert(string.endswith("Gaya", "ya")).
+assert(not string.endswith("Gaya", "Ga")).
 
 (* concat *)
-io.println(string.concat("Ga", "ya")).
-io.println(string.concat("Ga", "")).
+assert(string.concat("Ga", "ya") == "Gaya").
+assert(string.concat("Ga", "") == "Ga").
 
 (* index *)
-io.println(string.index("Gaya", "ya")).
-io.println(string.index("Gaya", "Ga")).
-io.println(string.index("Gaya", "Gata")).
+assert(string.index("Gaya", "ya") == 2).
+assert(string.index("Gaya", "Ga") == 0).
+assert(string.index("Gaya", "Gata") == unit).
 
 (* contains *)
-io.println(string.contains("Gaya", "ya")).
-io.println(string.contains("Gaya", "Ga")).
-io.println(string.contains("Gaya", "Gata")).
+assert(string.contains("Gaya", "ya")).
+assert(string.contains("Gaya", "Ga")).
+assert(not string.contains("Gaya", "Gata")).
 
 (* substring *)
-io.println(string.substring("Gaya", 0, 3)).
-io.println(string.substring("Gaya", 0, 4)).
-io.println(string.substring("Gaya", -1, 4)).
-io.println(string.substring("Gaya", 4, 0)).
+assert(string.substring("Gaya", 0, 3) == "Gay").
+assert(string.substring("Gaya", 0, 4) == "Gaya").
+assert(string.substring("Gaya", -1, 4) == unit).
+assert(string.substring("Gaya", 4, 0) == unit).
 
 (* split *)
 string.split("Hello\nGaya\n!", "\n")

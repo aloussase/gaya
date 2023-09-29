@@ -1,12 +1,6 @@
-(* Output: 'H\n69\nl\nNumber\n5' *)
-
-io.println(0 |> "Hello"(_)).
-
-io.println(42 |> _ + 27).
-
-io.println(1 |> _ + 2 |> "Hello"(_)).
-
-io.println(1 |> typeof(_)).
-
-io.println(5 |> let x = _ in x).
+0  |> "Hello"(_)          |> assert(_ == "H").
+42 |> _ + 27              |> assert(_ == 69).
+1  |> _ + 2 |> "Hello"(_) |> assert(_ == "l").
+1  |> typeof(_)           |> assert(_ == "Number").
+5  |> let x = _ in x      |> assert(_ == 5).
 

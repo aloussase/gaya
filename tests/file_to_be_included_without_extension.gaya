@@ -1,1 +1,1 @@
-someOtherFunction :: { => io.println("From other included") }
+someOtherFunction :: { => "From other included" }

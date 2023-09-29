@@ -1,8 +1,6 @@
-(* Output: 'before\nafter' *)
-
 do
-  let a = "before" in io.println(a).
-  let a = "after"  in io.println(a).
+  let a = "before" in a |> assert(_ == "before").
+  let a = "after"  in a |> assert(_ == "after").
 end.
     
 

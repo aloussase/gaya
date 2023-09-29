@@ -1,9 +1,7 @@
-(* Output: 'global\nlocal\nglobal' *)
-
 a :: "global"
-io.println(a).
+a |> assert(_ == "global").
 
 let a = "local" in
-io.println(a).
+a |> assert(_ == "local").
 
-io.println(a).
+a |> assert(_ == "global").

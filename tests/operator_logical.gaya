@@ -1,14 +1,12 @@
-(* Output: '0\n1\n1\n1\nunit\nunit\n42\n0' *)
+0 and 1 |> assert(_ == 0).
+1 and 1 |> assert(_ == 1).
 
-io.println(0 and 1).
-io.println(1 and 1).
-
-io.println(0 or 1).
-io.println(1 or 0).
+0 or 1 |> assert(_ == 1).
+1 or 0 |> assert(_ == 1).
 
 (* Short-circuiting *)
-io.println(unit) and io.println(42).
-io.println(unit) or io.println(42).
+unit and 42 |> assert(_ == unit).
+unit or 42  |> assert(_ == 42).
 
 (* Precedence with not *)
-io.println(not 42 and 69).
+not 42 and 69 == 0 |> assert(_ == 0).

@@ -1,17 +1,14 @@
-(* Output: '42\n42\n69' *)
-
 x :: 69
 
 f :: { =>
   let x = 42 in
-  { => io.println(x) }
+  { => x }
 }
 
 g :: f()
 h :: f()
 
-g().
+g() |> assert(_ == 42).
+h() |> assert(_ == 42).
 
-h().
-
-io.println(x).
+assert(x == 69).

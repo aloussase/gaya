@@ -1,12 +1,9 @@
-(* Output: '42\nThat was false' *)
-
 f :: { arg =>
   cases
-    given arg => io.println(arg)
-    otherwise => io.println("That was false")
+    given arg => arg
+    otherwise => "That was false"
   end
 }
 
-f(42).
-
-f(unit).
+f(42)   |> assert(_ == 42).
+f(unit) |> assert(_ == "That was false").

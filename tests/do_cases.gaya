@@ -1,20 +1,9 @@
-(* Output: 'Truthy\n42\nFalsey\n' *)
-
 f :: { x =>
   cases
-    given x =>
-      do
-        io.println("Truthy").
-        io.println(x)
-      end
-    otherwise =>
-      do
-        io.println("Falsey").
-        io.println(x)
-      end
-    end
+    given x =>   "Truthy"
+    otherwise => "Falsey"
+  end
 }
 
-f(42).
-
-f("").
+f(42) |> assert(_ == "Truthy").
+f("") |> assert(_ == "Falsey").

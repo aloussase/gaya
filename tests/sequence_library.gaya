@@ -1,5 +1,3 @@
-(* Output: '(5, 7, 9)\n(3)\n(3)\n()' *)
-
 include "sequences"
 include "functions"
 include "strings"
@@ -8,26 +6,29 @@ include "strings"
 (1, 2, 3)
   |> tosequence(_)
   |> seq.zip(_, (4, 5, 6), fn.add)
-  |> io.println(_).
+  |> seq.toarray(_)
+  |> assert(_ == (5, 7, 9)).
 
 (* seq.filter works outside of pipeline *)
 let xs = (1, 2, 3, 4) in
 let ss = seq.filter(xs, { x => x < 4 }) in
 let ss = seq.filter(ss, { x => x > 2 }) in
-io.println(ss).
+assert(ss |> seq.toarray(_) == (3)).
 
 (* seq.filter can be applied twice *)
 (1, 2, 3, 4)
   |> tosequence(_)
   |> seq.filter(_, { x => x < 4 })
   |> seq.filter(_, { x => x > 2 })
-  |> io.println(_).
+  |> seq.toarray(_)
+  |> assert(_ == (3)).
 
 (* seq.filter *)
 (1, 2, 3, 4)
   |> tosequence(_)
   |> seq.filter(_, { x => x < 1 })
-  |> io.println(_).
+  |> seq.toarray(_)
+  |> assert(_ == ()).
 
 (* seq.map and seq.filter *)
 (1, 2, 3, 4)

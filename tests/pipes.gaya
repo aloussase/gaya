@@ -1,5 +1,3 @@
-(* Output: 'anon says: Hello!\nanon says: Hallo!' *)
-
 include "strings"
 
 test :: { s =>
@@ -9,5 +7,5 @@ test :: { s =>
   |> string.concat("anon says: ", _)
 }
 
-io.println(test("   Hello \n ")).
-io.println(test("   Hallo   ")).
+test("   Hello \n ") |> assert(_ == "anon says: Hello!").
+test("   Hallo   ")  |> assert(_ == "anon says: Hallo!").

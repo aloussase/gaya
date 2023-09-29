@@ -1,17 +1,15 @@
-(* Output: '()\n(1)\n(1)\n(1, 2)\n(1)\n("hello", 1)' *)
-
 include "arrays"
 include "functions"
 
 (* Concat *)
-io.println(array.concat((), ())).
-io.println(array.concat((1), ())).
-io.println(array.concat((), (1))).
-io.println(array.concat((1), (2))).
+array.concat((), ())   |> assert(_ == ()).
+array.concat((1), ())  |> assert(_ == (1)).
+array.concat((), (1))  |> assert(_ == (1)).
+array.concat((1), (2)) |> assert(_ == (1, 2)).
 
 (* Push *)
-io.println(array.push((), 1)).
-io.println(array.push(("hello"), 1)).
+array.push((), 1) |> assert(_ == (1)).
+array.push(("hello"), 1) |> assert(_ == ("hello", 1)).
 
 (* Range *)
 array.range(1, 10) |> assert(_ == (1, 2, 3, 4, 5, 6, 7, 8, 9)).

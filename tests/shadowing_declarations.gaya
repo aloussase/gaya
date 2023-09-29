@@ -1,7 +1,5 @@
-(* Output: '42\n69' *)
-
 x :: 42 
-io.println(x).
+x |> assert(_ == 42).
 
 x :: 69
-io.println(x).
+x |> assert(_ == 69).

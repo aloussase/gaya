@@ -1,7 +1,5 @@
-(* Output: 'before\nafter' *)
-
 a :: "before"
-io.println(a).
+a |> assert(_ == "before").
 
 a :: "after"
-io.println(a).
+a |> assert(_ == "after").

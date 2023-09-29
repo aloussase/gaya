@@ -10,11 +10,13 @@ jobs:
         with:
           submodules: true
 
+      - name: Install dependencies
+        run: sudo apt-get install gdc ruby
+
       - name: Build Gaya
         run: |
-          sudo apt-get install gdc
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
           cmake --build build
 
       - name: Test examples
-        run: ./scripts/test.sh
+        run: ruby ./scripts/test.rb

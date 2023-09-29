@@ -1,10 +1,8 @@
-(* Output: 'i' *)
-
 test :: { =>
   let f = unit in
   let finished = 0 in do
     while not finished
-      let i = "i" in perform f <- { => io.println(i) }.
+      let i = "i" in perform f <- { => i }.
       finished <- 1
     end
 
@@ -14,4 +12,4 @@ test :: { =>
 
 h :: test()
 
-h().
+h() |> assert(_ == "i").
