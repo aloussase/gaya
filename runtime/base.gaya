@@ -1,13 +1,14 @@
-(* Constants *)
-
 true  :: 1
 false :: 0
 
-(* Utilities *)
+(*
+  Return the first element in a 2-element array.
+  @param xs <Array> The array.
+*)
+fst :: { (x, _) => x }
 
-ifelse :: { b, iftrue, iffalse =>
-  cases
-    given b   => iftrue()
-    otherwise => iffalse()
-  end
-}
+(*
+  Return the second element in a 2-element array.
+  @param xs <Array> The array.
+*)
+snd :: { (_, x) => x }

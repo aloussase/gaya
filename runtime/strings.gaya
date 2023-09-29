@@ -71,3 +71,9 @@ string.splitArray :: { s, pattern =>
 (* Return whether a string is a whitespace character.
   @param s <string> The string to test. *)
 string.iswhitespace :: { s => s == " " or s == "\n" or s == "\t" }
+
+(*
+  Return a sequence over the lines in the provided string.
+  @param s <String> The string to split.
+*)
+string.lines :: { s => s |> string.split(_, "\n") }

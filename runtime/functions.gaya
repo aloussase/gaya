@@ -30,3 +30,9 @@ fn.min :: { x, y =>
     otherwise   => y
   end
 }
+
+(* The identity function. *)
+id :: { x => x }
+
+(* Ignores its second argument. *)
+const :: { x, y => x }
