@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="./assets/logo/logo256x256.png" alt="gaya-logo" />
-</p>
-
 <h3 align="center">Gaya</h3>
 
 ```ocaml
