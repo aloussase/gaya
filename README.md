@@ -66,6 +66,15 @@ problems, surely I can write such a language myself". And here we are now.
 
 #### Installing
 
+You need to have a C++ and D compiler (GDC specifically) and CMake. You can
+install them on Debian with the following command:
+
+```
+sudo apt-get install build-essential cmake gdc
+```
+
+Then, you can clone this repository and build the interpreter:
+
 ```
 git clone --recurse-submodules https://github.com/aloussase/gaya
 cd gaya

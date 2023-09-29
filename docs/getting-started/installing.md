@@ -1,5 +1,16 @@
 # Installing Gaya
 
+## Dependencies
+
+You need to have a C++ and D compiler (GDC specifically). You can install them
+on Debian by running the following command:
+
+```
+sudo apt-get install build-essential cmake gdc
+```
+
+## Building Gaya
+
 You can install Gaya by building it from source:
 
 ```
