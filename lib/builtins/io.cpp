@@ -79,4 +79,30 @@ gaya::eval::object::object readfile(
 
     return create_string(interp, span, std::string { contents });
 }
+
+gaya::eval::object::object listdir(
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    if (!IS_STRING(args[0]))
+    {
+        interp.interp_error(span, "Expected the first argument to be a string");
+        return invalid;
+    }
+
+    auto& dirname = AS_STRING(args[0]);
+    std::vector<object> files;
+    std::filesystem::directory_iterator it { dirname };
+
+    for (auto entry : it)
+    {
+        auto filename        = entry.path().string();
+        auto filename_object = create_string(interp, span, filename);
+        files.push_back(filename_object);
+    }
+
+    return create_array(interp, span, std::move(files));
+}
+
 }

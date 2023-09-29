@@ -10,6 +10,9 @@
 
 static bool show_usage_flag = false;
 static bool print_ast_flag  = false;
+static bool run_repl_flag   = false;
+
+[[noreturn]] void repl();
 
 [[nodiscard]] static bool
 print_ast(const char* filename, const char* source) noexcept
@@ -17,18 +20,14 @@ print_ast(const char* filename, const char* source) noexcept
     auto interp  = gaya::eval::interpreter {};
     auto& parser = interp.get_parser();
 
-    if (auto ast = parser.parse(filename, source);
-        ast && parser.diagnostics().empty())
+    if (auto ast = parser.parse(filename, source); ast && !parser.had_error())
     {
         fmt::println("{}", ast->to_string());
         return true;
     }
     else
     {
-        for (const auto& diag : parser.diagnostics())
-        {
-            fmt::println("{}", diag.to_string());
-        }
+        parser.report_diagnostics();
         return false;
     }
 }
@@ -40,11 +39,7 @@ print_ast(const char* filename, const char* source) noexcept
 
     if (interp.had_error())
     {
-        for (const auto& diagnostic : interp.diagnostics())
-        {
-            fmt::print("{}", diagnostic.to_string());
-        }
-
+        interp.report_diagnostics();
         return false;
     }
 
@@ -84,6 +79,7 @@ print_ast(const char* filename, const char* source) noexcept
            "    filename     a file to evaluate\n"
            "options:\n"
            "    --help       show this help\n"
+           "    --repl       run the REPL\n"
            "    --print-ast  do not run the program, print the ast\n");
     exit(EXIT_SUCCESS);
 }
@@ -97,6 +93,10 @@ auto main(int argc, char** argv) -> int
         if (strcmp(arg, "--help") == 0)
         {
             show_usage_flag = true;
+        }
+        else if (strcmp(arg, "--repl") == 0)
+        {
+            run_repl_flag = true;
         }
         else if (strcmp(arg, "--print-ast") == 0)
         {
@@ -122,6 +122,11 @@ auto main(int argc, char** argv) -> int
     if (remaining_args > 1)
     {
         usage();
+    }
+
+    if (run_repl_flag)
+    {
+        repl();
     }
 
     if (remaining_args == 1)

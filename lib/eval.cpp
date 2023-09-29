@@ -51,6 +51,7 @@ interpreter::interpreter()
     BUILTIN("io.print"s, 1, io::print);
     BUILTIN("io.readline"s, 0, io::readline);
     BUILTIN("io.readfile"s, 1, io::readfile);
+    BUILTIN("io.listdir"s, 1, io::listdir);
 
     BUILTIN("string.length"s, 1, string::length);
     BUILTIN("string.concat"s, 2, string::concat);
@@ -122,6 +123,14 @@ std::vector<diagnostic::diagnostic> interpreter::diagnostics() const noexcept
 const std::string& interpreter::current_filename() const noexcept
 {
     return _filename;
+}
+
+void interpreter::report_diagnostics() noexcept
+{
+    for (const auto& diagnostic : _diagnostics)
+    {
+        fmt::println("{}", diagnostic.to_string());
+    }
 }
 
 void interpreter::clear_diagnostics() noexcept

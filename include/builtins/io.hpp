@@ -33,4 +33,11 @@ readline(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 readfile(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * List the files in the provided directory.
+ * @param dirname <String> The name of the directory to list.
+ */
+gaya::eval::object::object
+listdir(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

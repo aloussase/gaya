@@ -36,6 +36,11 @@ bool lexer::is_keyword(const std::string& w) noexcept
     return _keywords.contains(w);
 }
 
+bool lexer::is_keyword(const char* w) noexcept
+{
+    return is_keyword(std::string(w));
+}
+
 std::optional<char> lexer::advance() noexcept
 {
     if (is_at_end())

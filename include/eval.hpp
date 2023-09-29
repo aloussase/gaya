@@ -32,6 +32,11 @@ public:
     /// Return the name of the file currently being interpreted.
     [[nodiscard]] const std::string& current_filename() const noexcept;
 
+    /**
+     * Report the interpreter's diagnostics.
+     */
+    void report_diagnostics() noexcept;
+
     /// Remove all diagnostics from this interpreter.
     void clear_diagnostics() noexcept;
 

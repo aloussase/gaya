@@ -12,6 +12,7 @@ jobs:
 
       - name: Build Gaya
         run: |
+          apt-get install gdc
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
           cmake --build build
 

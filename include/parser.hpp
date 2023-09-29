@@ -23,6 +23,33 @@ public:
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>& diagnostics() noexcept;
 
+    /**
+     * Parse an expression.
+     */
+    [[nodiscard]] ast::node_ptr
+    parse_expression(const std::string& filename, const char*) noexcept;
+
+    /**
+     * Parse a statement.
+     */
+    [[nodiscard]] ast::node_ptr
+    parse_statement(const std::string& filename, const char*) noexcept;
+
+    /**
+     * Print the parser's diagnostics.
+     */
+    void report_diagnostics() const noexcept;
+
+    /**
+     * Clear the parser's diagnostics.
+     */
+    void clear_diagnostics() noexcept;
+
+    /**
+     * Return whether there was a parsing error.
+     */
+    bool had_error() const noexcept;
+
 private:
     std::vector<ast::stmt_ptr> stmts() noexcept;
 

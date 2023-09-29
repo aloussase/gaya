@@ -39,6 +39,8 @@ static std::vector<std::string> get_lines(const char* source) noexcept
         }
     }
 
+    lines.push_back(current_line);
+
     return lines;
 }
 
@@ -118,9 +120,9 @@ std::string diagnostic::to_string() const noexcept
     {
         auto lines = get_lines(_span.source());
 
-        auto linum          = _span.lineno() - 1;
+        int linum           = _span.lineno() - 1;
         auto context_before = linum - 1 > 0 ? lines[linum - 1] : "";
-        auto line           = lines[_span.lineno() - 1];
+        auto line           = lines[linum];
         auto context_after  = linum + 1 < lines.size() ? lines[linum + 1] : "";
 
         ss << linum_with_line(linum, context_before, StyleOption::Dim);

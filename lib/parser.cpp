@@ -10,10 +10,11 @@
 namespace gaya
 {
 
+using namespace std::string_literals;
+
 parser::parser()
     : _lexer { nullptr }
 {
-    using namespace std::string_literals;
 
     begin_scope();
 
@@ -29,6 +30,7 @@ parser::parser()
     define("io.print"s);
     define("io.readline"s);
     define("io.readfile"s);
+    define("io.listdir"s);
 
     define("string.length"s);
     define("string.concat"s);
@@ -62,6 +64,46 @@ parser::parser()
 std::vector<diagnostic::diagnostic>& parser::diagnostics() noexcept
 {
     return _diagnostics;
+}
+
+void parser::report_diagnostics() const noexcept
+{
+    for (const auto& diagnostic : _diagnostics)
+    {
+        fmt::println("{}", diagnostic.to_string());
+    }
+}
+
+bool parser::had_error() const noexcept
+{
+    return !_diagnostics.empty();
+}
+
+void parser::clear_diagnostics() noexcept
+{
+    _diagnostics.clear();
+}
+
+ast::node_ptr parser::parse_expression(
+    const std::string& filename,
+    const char* source) noexcept
+{
+    _filename = filename;
+    _lexer    = lexer { source };
+
+    auto t = _lexer.next_token();
+    if (!t) return nullptr;
+
+    return expression(*t);
+}
+
+ast::node_ptr parser::parse_statement(
+    const std::string& filename,
+    const char* source) noexcept
+{
+    _filename = filename;
+    _lexer    = lexer { source };
+    return toplevel_stmt();
 }
 
 void parser::parser_error(span s, const std::string& message)

@@ -97,18 +97,8 @@ public:
 
     void push_back(token) noexcept;
 
-    template <typename Callback>
-    void for_each(Callback f) noexcept
-    {
-        auto token = next_token();
-        while (token)
-        {
-            f(token.value());
-            token = next_token();
-        }
-    }
-
     [[nodiscard]] static bool is_keyword(const std::string&) noexcept;
+    [[nodiscard]] static bool is_keyword(const char*) noexcept;
 
 private:
     std::optional<char> advance() noexcept;
@@ -139,11 +129,11 @@ private:
     [[nodiscard]] std::optional<token> string() noexcept;
     [[nodiscard]] std::optional<token> identifier() noexcept;
 
-    char* _current            = 0;
-    char* _start              = 0;
-    size_t _lineno            = 1;
-    const char* _source       = nullptr;
-    std::queue<token> _buffer = {};
+    char* _current      = 0;
+    char* _start        = 0;
+    size_t _lineno      = 1;
+    const char* _source = nullptr;
+    std::queue<token> _buffer;
     std::vector<diagnostic::diagnostic> _diagnostics;
     static std::unordered_map<std::string, token_type> _keywords;
 };

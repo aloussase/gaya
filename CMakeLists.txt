@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 add_subdirectory(third_party/fmt EXCLUDE_FROM_ALL)
 
 include_directories(include)
+add_subdirectory(lib)
 add_subdirectory(src)
 
 
