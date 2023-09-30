@@ -189,14 +189,13 @@ bool parser::assign_scope(std::unique_ptr<ast::identifier>& ident) noexcept
     return false;
 }
 
-bool parser::is_valid_assignment_target(
-    std::unique_ptr<ast::identifier>& ident) noexcept
+bool parser::is_valid_assignment_target(ast::identifier& ident) noexcept
 {
     assert(_scopes.size() > 0);
 
     for (int i = _scopes.size() - 1; i >= 0; i--)
     {
-        if (auto it = _scopes[i].find(ident->key); it != _scopes[i].end())
+        if (auto it = _scopes[i].find(ident.key); it != _scopes[i].end())
         {
             return it->kind == eval::identifier_kind::local;
         }
@@ -284,17 +283,9 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
 {
     switch (token.type)
     {
-    case token_type::identifier:
+    case token_type::ampersand:
     {
-        if (auto backarrow = _lexer.peek_token();
-            match(backarrow, token_type::back_arrow))
-        {
-            return assignment_stmt(token);
-        }
-        else
-        {
-            return expression_stmt(token);
-        }
+        return assignment_stmt(token);
     }
     case token_type::while_:
     {
@@ -311,63 +302,59 @@ ast::stmt_ptr parser::local_stmt(token token) noexcept
     }
 }
 
-ast::stmt_ptr parser::assignment_stmt(token identifier) noexcept
+ast::stmt_ptr parser::assignment_stmt(token ampersand) noexcept
 {
-    assert(identifier.type == token_type::identifier);
-    if (!match(token_type::back_arrow))
+    assert(ampersand.type == token_type::ampersand);
+
+    auto i_t = _lexer.next_token();
+    if (!match(i_t, token_type::identifier))
     {
-        parser_error(
-            identifier.span,
-            "Expected '<-' after identifier in assignment statement");
+        parser_error(ampersand.span, "Expected an identifier after '&'");
         return nullptr;
     }
 
-    auto expression_token = _lexer.next_token();
-    if (!expression_token)
+    if (!match(token_type::back_arrow))
     {
         parser_error(
-            identifier.span,
+            ampersand.span,
+            "Expected '<-' after expression in assignment statement");
+        return nullptr;
+    }
+
+    auto e_t = _lexer.next_token();
+    auto e   = e_t ? expression(*e_t) : nullptr;
+    if (!e)
+    {
+        parser_error(
+            ampersand.span,
             "Expected expression after '<-' in assignment statement");
         return nullptr;
     }
 
-    auto expr = expression(expression_token.value());
-    if (!expr)
+    auto span       = i_t->span;
+    auto identifier = ast::make_node<ast::identifier>(span, span.to_string());
+
+    if (!is_valid_assignment_target(*identifier))
     {
-        parser_error(
-            identifier.span,
-            "Expected an expression after '<-' in assignment statement");
+        parser_error(span, "Invalid assignment target.");
+        parser_hint(span, "Only local variables may be assigned to");
         return nullptr;
     }
 
-    auto ident = std::make_unique<ast::identifier>(
-        identifier.span,
-        identifier.span.to_string());
-
-    if (!is_valid_assignment_target(ident))
+    if (!assign_scope(identifier))
     {
         parser_error(
-            identifier.span,
-            fmt::format(
-                "Invalid assignment target: {}",
-                identifier.span.to_string()));
-        parser_hint(
-            identifier.span,
-            "Only variables introduced with let are valid assignment targets");
-        return nullptr;
-    }
-
-    if (!assign_scope(ident))
-    {
-        parser_error(
-            identifier.span,
+            span,
             fmt::format(
                 "Undeclared identifier in assignment: {}",
-                identifier.span.to_string()));
+                span.to_string()));
         return nullptr;
     }
 
-    return ast::make_node<ast::assignment_stmt>(std::move(ident), expr);
+    return ast::make_node<ast::assignment_stmt>(
+        ast::AssignmentKind::Identifier,
+        std::move(identifier),
+        e);
 }
 
 ast::stmt_ptr parser::while_stmt(token while_) noexcept
@@ -456,12 +443,9 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
 
     if (match(token_type::colon))
     {
-        if (auto identifier_token = _lexer.next_token();
-            match(identifier_token, token_type::identifier))
-        {
-            continuation = assignment_stmt(identifier_token.value());
-        }
-        else
+        auto a_t     = _lexer.next_token();
+        continuation = a_t ? assignment_stmt(*a_t) : nullptr;
+        if (!continuation)
         {
             parser_error(
                 while_.span,
@@ -2015,84 +1999,37 @@ ast::expression_ptr parser::do_expression(token token)
     std::vector<ast::node_ptr> body;
     bool parsed_final_expression = false;
 
-    for (;;)
+    while (!parsed_final_expression)
     {
-        auto stmt_token = _lexer.next_token();
-        if (!stmt_token) break;
+        auto t = _lexer.next_token();
+        if (!t) break;
 
-        if (match(stmt_token, token_type::end))
+        if (match(t, token_type::end))
         {
-            _lexer.push_back(stmt_token.value());
+            _lexer.push_back(*t);
             break;
         }
 
-        if (stmt_token->type == token_type::while_)
+        switch (t->type)
         {
-            auto stmt = while_stmt(stmt_token.value());
-            if (!stmt) return nullptr;
-
+        case token_type::ampersand:
+        case token_type::while_:
+        case token_type::for_:
+        {
+            auto stmt = local_stmt(*t);
+            if (!stmt)
+            {
+                end_scope();
+                return nullptr;
+            }
             body.push_back(stmt);
+            break;
         }
-        else if (stmt_token->type == token_type::for_)
+        default:
         {
-            auto stmt = for_in_stmt(stmt_token.value());
-            if (!stmt) return nullptr;
-
-            body.push_back(stmt);
-        }
-        else if (stmt_token->type == token_type::identifier)
-        {
-            if (auto lparen_or_backarrow = _lexer.peek_token();
-                match(lparen_or_backarrow, token_type::lparen))
-            {
-                auto e = expression(stmt_token.value());
-                if (!e) return nullptr;
-
-                if (match(token_type::dot))
-                {
-                    body.push_back(ast::make_node<ast::expression_stmt>(e));
-                }
-                else
-                {
-                    body.push_back(e);
-                    parsed_final_expression = true;
-                    break;
-                }
-            }
-            else if (match(lparen_or_backarrow, token_type::back_arrow))
-            {
-                auto stmt = assignment_stmt(stmt_token.value());
-                if (!stmt) return nullptr;
-
-                body.push_back(stmt);
-            }
-            else
-            {
-                auto e = expression(stmt_token.value());
-                if (!e) return nullptr;
-
-                if (match(token_type::dot))
-                {
-                    body.push_back(ast::make_node<ast::expression_stmt>(e));
-                }
-                else
-                {
-                    body.push_back(e);
-                    parsed_final_expression = true;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            auto expr = expression(stmt_token.value());
+            auto expr = expression(*t);
             if (!expr)
             {
-                parser_error(
-                    stmt_token->span,
-                    fmt::format(
-                        "Expected an expression in do block body, but got '{}'",
-                        stmt_token->span.to_string()));
                 end_scope();
                 return nullptr;
             }
@@ -2105,8 +2042,9 @@ ast::expression_ptr parser::do_expression(token token)
             {
                 body.push_back(expr);
                 parsed_final_expression = true;
-                break;
             }
+            break;
+        }
         }
     }
 

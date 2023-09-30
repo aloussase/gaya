@@ -37,18 +37,18 @@ string.split :: { s: String, pattern: String =>
           while i < string.length(s) and not found
             cases
               given string.startswith(s, pattern, i) => do
-                result <- string.substring(s, j, i)
-                found <- true
-                i <- i + string.length(pattern)
-                j <- i
+                &result <- string.substring(s, j, i)
+                &found <- true
+                &i <- i + string.length(pattern)
+                &j <- i
               end
-              otherwise => perform i <- i + 1
+              otherwise => perform &i <- i + 1
             end.
           end
           cases
             given result /= unit => result
             given i == string.length(s) => do
-              i <- i + 1
+              &i <- i + 1
               string.substring(s, j, i - 1)
             end
           end

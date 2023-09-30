@@ -4,7 +4,7 @@ let chars = () in
 do
   while i < string.length(s)
     array.push(chars, s(i)).
-    i <- i + 1
+    &i <- i + 1
   end
 
   assert(chars == ("H", "o", "l", "a"))

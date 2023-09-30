@@ -2,7 +2,7 @@
 
 test :: { x =>
   do
-    x <- 42
+    &x <- 42
     io.println(x)
   end
 }

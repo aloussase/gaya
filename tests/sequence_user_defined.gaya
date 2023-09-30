@@ -7,7 +7,7 @@ upto :: { n =>
     cases
       given i < n =>
         let previous = i in do
-          i <- i + 1
+          &i <- i + 1
           previous
         end
     end

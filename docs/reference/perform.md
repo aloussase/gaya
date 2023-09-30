@@ -16,7 +16,7 @@ First, with a `do` block:
 ```julia
 let x = 0 in do
   while x < 10
-    x <- x + 1
+    &x <- x + 1
   end
 end
 ```
@@ -26,7 +26,7 @@ Second, with `perform`:
 ```julia
 let x = 0 in perform
 while x < 10
-  x <- x + 1
+  &x <- x + 1
 end
 ```
 

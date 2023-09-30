@@ -11,7 +11,7 @@ include "functions"
  *)
 seq.foreach :: { s: Sequence, f: Function =>
   let xs = tosequence(s), next = seq.next(xs) in perform
-  while next /= unit : next <- seq.next(xs)
+  while next /= unit : &next <- seq.next(xs)
     f(next).
   end
 }
@@ -27,8 +27,8 @@ seq.foreach :: { s: Sequence, f: Function =>
 seq.reduce :: { s: Sequence, init, f: Function =>
   let acc = init, xs = tosequence(s), next = seq.next(xs) in
   do
-    while next /= unit : next <- seq.next(xs)
-      acc <- f(acc, next)
+    while next /= unit : &next <- seq.next(xs)
+      &acc <- f(acc, next)
     end
 
     acc
@@ -45,8 +45,8 @@ seq.any :: { xs: Sequence, pred =>
   let found = false in
   do
     while x /= unit and not found 
-      found <- pred(x)
-      x <- seq.next(xs)
+      &found <- pred(x)
+      &x <- seq.next(xs)
     end
 
     found
@@ -62,8 +62,8 @@ seq.all :: { xs: Sequence, pred =>
   let x = seq.next(xs) in
   let success = true in
   do
-    while x /= unit and success : x <- seq.next(xs)
-      success <- pred(x)
+    while x /= unit and success : &x <- seq.next(xs)
+      &success <- pred(x)
     end
 
     success
@@ -80,8 +80,8 @@ seq.max :: { xs: Sequence =>
   let next = seq.next(xs) in
   let max = next in
   do
-    while next /= unit : next <- seq.next(xs)
-      max <- fn.max(max, next)
+    while next /= unit : &next <- seq.next(xs)
+      &max <- fn.max(max, next)
     end
 
     max
@@ -98,8 +98,8 @@ seq.min :: { xs: Sequence =>
   let next = seq.next(xs) in
   let min = next in
   do
-    while next /= unit : next <- seq.next(xs)
-      min <- fn.min(min, next)
+    while next /= unit : &next <- seq.next(xs)
+      &min <- fn.min(min, next)
     end
 
     min
@@ -118,9 +118,9 @@ seq.minmax :: { xs: Sequence =>
       min = next,
       max = next in
   do
-    while next /= unit : next <- seq.next(xs)
-      max <- fn.max(max, next)
-      min <- fn.min(min, next)
+    while next /= unit : &next <- seq.next(xs)
+      &max <- fn.max(max, next)
+      &min <- fn.min(min, next)
     end
 
     cases (min, max)
@@ -156,7 +156,7 @@ seq.mapWithIndex :: { xs: Sequence, func: Function =>
     cases 
       given next /= unit =>
       let result = func(i, next) in do
-        i <- i + 1
+        &i <- i + 1
         result
       end
     end
@@ -171,7 +171,7 @@ seq.filter :: { xs: Sequence, func: Function =>
   let xs = tosequence(xs) in seq.make { => 
     let x = seq.next(xs) in do
       while x /= unit and not func(x)
-        x <- seq.next(xs)
+        &x <- seq.next(xs)
       end
 
       x
@@ -210,7 +210,7 @@ seq.take :: { xs: Sequence, n: Number =>
   let xs = tosequence(xs), i = 0 in seq.make { =>
     cases
       given i < n => do
-        i <- i + 1
+        &i <- i + 1
         seq.next(xs)
       end
     end
@@ -226,8 +226,8 @@ seq.dropwhile :: { xs: Sequence, pred: Function =>
     let x = seq.next(xs) in do
       while x /= unit and not predicateFailed
         cases
-          given pred(x) => perform x <- seq.next(xs) 
-          otherwise     => perform predicateFailed <- true
+          given pred(x) => perform &x <- seq.next(xs) 
+          otherwise     => perform &predicateFailed <- true
         end.
       end
 
@@ -242,7 +242,7 @@ seq.drop :: { xs: Sequence, n: Number =>
   let i = 0 in
   seq.make { => 
     do
-      while i < n : i <- i + 1
+      while i < n : &i <- i + 1
         seq.next(xs).
       end
       
@@ -260,7 +260,7 @@ seq.range :: { start: Number, finish: Number =>
     cases
       given i < finish =>
         let previous = i in do
-          i <- i + 1
+          &i <- i + 1
           previous
       end
     end
@@ -276,7 +276,7 @@ seq.enumerate :: { xs: Sequence =>
     let x = seq.next(xs), pair = (i, x) in 
     cases
       given x /= unit => do
-        i <- i + 1
+        &i <- i + 1
         pair
       end
     end
@@ -289,7 +289,7 @@ seq.toarray :: { xs: Sequence =>
     given "Array" => xs
     otherwise => do
       let xs = tosequence(xs), x = seq.next(xs), ary = () in do
-        while x /= unit : x <- seq.next(xs)
+        while x /= unit : &x <- seq.next(xs)
           array.push(ary, x).
         end
 
@@ -308,8 +308,8 @@ seq.toarray :: { xs: Sequence =>
 seq.tostring :: { xs: Sequence =>
   let xs = tosequence(xs), x = seq.next(xs), s = "" in
   do
-    while x /= unit : x <- seq.next(xs)
-      s <- x |> tostring(_) |> string.concat(s, _)
+    while x /= unit : &x <- seq.next(xs)
+      &s <- x |> tostring(_) |> string.concat(s, _)
     end
 
     s
@@ -335,7 +335,7 @@ seq.count :: { xs: Sequence =>
   let xs = tosequence(xs) in
   do
     while seq.next(xs) /= unit
-      count <- count + 1
+      &count <- count + 1
     end
     count
   end
@@ -366,7 +366,7 @@ seq.inits :: { xs: Sequence =>
         (* TODO: Re-implement this with iteration. *)
         let seq = elems |> seq.take(_, i) in
         do
-          i <- i + 1
+          &i <- i + 1
           seq
         end
     end
@@ -388,7 +388,7 @@ seq.tails :: { xs: Sequence =>
       given i <= count =>
         let seq = elems |> seq.drop(_, i) in
         do
-          i <- i + 1
+          &i <- i + 1
           seq
         end
       end
@@ -406,12 +406,12 @@ seq.flatten :: { xs: Sequence =>
     cases seq.next(ys)
       given unit =>
         do
-          ys <- tosequence(seq.next(xs))
+          &ys <- tosequence(seq.next(xs))
           let y = seq.next(ys) in
           do
             while y == unit and ys /= unit
-              ys <- tosequence(seq.next(xs))
-              y <- seq.next(ys)
+              &ys <- tosequence(seq.next(xs))
+              &y <- seq.next(ys)
             end
 
             y

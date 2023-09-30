@@ -4,44 +4,22 @@
 #include <memory>
 #include <vector>
 
+#include <ast/assignment.hpp>
+#include <ast/forward.hpp>
 #include <env.hpp>
 #include <lexer.hpp>
 #include <object.hpp>
 #include <span.hpp>
 #include <types.hpp>
 
-namespace gaya::eval
-{
-class interpreter;
-}
-
 namespace gaya::ast
 {
-
-using object = gaya::eval::object::object;
-
-struct ast_node;
-struct stmt;
-struct expression;
-struct identifier;
-
-using node_ptr       = std::shared_ptr<ast_node>;
-using stmt_ptr       = std::shared_ptr<stmt>;
-using expression_ptr = std::shared_ptr<expression>;
 
 template <typename T, typename... Ts>
 std::shared_ptr<T> make_node(Ts&&... args)
 {
     return std::make_shared<T>(std::forward<Ts>(args)...);
 }
-
-class ast_visitor;
-
-struct ast_node
-{
-    virtual ~ast_node() {};
-    virtual object accept(ast_visitor&) = 0;
-};
 
 struct program final : public ast_node
 {
@@ -51,11 +29,6 @@ struct program final : public ast_node
 };
 
 /* Statements */
-
-struct stmt : public ast_node
-{
-    virtual ~stmt() { }
-};
 
 struct declaration_stmt final : public stmt
 {
@@ -80,20 +53,6 @@ struct expression_stmt final : public stmt
 
     object accept(ast_visitor&) override;
 
-    expression_ptr expr;
-};
-
-struct assignment_stmt final : public stmt
-{
-    assignment_stmt(std::unique_ptr<identifier> i, expression_ptr e)
-        : ident { std::move(i) }
-        , expr { std::move(e) }
-    {
-    }
-
-    object accept(ast_visitor&) override;
-
-    std::unique_ptr<identifier> ident;
     expression_ptr expr;
 };
 
@@ -582,5 +541,4 @@ struct placeholder final : public expression
 
     span span_;
 };
-
 }

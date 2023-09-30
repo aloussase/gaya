@@ -1,6 +1,6 @@
 test :: { x =>
   let x = x in do
-    x <- 42
+    &x <- 42
     x
   end
 }

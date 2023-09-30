@@ -1,6 +1,6 @@
 test :: { =>
   let x = 42 in do
-    perform x <- 52 .
+    perform &x <- 52 .
     x
   end
 }

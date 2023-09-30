@@ -26,7 +26,7 @@ objects:
 mkCounter :: { =>
   let count = 0 in { =>
     let previous = count in do
-      count <- count + 1
+      &count <- count + 1
       previous
     done
   }

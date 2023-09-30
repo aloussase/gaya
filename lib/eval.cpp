@@ -222,30 +222,44 @@ interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
     return object::invalid;
 }
 
-object::object
-interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
+object::object interpreter::assign_to_identifier(
+    const ast::identifier& ident,
+    object::object value) noexcept
 {
-    auto new_val = assignment.expr->accept(*this);
-    RETURN_IF_INVALID(new_val);
+    auto depth = ident.depth;
+    auto& key  = ident.key;
+    auto span  = ident._span;
 
-    auto depth = assignment.ident->depth;
-    auto& key  = assignment.ident->key;
-
-    auto ok = environment().update_at(std::move(key), new_val, depth);
-    if (!ok)
+    if (!environment().update_at(std::move(key), value, depth))
     {
-        interp_error(
-            assignment.ident->_span,
-            fmt::format(
-                "Tried to assign to {}",
-                key.kind == identifier_kind::global ? "global variable"
-                                                    : "function parameter"));
-        interp_hint(
-            assignment.ident->_span,
-            "You can only assign to local variables");
+        auto s = key.kind == identifier_kind::global ? "global variable"
+                                                     : "function parameter";
+        interp_error(span, fmt::format("Tried to assign to {}", s));
+        interp_hint(span, "You can only assign to local variables");
     }
 
     return object::invalid;
+}
+
+object::object
+interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
+{
+    auto value = assignment.expression->accept(*this);
+    RETURN_IF_INVALID(value);
+
+    switch (assignment.kind)
+    {
+    case ast::AssignmentKind::Identifier:
+    {
+        return assign_to_identifier(
+            *std::static_pointer_cast<ast::identifier>(assignment.target),
+            value);
+    }
+    case ast::AssignmentKind::Dictionary:
+    {
+        assert(0 && "not implemented");
+    }
+    }
 }
 
 object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)

@@ -15,7 +15,7 @@ end
 do
   let x = 0 in perform
   while x < 10
-    x <- x + 1
+    &x <- x + 1
   end.
 end
 ```

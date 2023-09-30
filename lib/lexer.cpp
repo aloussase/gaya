@@ -137,7 +137,14 @@ std::optional<token> lexer::next_token() noexcept
     case '+': return mk_token(token_type::plus);
     case '*': return mk_token(token_type::star);
     case '_': return mk_token(token_type::underscore);
-    case '&': return mk_token(token_type::land);
+    case '&':
+    {
+        if (auto c = peek(); c && is_valid_identifier(*c))
+        {
+            return mk_token(token_type::ampersand);
+        }
+        return mk_token(token_type::land);
+    }
     case '-': return dash();
     case '/': return slash();
     case '|': return pipe();

@@ -9,7 +9,7 @@ parse :: { tokens: Array =>
     cases
       given current < array.length(tokens) =>
         let token = tokens(current) in do
-          current <- current + 1
+          &current <- current + 1
           token
         end
     end
@@ -25,7 +25,7 @@ parse :: { tokens: Array =>
       while peek() == "*" or peek() == "/"
         let op = advance() in
         let rhs = parse_primary() in perform
-        lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
+        &lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
       end
 
       lhs
@@ -36,7 +36,7 @@ parse :: { tokens: Array =>
       while peek() == "+" or peek() == "-" 
         let op = advance() in
         let rhs = parse_factor() in perform
-        lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
+        &lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
       end
 
       lhs
@@ -61,9 +61,9 @@ eval :: { ast: Dictionary =>
 let line = "", done = false in do
   while not done
     io.print("> ").
-    line <- io.readline()
+    &line <- io.readline()
     cases line
-      given ".quit" => perform done <- true
+      given ".quit" => perform &done <- true
       given line when not string.isempty(line) => do
         let tokens = tokenize(line) in
         let ast = parse(tokens) in

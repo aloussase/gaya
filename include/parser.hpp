@@ -57,7 +57,7 @@ private:
     [[nodiscard]] ast::stmt_ptr declaration_stmt(token identifier);
 
     [[nodiscard]] ast::stmt_ptr local_stmt(token token) noexcept;
-    [[nodiscard]] ast::stmt_ptr assignment_stmt(token identifier) noexcept;
+    [[nodiscard]] ast::stmt_ptr assignment_stmt(token) noexcept;
     [[nodiscard]] ast::stmt_ptr while_stmt(token while_) noexcept;
     [[nodiscard]] ast::stmt_ptr for_in_stmt(token for_) noexcept;
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
@@ -119,8 +119,7 @@ private:
     [[nodiscard]] bool assign_scope(std::shared_ptr<ast::identifier>&) noexcept;
     [[nodiscard]] bool assign_scope(std::unique_ptr<ast::identifier>&) noexcept;
 
-    [[nodiscard]] bool
-    is_valid_assignment_target(std::unique_ptr<ast::identifier>&) noexcept;
+    [[nodiscard]] bool is_valid_assignment_target(ast::identifier&) noexcept;
 
     lexer _lexer;
     std::vector<diagnostic::diagnostic> _diagnostics;

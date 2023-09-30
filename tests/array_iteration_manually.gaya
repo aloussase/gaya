@@ -4,7 +4,7 @@ let nums = () in
 do
   while i < array.length(a)
     array.push(nums, a(i)).
-    i <- i + 1
+    &i <- i + 1
   end
 
   assert(nums == (1, 2, 3)).

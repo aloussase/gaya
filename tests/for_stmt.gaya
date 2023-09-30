@@ -1,6 +1,6 @@
 let sum = 0 in do
   for x in 10
-    sum <- sum + x
+    &sum <- sum + x
   end
 
   assert(sum == 45)
@@ -17,7 +17,7 @@ end.
 (* Check that it works for arrays. *)
 let sum = 0 in do
   for x in (1, 2, 3)
-    sum <- sum + x
+    &sum <- sum + x
   end
 
   assert(sum == 6)

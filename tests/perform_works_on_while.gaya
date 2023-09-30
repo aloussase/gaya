@@ -3,7 +3,7 @@ let nums = () in
 do
   perform while i < 5
     array.push(nums, i).
-    i <- i + 1
+    &i <- i + 1
   end.
 
   assert(nums == (0, 1, 2, 3, 4)).

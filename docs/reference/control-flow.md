@@ -8,7 +8,7 @@ While loops work as you'd expect in other programming languages:
 let x = 0 in perform
 while x < 10
   io.println(x).
-  x <- x + 1
+  &x <- x + 1
 end
 ```
 
@@ -17,7 +17,7 @@ Zig. So the last example could be rewritten to:
 
 ```ocaml
 let x = 0 in perform
-while x < 10 : x <- x + 1
+while x < 10 : &x <- x + 1
   io.println(x).
 end
 ```
@@ -26,7 +26,7 @@ Finally, you can also use an initialization statement, which would make Gaya's
 while loops the essentially the same as C's for-loops:
 
 ```
-while let i = 0 : i < 10 : i <- i + 1
+while let i = 0 : i < 10 : &i <- i + 1
   io.println(i).
 end
 ```

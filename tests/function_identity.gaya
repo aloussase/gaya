@@ -2,7 +2,7 @@ f :: { x =>
   let y = 41 in 
   let z = 69 in do
     while y /= x
-      y <- y + 1
+      &y <- y + 1
     end
 
     x

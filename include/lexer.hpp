@@ -12,7 +12,10 @@ enum class token_type {
     and_,
     arrow,
     at,
+    /* Assignment */
+    ampersand,
     back_arrow,
+    /* End Assignment */
     /* Types */
     of,
     type,

@@ -11,7 +11,7 @@ array.isempty :: { a => array.length(a) == 0 }
   @param finish <number> The non-inclusive end of the range. *)
 array.range :: { start: Number, finish: Number => do
     let i = start, a = () in do
-      while i < finish : i <- i + 1
+      while i < finish : &i <- i + 1
         array.push(a, i).
       end
 
@@ -28,11 +28,11 @@ array.range :: { start: Number, finish: Number => do
 *)
 array.join :: { a: Array, sep: String => do
     let i = 0, result = "" in do
-      while i < array.length(a) : i <- i + 1
-        result <- string.concat(result, tostring(a(i)))
+      while i < array.length(a) : &i <- i + 1
+        &result <- string.concat(result, tostring(a(i)))
         cases
           given i < array.length(a) - 1 => 
-            perform result <- string.concat(result, sep)
+            perform &result <- string.concat(result, sep)
         end.
       end
 

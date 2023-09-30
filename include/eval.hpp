@@ -20,10 +20,10 @@ class interpreter final : public ast::ast_visitor
 public:
     interpreter();
 
-    [[nodiscard]] std::optional<object::object>
+    [[nodiscard]] std::optional<ResultType>
     eval(const std::string& filename, const char* source) noexcept;
 
-    [[nodiscard]] std::optional<object::object>
+    [[nodiscard]] std::optional<ResultType>
     eval(const std::string& filename, ast::node_ptr ast) noexcept;
 
     [[nodiscard]] std::vector<diagnostic::diagnostic>
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] env& environment() noexcept;
 
     /// Define a new symbol in the current scope.
-    void define(key, object::object) noexcept;
+    void define(key, ResultType) noexcept;
 
     /// Begin a new scope.
     void begin_scope(env new_scope) noexcept;
@@ -75,7 +75,7 @@ public:
      * Execute a match pattern. Exposed for object::function::call.
      */
     [[nodiscard]] bool match_pattern(
-        object::object&,
+        ResultType&,
         const ast::match_pattern&,
         std::function<key(const std::string&)> to_key = &key::local) noexcept;
 
@@ -87,33 +87,36 @@ public:
 
     /* Visitor pattern */
 
-    object::object visit_program(ast::program&) override;
-    object::object visit_declaration_stmt(ast::declaration_stmt&) override;
-    object::object visit_expression_stmt(ast::expression_stmt&) override;
-    object::object visit_assignment_stmt(ast::assignment_stmt&) override;
-    object::object visit_while_stmt(ast::while_stmt&) override;
-    object::object visit_for_in_stmt(ast::for_in_stmt&) override;
-    object::object visit_include_stmt(ast::include_stmt&) override;
-    object::object visit_type_declaration(ast::TypeDeclaration&) override;
-    object::object visit_foreign_declaration(ast::ForeignDeclaration&) override;
-    object::object visit_do_expression(ast::do_expression&) override;
-    object::object visit_case_expression(ast::case_expression&) override;
-    object::object visit_match_expression(ast::match_expression&) override;
-    object::object visit_lnot_expression(ast::lnot_expression&) override;
-    object::object visit_not_expression(ast::not_expression&) override;
-    object::object visit_perform_expression(ast::perform_expression&) override;
-    object::object visit_binary_expression(ast::binary_expression&) override;
-    object::object visit_call_expression(ast::call_expression&) override;
-    object::object
-    visit_function_expression(ast::function_expression&) override;
-    object::object visit_let_expression(ast::let_expression&) override;
-    object::object visit_array(ast::array&) override;
-    object::object visit_dictionary(ast::dictionary&) override;
-    object::object visit_number(ast::number&) override;
-    object::object visit_string(ast::string&) override;
-    object::object visit_identifier(ast::identifier&) override;
-    object::object visit_unit(ast::unit&) override;
-    object::object visit_placeholder(ast::placeholder&) override;
+    ResultType visit_program(ast::program&) override;
+    ResultType visit_declaration_stmt(ast::declaration_stmt&) override;
+    ResultType visit_expression_stmt(ast::expression_stmt&) override;
+
+    ResultType
+    assign_to_identifier(const ast::identifier&, object::object) noexcept;
+    ResultType visit_assignment_stmt(ast::assignment_stmt&) override;
+
+    ResultType visit_while_stmt(ast::while_stmt&) override;
+    ResultType visit_for_in_stmt(ast::for_in_stmt&) override;
+    ResultType visit_include_stmt(ast::include_stmt&) override;
+    ResultType visit_type_declaration(ast::TypeDeclaration&) override;
+    ResultType visit_foreign_declaration(ast::ForeignDeclaration&) override;
+    ResultType visit_do_expression(ast::do_expression&) override;
+    ResultType visit_case_expression(ast::case_expression&) override;
+    ResultType visit_match_expression(ast::match_expression&) override;
+    ResultType visit_lnot_expression(ast::lnot_expression&) override;
+    ResultType visit_not_expression(ast::not_expression&) override;
+    ResultType visit_perform_expression(ast::perform_expression&) override;
+    ResultType visit_binary_expression(ast::binary_expression&) override;
+    ResultType visit_call_expression(ast::call_expression&) override;
+    ResultType visit_function_expression(ast::function_expression&) override;
+    ResultType visit_let_expression(ast::let_expression&) override;
+    ResultType visit_array(ast::array&) override;
+    ResultType visit_dictionary(ast::dictionary&) override;
+    ResultType visit_number(ast::number&) override;
+    ResultType visit_string(ast::string&) override;
+    ResultType visit_identifier(ast::identifier&) override;
+    ResultType visit_unit(ast::unit&) override;
+    ResultType visit_placeholder(ast::placeholder&) override;
 
 private:
     std::string _filename;
