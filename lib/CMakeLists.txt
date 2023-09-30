@@ -44,5 +44,6 @@ target_compile_definitions(gaya_lib PRIVATE
     GAYA_RUNTIME="${GAYA_RUNTIME}"
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>)
 
-target_link_libraries(gaya_lib PRIVATE fmt::fmt ffi dl)
+target_link_libraries(gaya_lib PRIVATE
+    fmt::fmt ffi dl)
 

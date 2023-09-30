@@ -40,15 +40,12 @@ class ast_visitor;
 struct ast_node
 {
     virtual ~ast_node() {};
-    virtual std::string to_string() const noexcept = 0;
-    virtual object accept(ast_visitor&)            = 0;
+    virtual object accept(ast_visitor&) = 0;
 };
 
 struct program final : public ast_node
 {
     std::vector<stmt_ptr> stmts;
-
-    std::string to_string() const noexcept override;
 
     object accept(ast_visitor&) override;
 };
@@ -68,7 +65,6 @@ struct declaration_stmt final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     std::unique_ptr<identifier> ident;
@@ -82,7 +78,6 @@ struct expression_stmt final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     expression_ptr expr;
@@ -96,7 +91,6 @@ struct assignment_stmt final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     std::unique_ptr<identifier> ident;
@@ -125,7 +119,6 @@ struct while_stmt final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -149,7 +142,6 @@ struct for_in_stmt final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -167,7 +159,6 @@ struct include_stmt final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -189,7 +180,6 @@ struct TypeDeclaration final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -212,7 +202,6 @@ struct ForeignDeclaration final : public stmt
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     std::string libname;
@@ -236,7 +225,6 @@ struct do_expression final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     // All but the last node in a do block body must be stmts.
@@ -252,8 +240,6 @@ struct case_branch final
         , body { std::move(b) }
     {
     }
-
-    [[nodiscard]] std::string to_string() const noexcept;
 
     expression_ptr condition;
     expression_ptr body;
@@ -271,7 +257,6 @@ struct case_expression final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -336,7 +321,6 @@ struct match_expression final : expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -355,7 +339,6 @@ struct call_expression final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -398,7 +381,6 @@ struct function_expression final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span _span;
@@ -429,7 +411,6 @@ struct let_expression final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     std::vector<let_binding> bindings;
@@ -448,7 +429,6 @@ struct binary_expression final : public expression
     }
 
     object accept(ast_visitor&) override;
-    std::string to_string() const noexcept override;
 
     expression_ptr lhs;
     token op;
@@ -466,7 +446,6 @@ struct lnot_expression final : public expression
     }
 
     object accept(ast_visitor&) override;
-    std::string to_string() const noexcept override;
 
     token op;
     expression_ptr operand;
@@ -481,7 +460,6 @@ struct not_expression final : public expression
     }
 
     object accept(ast_visitor&) override;
-    std::string to_string() const noexcept override;
 
     token op;
     expression_ptr operand;
@@ -496,7 +474,6 @@ struct perform_expression final : public expression
     }
 
     object accept(ast_visitor&) override;
-    std::string to_string() const noexcept override;
 
     token op;
     stmt_ptr stmt;
@@ -512,7 +489,6 @@ struct array final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -531,7 +507,6 @@ struct dictionary final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
@@ -547,7 +522,6 @@ struct number final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span _span;
@@ -562,7 +536,6 @@ struct string final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span _span;
@@ -578,7 +551,6 @@ struct identifier final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span _span;
@@ -594,7 +566,6 @@ struct unit final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span _span;
@@ -607,7 +578,6 @@ struct placeholder final : public expression
     {
     }
 
-    std::string to_string() const noexcept override;
     object accept(ast_visitor&) override;
 
     span span_;
