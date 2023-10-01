@@ -245,6 +245,40 @@ object::object interpreter::assign_to_call_expression(
     const ast::call_expression& call_expression,
     object::object value) noexcept
 {
+    auto target = call_expression.target->accept(*this);
+    RETURN_IF_INVALID(target);
+
+    auto span = call_expression.span_;
+
+    if (call_expression.args.size() != 1)
+    {
+        interp_error(span, "Expected one argument in indexing expression");
+        return object::invalid;
+    }
+
+    auto index = call_expression.args[0]->accept(*this);
+    RETURN_IF_INVALID(index);
+
+    if (IS_DICTIONARY(target))
+    {
+        auto& d = AS_DICT(target);
+        d.insert_or_assign(index, value);
+        return object::invalid;
+    }
+
+    if (IS_ARRAY(target) && IS_NUMBER(index))
+    {
+        auto& a = AS_ARRAY(target);
+        auto i  = AS_NUMBER(index);
+        a[i]    = value;
+        return object::invalid;
+    }
+
+    interp_error(span, "Invalid assignment target");
+    interp_hint(
+        span,
+        "Only arrays and dictionaries may be assigned to using call syntax");
+    return object::invalid;
 }
 
 object::object interpreter::assign_to_get_expression(
@@ -291,7 +325,15 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
             *std::static_pointer_cast<ast::get_expression>(assignment.target),
             value);
     }
+    case ast::AssignmentKind::CallExpression:
+    {
+        return assign_to_call_expression(
+            *std::static_pointer_cast<ast::call_expression>(assignment.target),
+            value);
     }
+    }
+
+    assert(0 && "Unhandled case in visit_assignment_stmt");
 }
 
 object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
@@ -551,6 +593,8 @@ bool interpreter::match_pattern(
         return true;
     }
     }
+
+    assert(0 && "Unhandled case in match_pattern");
 #undef DEFINE_AS_PATTERN
 }
 
@@ -862,7 +906,7 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
         case token_type::xor_: return object::create_number(span, i ^ j);
         case token_type::lshift: return object::create_number(span, i << j);
         case token_type::rshift: return object::create_number(span, i >> j);
-        default: assert("unreachable");
+        default: assert(0 && "unreachable");
         }
     }
     default:

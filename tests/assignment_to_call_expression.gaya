@@ -1,0 +1,14 @@
+let
+  xs = (1, 2, 3),
+  ds = ("hello" -> "world"),
+  get = { => ds }
+in do
+  &xs(0) <- 2
+  assert(xs == (2, 2, 3)).
+
+  &ds("hello") <- "monde"
+  assert(ds("hello") == "monde").
+
+  &get()("hello") <- "welt"
+  assert(ds("hello") == "welt").
+end.
