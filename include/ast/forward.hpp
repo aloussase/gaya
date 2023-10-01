@@ -36,4 +36,9 @@ struct stmt : public ast_node
     virtual ~stmt() { }
 };
 
+struct expression : public ast_node
+{
+    virtual ~expression() { }
+};
+
 }

@@ -7,7 +7,8 @@ namespace gaya::ast
 
 enum class AssignmentKind {
     Identifier,
-    Dictionary,
+    GetExpression,
+    CallExpression,
 };
 
 struct assignment_stmt final : public stmt

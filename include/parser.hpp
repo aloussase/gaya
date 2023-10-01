@@ -88,6 +88,12 @@ private:
     [[nodiscard]] ast::expression_ptr not_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr perform_expression(token) noexcept;
 
+    [[nodiscard]] std::shared_ptr<ast::function_expression>
+    finish_trailing_function(span, token lparen) noexcept;
+    [[nodiscard]] std::shared_ptr<ast::get_expression>
+    finish_get_expression(span, ast::expression_ptr target) noexcept;
+    [[nodiscard]] std::shared_ptr<ast::call_expression>
+    finish_call_expression(span, ast::expression_ptr target) noexcept;
     [[nodiscard]] ast::expression_ptr call_expression(token token);
 
     [[nodiscard]] ast::expression_ptr primary_expression(token);

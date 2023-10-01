@@ -306,10 +306,13 @@ ast::stmt_ptr parser::assignment_stmt(token ampersand) noexcept
 {
     assert(ampersand.type == token_type::ampersand);
 
-    auto i_t = _lexer.next_token();
-    if (!match(i_t, token_type::identifier))
+    auto span = ampersand.span;
+
+    auto t_t = _lexer.next_token();
+    auto t   = t_t ? expression(*t_t) : nullptr;
+    if (!t)
     {
-        parser_error(ampersand.span, "Expected an identifier after '&'");
+        parser_error(ampersand.span, "Expected an expression after '&'");
         return nullptr;
     }
 
@@ -331,29 +334,49 @@ ast::stmt_ptr parser::assignment_stmt(token ampersand) noexcept
         return nullptr;
     }
 
-    auto span       = i_t->span;
-    auto identifier = ast::make_node<ast::identifier>(span, span.to_string());
+    std::optional<ast::AssignmentKind> assignment_kind = std::nullopt;
 
-    if (!is_valid_assignment_target(*identifier))
+    if (auto identifier = std::dynamic_pointer_cast<ast::identifier>(t))
     {
-        parser_error(span, "Invalid assignment target.");
-        parser_hint(span, "Only local variables may be assigned to");
-        return nullptr;
+        if (!is_valid_assignment_target(*identifier))
+        {
+            parser_error(span, "Invalid assignment target");
+            parser_hint(span, "Only local variables may be assigned to");
+            return nullptr;
+        }
+
+        if (!assign_scope(identifier))
+        {
+            parser_error(
+                span,
+                fmt::format(
+                    "Undeclared identifier in assignment: {}",
+                    identifier->value));
+            return nullptr;
+        }
+
+        assignment_kind = ast::AssignmentKind::Identifier;
     }
 
-    if (!assign_scope(identifier))
+    if (auto get_expr = std::dynamic_pointer_cast<ast::get_expression>(t))
     {
-        parser_error(
-            span,
-            fmt::format(
-                "Undeclared identifier in assignment: {}",
-                span.to_string()));
+        assignment_kind = ast::AssignmentKind::GetExpression;
+    }
+
+    if (std::dynamic_pointer_cast<ast::call_expression>(t))
+    {
+        assignment_kind = ast::AssignmentKind::CallExpression;
+    }
+
+    if (!assignment_kind)
+    {
+        parser_error(span, "Invalid assignment target");
         return nullptr;
     }
 
     return ast::make_node<ast::assignment_stmt>(
-        ast::AssignmentKind::Identifier,
-        std::move(identifier),
+        *assignment_kind,
+        std::move(t),
         e);
 }
 
@@ -1392,87 +1415,124 @@ ast::expression_ptr parser::perform_expression(token op) noexcept
     return ast::make_node<ast::perform_expression>(op, stmt);
 }
 
-ast::expression_ptr parser::call_expression(token starttoken)
+std::shared_ptr<ast::function_expression>
+parser::finish_trailing_function(span span, token lparen) noexcept
 {
-    auto expr = primary_expression(starttoken);
+    auto function = function_expression(lparen);
+    if (!function)
+    {
+        parser_error(span, "Expected a trailing function expression");
+        return nullptr;
+    }
+
+    return std::static_pointer_cast<ast::function_expression>(function);
+}
+
+std::shared_ptr<ast::get_expression>
+parser::finish_get_expression(span span, ast::expression_ptr target) noexcept
+{
+    auto i_t = _lexer.next_token();
+    if (!match(i_t, token_type::identifier))
+    {
+        parser_error(span, "Expected an identifier after '@'");
+        return nullptr;
+    }
+
+    auto ident_span  = i_t->span;
+    auto ident_value = ident_span.to_string();
+
+    return ast::make_node<ast::get_expression>(
+        span,
+        target,
+        ast::identifier { ident_span, ident_value });
+}
+
+std::shared_ptr<ast::call_expression>
+parser::finish_call_expression(span span, ast::expression_ptr target) noexcept
+{
+    std::vector<ast::expression_ptr> args;
+
+    for (;;)
+    {
+        auto e_t = _lexer.next_token();
+        if (match(e_t, token_type::rparen))
+        {
+            _lexer.push_back(e_t.value());
+            break;
+        }
+
+        auto arg = e_t ? expression(e_t.value()) : nullptr;
+        if (!arg) return nullptr;
+
+        args.push_back(std::move(arg));
+
+        if (!match(token_type::comma))
+        {
+            break;
+        }
+    }
+
+    if (!match(token_type::rparen))
+    {
+        parser_error(span, "Missing ')' after function call");
+        return nullptr;
+    }
+
+    if (auto t = _lexer.next_token(); match(t, token_type::lcurly))
+    {
+        auto function = finish_trailing_function(span, *t);
+        if (!function) return nullptr;
+
+        args.push_back(std::move(function));
+    }
+    else if (t)
+    {
+        _lexer.push_back(*t);
+    }
+
+    return ast::make_node<ast::call_expression>(span, target, std::move(args));
+}
+
+ast::expression_ptr parser::call_expression(token token)
+{
+    auto expr = primary_expression(token);
     if (!expr) return nullptr;
 
     for (;;)
     {
-        auto lparen = _lexer.next_token();
-        if (!lparen) break;
+        auto t = _lexer.next_token();
+        if (!t) break;
 
-        auto has_argument_list = true;
-        std::vector<ast::expression_ptr> args;
-
-        if (!match(lparen, token_type::lparen))
+        if (match(t, token_type::lparen))
         {
-            if (match(lparen, token_type::lcurly))
-            {
-                auto function = function_expression(lparen.value());
-                if (!function)
-                {
-                    parser_error(
-                        starttoken.span,
-                        "Expected a trailing function in call expression");
-                    return nullptr;
-                }
-                args.push_back(function);
-                has_argument_list = false;
-            }
-            else
-            {
-                _lexer.push_back(lparen.value());
-                break;
-            }
+            auto e = finish_call_expression(token.span, expr);
+            if (!e) return nullptr;
+
+            expr = e;
         }
-
-        for (;;)
+        else if (match(t, token_type::lcurly))
         {
-            if (!has_argument_list) break;
-
-            auto expr_token = _lexer.next_token();
-            if (!expr_token) break;
-
-            if (match(expr_token, token_type::rparen))
-            {
-                _lexer.push_back(expr_token.value());
-                break;
-            }
-
-            auto arg = expression(expr_token.value());
-            if (!arg) return nullptr;
-
-            args.push_back(std::move(arg));
-
-            if (!match(token_type::comma))
-            {
-                break;
-            }
-        }
-
-        if (!match(token_type::rparen) && has_argument_list)
-        {
-            parser_error(starttoken.span, "Missing ')' after function call");
-            return nullptr;
-        }
-
-        if (auto lcurly = _lexer.next_token();
-            match(lcurly, token_type::lcurly) && has_argument_list)
-        {
-            auto function = function_expression(lcurly.value());
+            ast::expression_ptr function
+                = finish_trailing_function(token.span, *t);
             if (!function) return nullptr;
-            args.push_back(function);
-        }
-        else if (lcurly)
-        {
-            _lexer.push_back(lcurly.value());
-        }
 
-        expr = ast::make_node<ast::call_expression>(
-            starttoken.span,
-            expr,
-            std::move(args));
+            return ast::make_node<ast::call_expression>(
+                token.span,
+                expr,
+                std::vector { function });
+        }
+        else if (match(t, token_type::at))
+        {
+            auto e = finish_get_expression(token.span, expr);
+            if (!e) return nullptr;
+
+            expr = e;
+        }
+        else
+        {
+            _lexer.push_back(t.value());
+            break;
+        }
     }
 
     return expr;
@@ -2057,15 +2117,28 @@ ast::expression_ptr parser::do_expression(token token)
 
     if (auto end = _lexer.next_token(); !match(end, token_type::end))
     {
+        auto actual = end ? end->span.to_string() : "nothing";
+
         parser_error(
             token.span,
             fmt::format(
                 "Expected 'end' after last expression in do block, but got "
                 "'{}'",
-                end ? end->span.to_string() : "nothing"));
-        parser_hint(
-            token.span,
-            "Check that you didn't forget a '.' after an expression");
+                actual));
+
+        if (actual == "<-")
+        {
+            parser_hint(
+                token.span,
+                "To perform assignment, you need to use the '&' operator");
+        }
+        else
+        {
+            parser_hint(
+                token.span,
+                "Check that you didn't forget a '.' after an expression");
+        }
+
         return nullptr;
     }
 

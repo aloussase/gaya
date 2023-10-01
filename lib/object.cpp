@@ -484,6 +484,8 @@ copy_sequence(interpreter& interp, span span, const sequence& xs) noexcept
         return create_user_sequence(span, interp, new_func);
     }
     }
+
+    assert(0 && "Unhandled case in copy_sequence");
 }
 
 }

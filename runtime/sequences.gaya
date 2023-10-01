@@ -259,10 +259,11 @@ seq.range :: { start: Number, finish: Number =>
   let i = start in seq.make { =>
     cases
       given i < finish =>
-        let previous = i in do
+        let previous = i in
+        do
           &i <- i + 1
           previous
-      end
+        end
     end
   }
 }

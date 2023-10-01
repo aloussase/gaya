@@ -28,6 +28,7 @@ public:
     virtual ResultType visit_do_expression(do_expression&)             = 0;
     virtual ResultType visit_case_expression(case_expression&)         = 0;
     virtual ResultType visit_match_expression(match_expression&)       = 0;
+    virtual ResultType visit_get_expression(get_expression&)           = 0;
     virtual ResultType visit_call_expression(call_expression&)         = 0;
     virtual ResultType visit_function_expression(function_expression&) = 0;
     virtual ResultType visit_let_expression(let_expression&)           = 0;

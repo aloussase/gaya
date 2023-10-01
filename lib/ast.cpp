@@ -80,6 +80,11 @@ object call_expression::accept(ast_visitor& v)
     return v.visit_call_expression(*this);
 }
 
+object get_expression::accept(ast_visitor& v)
+{
+    return v.visit_get_expression(*this);
+}
+
 object function_expression::accept(ast_visitor& v)
 {
     return v.visit_function_expression(*this);

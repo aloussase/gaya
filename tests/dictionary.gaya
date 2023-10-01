@@ -38,3 +38,35 @@ assert((1 -> 2) == (1 -> 2)).
   |> seq.map(_) { xs => xs(0) + xs(1) }
   |> seq.reduce(_, 0, fn.add)
   |> assert(_ == 15).
+
+(* Get expression works on dictionaries. *)
+let d = 
+  ( "Hello" -> "World"
+  , "Nice" -> "One"
+  , "Nested" -> ("Dict" -> { => "42" })
+  , "Fn" -> { => ("X" -> "Y") }) in
+do
+  assert(d@Hello == "World").
+  assert(d@Nice == "One").
+  assert(d@Nested@Dict() == "42").
+  assert(d@Fn()@X == "Y").
+end.
+
+(* Set expression works on dictionaries. *)
+let d =  ("Hello" -> "World", "Nice" -> "One", "Nested" -> ("X" -> "Y")) in
+do
+  &d@Hello <- "Gaya"
+  &d@Nice <- "69"
+  &d@Nested@X <- "Z"
+
+  assert(d@Hello == "Gaya").
+  assert(d@Nice == "69").
+  assert(d@Nested@X == "Z").
+end.
+
+let f = { d => d } in
+let d = ("hello" -> "world") in
+do
+  &f(d)@hello <- "monde"
+  assert(d@hello == "monde").
+end.

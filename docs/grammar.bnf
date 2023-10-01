@@ -32,7 +32,7 @@ local_stmt ::= expression_stmt
              | while_stmt
              | for_in_stmt
 
-assignment_stmt ::= IDENTIFIER '<-' expression
+assignment_stmt ::= '&' expression '<-' expression
 
 while_stmt ::= 'while' expression local_stmts 'end'
              | 'while' expression ':' local_stmt local_stmts 'end'
@@ -100,6 +100,7 @@ unary_expression ::= 'not' call_expression
                    | '~' call_expression
 
 call_expression ::= primary_expression '(' args_list ')'
+                  | primary_expression '@' IDENTIFIER
                   | primary_expression
 
 args_list ::= expression

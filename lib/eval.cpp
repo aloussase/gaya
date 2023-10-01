@@ -241,6 +241,36 @@ object::object interpreter::assign_to_identifier(
     return object::invalid;
 }
 
+object::object interpreter::assign_to_call_expression(
+    const ast::call_expression& call_expression,
+    object::object value) noexcept
+{
+}
+
+object::object interpreter::assign_to_get_expression(
+    const ast::get_expression& get_expression,
+    object::object value) noexcept
+{
+    auto target = get_expression.target->accept(*this);
+    RETURN_IF_INVALID(target);
+
+    if (IS_DICTIONARY(target))
+    {
+        auto& dict = AS_DICT(target);
+        auto key   = object::create_string(
+            *this,
+            get_expression.span_,
+            get_expression.ident.value);
+        dict.insert_or_assign(key, value);
+    }
+    else
+    {
+        interp_error(get_expression.span_, "Invalid assigment target");
+    }
+
+    return object::invalid;
+}
+
 object::object
 interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 {
@@ -255,9 +285,11 @@ interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
             *std::static_pointer_cast<ast::identifier>(assignment.target),
             value);
     }
-    case ast::AssignmentKind::Dictionary:
+    case ast::AssignmentKind::GetExpression:
     {
-        assert(0 && "not implemented");
+        return assign_to_get_expression(
+            *std::static_pointer_cast<ast::get_expression>(assignment.target),
+            value);
     }
     }
 }
@@ -877,6 +909,31 @@ interpreter::visit_perform_expression(ast::perform_expression& expr)
     if (had_error()) return object::invalid;
 
     return gaya::eval::object::create_unit(expr.op.span);
+}
+
+object::object
+interpreter::visit_get_expression(ast::get_expression& get_expression)
+{
+    auto receiver = get_expression.target->accept(*this);
+    RETURN_IF_INVALID(receiver);
+
+    auto span = get_expression.span_;
+
+    if (IS_DICTIONARY(receiver))
+    {
+        auto& dict = AS_DICT(receiver);
+        auto key
+            = object::create_string(*this, span, get_expression.ident.value);
+        if (auto it = dict.find(key); it != dict.end())
+        {
+            return it->second;
+        }
+        return object::create_unit(span);
+    }
+
+    interp_error(span, "Invalid getter target");
+    interp_hint(span, "Only dictionaries are valid getter targets");
+    return object::invalid;
 }
 
 object::object interpreter::visit_call_expression(ast::call_expression& cexpr)

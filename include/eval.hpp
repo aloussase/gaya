@@ -91,6 +91,12 @@ public:
     ResultType visit_declaration_stmt(ast::declaration_stmt&) override;
     ResultType visit_expression_stmt(ast::expression_stmt&) override;
 
+    ResultType assign_to_call_expression(
+        const ast::call_expression&,
+        object::object) noexcept;
+    ResultType assign_to_get_expression(
+        const ast::get_expression&,
+        object::object) noexcept;
     ResultType
     assign_to_identifier(const ast::identifier&, object::object) noexcept;
     ResultType visit_assignment_stmt(ast::assignment_stmt&) override;
@@ -107,6 +113,7 @@ public:
     ResultType visit_not_expression(ast::not_expression&) override;
     ResultType visit_perform_expression(ast::perform_expression&) override;
     ResultType visit_binary_expression(ast::binary_expression&) override;
+    ResultType visit_get_expression(ast::get_expression&) override;
     ResultType visit_call_expression(ast::call_expression&) override;
     ResultType visit_function_expression(ast::function_expression&) override;
     ResultType visit_let_expression(ast::let_expression&) override;

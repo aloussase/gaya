@@ -6,6 +6,7 @@
 
 #include <ast/assignment.hpp>
 #include <ast/forward.hpp>
+#include <ast/identifier.hpp>
 #include <env.hpp>
 #include <lexer.hpp>
 #include <object.hpp>
@@ -171,11 +172,6 @@ struct ForeignDeclaration final : public stmt
 
 /* Expressions */
 
-struct expression : public ast_node
-{
-    virtual ~expression() { }
-};
-
 struct do_expression final : public expression
 {
     do_expression(span s, std::vector<node_ptr>&& b)
@@ -304,6 +300,22 @@ struct call_expression final : public expression
     expression_ptr target;
     std::vector<expression_ptr> args;
     std::vector<gaya::eval::object::object> oargs;
+};
+
+struct get_expression final : public expression
+{
+    get_expression(span s, expression_ptr t, identifier i)
+        : span_ { s }
+        , target { t }
+        , ident { i }
+    {
+    }
+
+    object accept(ast_visitor&) override;
+
+    span span_;
+    expression_ptr target;
+    identifier ident;
 };
 
 struct function_param final
@@ -499,23 +511,6 @@ struct string final : public expression
 
     span _span;
     std::string value;
-};
-
-struct identifier final : public expression
-{
-    identifier(span s, const std::string& v)
-        : _span { s }
-        , value { v }
-        , key { value }
-    {
-    }
-
-    object accept(ast_visitor&) override;
-
-    span _span;
-    std::string value;
-    gaya::eval::key key;
-    size_t depth = 0;
 };
 
 struct unit final : public expression
