@@ -8,6 +8,10 @@ toplevel_stmt ::= declaration_stmt
 
 declaration_stmt ::= IDENTIFIER '::' expression
 
+struct_declaration ::= 'struct' IDENTIFIER struct_fields 'end'
+struct_fields ::= struct_field struct_fields | struct_field
+struct_field ::= IDENTIFIER ':' IDENTIFIER
+
 expression_stmt ::= expression '.'
 
 expression ::= do_expression
@@ -18,8 +22,8 @@ let_expression ::= 'let' match_pattern '=' expression 'in' expression
 
 function_expression ::= '{' params_list '=>' expression '}'
             
-params_list ::= IDENTIFIER
-              | IDENTIFIER ',' params_list
+params_list ::= match_pattern
+              | match_pattern ',' params_list
 
 do_expression ::= 'do' local_stmts 'end'
                 | 'do' local_stmts expression 'end'

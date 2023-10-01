@@ -12,6 +12,9 @@ enum class token_type {
     and_,
     arrow,
     at,
+    /* Structs */
+    struct_,
+    /* End Structs */
     /* Assignment */
     ampersand,
     back_arrow,

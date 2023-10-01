@@ -272,6 +272,10 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     {
         return foreign_declaration(*token);
     }
+    case token_type::struct_:
+    {
+        return struct_declaration(*token);
+    }
     default:
     {
         return expression_stmt(token.value());
@@ -887,6 +891,63 @@ ast::stmt_ptr parser::foreign_declaration(token foreign) noexcept
         argument_types);
 }
 
+std::vector<ast::StructField> parser::struct_fields() noexcept
+{
+    std::vector<ast::StructField> fields;
+
+    for (;;)
+    {
+        auto i_t = _lexer.next_token();
+        if (!match(i_t, token_type::identifier))
+        {
+            if (i_t) _lexer.push_back(*i_t);
+            break;
+        }
+
+        if (!match(token_type::colon))
+        {
+            parser_error(i_t->span, "Expected a ':' after identifier");
+            return {};
+        }
+
+        auto identifier = i_t->span.to_string();
+        auto type       = type_id();
+
+        if (!type)
+        {
+            parser_error(i_t->span, "Expected a type after ':'");
+            return {};
+        }
+
+        fields.push_back(ast::StructField { identifier, *type });
+    }
+
+    return fields;
+}
+
+ast::stmt_ptr parser::struct_declaration(token struct_) noexcept
+{
+    assert(struct_.type == token_type::struct_);
+
+    auto span = struct_.span;
+    auto i_t  = _lexer.next_token();
+    if (!match(i_t, token_type::identifier))
+    {
+        parser_error(struct_.span, "Expected an identifier after 'struct'");
+        return nullptr;
+    }
+
+    auto identifier = i_t->span.to_string();
+    auto fields     = struct_fields();
+    if (fields.empty())
+    {
+        parser_error(span, "Expected at least one field in struct");
+        return nullptr;
+    }
+
+    return ast::make_node<ast::StructDeclaration>(span, identifier, fields);
+}
+
 ast::expression_ptr parser::expression(token token)
 {
     /*
@@ -901,6 +962,37 @@ ast::expression_ptr parser::expression(token token)
     case token_type::cases: return case_expression(token);
     default: return logical_expression(token);
     }
+}
+
+std::optional<types::Type> parser::type_id() noexcept
+{
+    auto t_t = _lexer.next_token();
+    if (!match(t_t, token_type::identifier))
+    {
+        return {};
+    }
+
+    auto span       = t_t->span;
+    auto identifier = span.to_string();
+
+    auto m_t = types::Type::from_string(identifier);
+    if (m_t) return m_t;
+
+    auto it = _type_declarations.find(identifier);
+    if (it == _type_declarations.end())
+    {
+        parser_error(
+            t_t->span,
+            fmt::format("Invalid type identifier: {}", identifier));
+        return {};
+    }
+
+    auto type_declaration = it->second;
+    return types::Type {
+        type_declaration->declared_type,
+        type_declaration->underlying_type.kind(),
+        { nullptr, type_declaration->constraint },
+    };
 }
 
 ast::expression_ptr parser::function_expression(token lcurly)
@@ -937,43 +1029,18 @@ ast::expression_ptr parser::function_expression(token lcurly)
 
         if (match(token_type::colon))
         {
-            auto t_t = _lexer.next_token();
-            if (!match(t_t, token_type::identifier))
+            if (auto m_t = type_id(); m_t)
+            {
+                t = *m_t;
+            }
+            else
             {
                 parser_error(
                     lcurly.span,
-                    "Expected a type name after ':' in function parameter");
+                    "Expected a type after ':' in function parameter");
                 end_scope();
                 return nullptr;
             }
-
-            auto t_d_s = t_t->span.to_string();
-            auto m_t   = types::Type::from_string(t_d_s);
-            if (!m_t)
-            {
-                if (auto it = _type_declarations.find(t_d_s);
-                    it != _type_declarations.end())
-                {
-                    auto type_declaration = it->second;
-                    auto constraint       = types::TypeConstraint {
-                        nullptr,
-                        type_declaration->constraint,
-                    };
-                    m_t = types::Type {
-                        type_declaration->declared_type,
-                        type_declaration->underlying_type.kind(),
-                        constraint,
-                    };
-                }
-                else
-                {
-                    parser_error(lcurly.span, "Invalid type identifier");
-                    end_scope();
-                    return nullptr;
-                }
-            }
-
-            t = *m_t;
         }
 
         if (match(token_type::equal))

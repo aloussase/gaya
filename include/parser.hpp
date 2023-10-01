@@ -65,6 +65,11 @@ private:
     [[nodiscard]] ast::stmt_ptr type_declaration(token type) noexcept;
     [[nodiscard]] ast::stmt_ptr foreign_declaration(token foreign) noexcept;
 
+    [[nodiscard]] std::optional<types::Type> type_id() noexcept;
+
+    [[nodiscard]] std::vector<ast::StructField> struct_fields() noexcept;
+    [[nodiscard]] ast::stmt_ptr struct_declaration(token struct_) noexcept;
+
     [[nodiscard]] ast::expression_ptr expression(token);
     [[nodiscard]] ast::expression_ptr let_expression(token let);
     [[nodiscard]] ast::expression_ptr case_expression(token cases);

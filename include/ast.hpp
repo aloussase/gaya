@@ -7,6 +7,7 @@
 #include <ast/assignment.hpp>
 #include <ast/forward.hpp>
 #include <ast/identifier.hpp>
+#include <ast/struct.hpp>
 #include <env.hpp>
 #include <lexer.hpp>
 #include <object.hpp>

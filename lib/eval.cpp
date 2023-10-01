@@ -493,6 +493,17 @@ object::object interpreter::visit_foreign_declaration(
     return object::invalid;
 }
 
+object::object interpreter::visit_struct_declaration(
+    ast::StructDeclaration& struct_declaration)
+{
+    auto span = struct_declaration.span_;
+
+    interp_error(span, "Structs are not implemented yet");
+    interp_hint(span, "Open an issue or PR to speed up the process");
+
+    return object::invalid;
+}
+
 object::object interpreter::visit_do_expression(ast::do_expression& do_expr)
 {
     begin_scope(env { std::make_shared<env>(environment()) });

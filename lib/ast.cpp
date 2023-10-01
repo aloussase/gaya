@@ -58,6 +58,11 @@ object ForeignDeclaration::accept(ast_visitor& v)
     return v.visit_foreign_declaration(*this);
 }
 
+object StructDeclaration::accept(ast_visitor& v)
+{
+    return v.visit_struct_declaration(*this);
+}
+
 /* Expressions */
 
 object do_expression::accept(ast_visitor& v)
