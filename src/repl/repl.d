@@ -13,10 +13,16 @@ extern (C++) class lexer {
     static bool is_keyword(const char *) nothrow;
 }
 
-auto red(string s)   { return format("\x1b[31m%s\x1b[m", s); }
-auto green(string s) { return format("\x1b[32m%s\x1b[m", s); }
+auto red(string s)    { return format("\x1b[31m%s\x1b[m", s); }
+auto green(string s)  { return format("\x1b[32m%s\x1b[m", s); }
 auto yellow(string s) { return format("\x1b[33m%s\x1b[m", s); }
 auto purple(string s) { return format("\x1b[35m%s\x1b[m", s); }
+auto blue(string s)   { return format("\x1b[34m%s\x1b[m", s); }
+
+auto controlKey(char c) 
+{
+    return ((c) & 0x1f);
+}
 
 auto isOperator(string word)
 {
@@ -27,6 +33,13 @@ auto isOperator(string word)
         default:
             return false;
     }
+}
+
+auto isString(string word)
+{
+    if (word.empty) return false;
+    if (word.length < 3) return false;
+    return word[0] == '"' && word[$ - 1] == '"';
 }
 
 auto highlightWord(string word)
@@ -45,12 +58,18 @@ auto highlightWord(string word)
     {
         return word.green();
     }
+    
+    if (word.isString())
+    {
+        return word.blue();
+    }
 
     return word;
 }
 
 auto highlight(string line)
 {
+    if (line.empty) return line;
     return line.splitter(" ").map!(highlightWord).reduce!`a ~ ' ' ~ b`;
 }
 
@@ -68,11 +87,24 @@ auto readline(string prompt)
 
     while ((c = fgetc(stdin)) != EOF && c != '\n')
     {
-        if (!c.isControl())
+        if (c == 127 && !line.empty)
+        {
+            line = line.chop();
+        }
+        else if (c == 'l'.controlKey())
+        {
+            write("\x1b[2J\x1b[H");
+        }
+        else if (!c.isControl())
         {
             line ~= c;
-            (prompt ~ line.highlight()).clearLine().write();
         }
+        else
+        {
+            continue;
+        }
+
+        (prompt ~ line.highlight()).clearLine().write();
     }
 
     write('\n');
