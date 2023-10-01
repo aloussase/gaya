@@ -46,6 +46,18 @@ size_t hash(const object& o) noexcept
         }
         return seed;
     }
+    case object_type_struct:
+    {
+        auto struct_object = AS_STRUCT(o);
+        std::size_t seed   = struct_object.fields.size();
+        for (auto& field : struct_object.fields)
+        {
+            seed ^= robin_hood::hash<std::string> {}(field.identifier)
+                + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= hash(field.value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
+    }
     case object_type_function:
     case object_type_builtin_function:
     case object_type_foreign_function:

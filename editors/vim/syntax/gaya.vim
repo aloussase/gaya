@@ -10,7 +10,7 @@ syntax keyword gayaConstant true false
 highlight link gayaConstant Constant
 
 " Keywords
-syntax keyword gayaKeyword let in do unit cases end given otherwise while perform and or not include when for type of with foreign
+syntax keyword gayaKeyword let in do unit cases end given otherwise while perform and or not include when for type of with foreign struct
 highlight link gayaKeyword Keyword
 
 syntax match gayaType /\v[A-Z]+[a-z]*/

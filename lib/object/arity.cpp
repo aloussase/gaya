@@ -10,7 +10,6 @@ size_t arity(const object& o) noexcept
 {
     switch (o.type)
     {
-
     case object_type_string:
     case object_type_array:
     case object_type_dictionary:
@@ -28,6 +27,10 @@ size_t arity(const object& o) noexcept
     case object_type_foreign_function:
     {
         return AS_FOREIGN_FUNCTION(o).argument_types.size();
+    }
+    case object_type_struct:
+    {
+        return AS_STRUCT(o).fields.size();
     }
     case object_type_number:
     case object_type_unit:

@@ -236,6 +236,44 @@ object call_string(
     return create_string(interp, span, std::string { string[i] });
 }
 
+object call_struct(
+    StructObject& struct_object,
+    interpreter& interp,
+    span span,
+    const std::vector<object>& args) noexcept
+{
+    StructObject new_object = struct_object;
+
+    auto n = new_object.fields.size();
+    for (size_t i = 0; i < n; i++)
+    {
+        auto& field = new_object.fields[i];
+        auto& value = args[i];
+
+        if (!field.type.check(interp, value))
+        {
+            interp.interp_error(
+                span,
+                fmt::format(
+                    "Invalid type for field '{}', expected a {}",
+                    field.identifier,
+                    field.type.to_string()));
+            interp.interp_hint(
+                span,
+                "Check that the type's constraints are satisfied");
+            return invalid;
+        }
+
+        field.value = value;
+    }
+
+    return create_struct_object(
+        interp,
+        span,
+        new_object.name,
+        std::move(new_object.fields));
+}
+
 object call(
     object& o,
     interpreter& interp,
@@ -271,6 +309,10 @@ object call(
             span,
             interp,
             args);
+    }
+    case object_type_struct:
+    {
+        return call_struct(AS_STRUCT(o), interp, span, args);
     }
     case object_type_number:
     case object_type_unit:

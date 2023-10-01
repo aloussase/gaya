@@ -21,6 +21,7 @@ namespace gaya::ast
 {
 struct expression;
 using expression_ptr = std::shared_ptr<expression>;
+struct StructDeclaration;
 }
 
 namespace gaya::types
@@ -39,8 +40,11 @@ std::optional<ForeignType> foreign_type_from_string(const std::string&);
 
 struct TypeConstraint
 {
-    std::shared_ptr<eval::env> closed_over_env;
-    ast::expression_ptr condition;
+    [[nodiscard]] TypeConstraint
+        with_closed_over_env(std::shared_ptr<eval::env>) const noexcept;
+
+    std::shared_ptr<eval::env> closed_over_env = nullptr;
+    ast::expression_ptr condition              = nullptr;
 };
 
 enum class TypeKind {
@@ -51,6 +55,7 @@ enum class TypeKind {
     Number,
     Sequence,
     String,
+    Struct,
     Unit,
 };
 
@@ -58,14 +63,14 @@ class Type final
 {
 public:
     explicit Type(TypeKind kind)
-        : Type { "", kind, {} }
+        : Type { "", kind }
     {
     }
 
     Type(
         const std::string& declared_type_name,
         TypeKind kind,
-        TypeConstraint constraints)
+        TypeConstraint constraints = {})
         : _declared_type_name { declared_type_name }
         , _kind { kind }
         , _constraint { std::move(constraints) }
@@ -92,6 +97,16 @@ public:
      * @return A string describing this type.
      */
     [[nodiscard]] std::string to_string() const noexcept;
+
+    /**
+     * Return this type's constraint.
+     */
+    [[nodiscard]] TypeConstraint constraint() const noexcept;
+
+    /**
+     * Return a copy of this type with the specified type constraint.
+     */
+    [[nodiscard]] Type with_constraint(TypeConstraint) const noexcept;
 
 private:
     std::string _declared_type_name;

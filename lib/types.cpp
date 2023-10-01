@@ -12,6 +12,12 @@ std::optional<ForeignType> foreign_type_from_string(const std::string& s)
     return {};
 }
 
+TypeConstraint TypeConstraint::with_closed_over_env(
+    std::shared_ptr<eval::env> env) const noexcept
+{
+    return TypeConstraint { env, condition };
+}
+
 TypeKind Type::kind() const noexcept
 {
     return _kind;
@@ -65,10 +71,16 @@ bool Type::check(eval::interpreter& interp, const eval::object::object& o)
         type_ok = IS_UNIT(o);
         break;
     }
+    case TypeKind::Struct:
+    {
+        type_ok = IS_STRUCT(o) && AS_STRUCT(o).name == _declared_type_name;
+        break;
+    }
     }
 
     if (_constraint.condition != nullptr)
     {
+        assert(_constraint.condition && _constraint.closed_over_env);
         using namespace gaya::eval;
         interp.begin_scope(env { _constraint.closed_over_env });
         interp.define(key::global("_"), o);
@@ -97,10 +109,11 @@ std::string Type::to_string() const noexcept
     case TypeKind::Number: return "Number";
     case TypeKind::Sequence: return "Sequence";
     case TypeKind::String: return "String";
+    case TypeKind::Struct: return "Struct";
     case TypeKind::Unit: return "Unit";
     }
 
-    assert(0 && "Type::to_string");
+    assert(0 && "Unhandled case in Type::to_string");
 }
 
 std::optional<Type> Type::from_string(const std::string& s) noexcept
@@ -121,6 +134,20 @@ std::optional<Type> Type::from_string(const std::string& s) noexcept
         return Type { TypeKind::String };
     else
         return {};
+}
+
+TypeConstraint Type::constraint() const noexcept
+{
+    return _constraint;
+}
+
+Type Type::with_constraint(TypeConstraint new_constraint) const noexcept
+{
+    return Type {
+        _declared_type_name,
+        _kind,
+        new_constraint,
+    };
 }
 
 }

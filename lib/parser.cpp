@@ -945,6 +945,21 @@ ast::stmt_ptr parser::struct_declaration(token struct_) noexcept
         return nullptr;
     }
 
+    auto struct_type      = types::Type { identifier, types::TypeKind::Struct };
+    auto type_declaration = ast::make_node<ast::TypeDeclaration>(
+        span,
+        identifier,
+        struct_type,
+        nullptr);
+    _type_declarations.insert({ identifier, type_declaration });
+    define(identifier);
+
+    if (!match(token_type::end))
+    {
+        parser_error(span, "Expected 'end' after struct declaration");
+        return nullptr;
+    }
+
     return ast::make_node<ast::StructDeclaration>(span, identifier, fields);
 }
 

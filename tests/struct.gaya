@@ -1,0 +1,40 @@
+type ShortString of String with string.length(_) < 10
+
+struct Person
+  name: ShortString
+end
+
+p :: Person("Alina")
+
+(* Structs can be compared for equality *)
+let p1 = Person("Gaya") in
+let p2 = Person("Gaya") in
+let p3 = Person("Gay") in
+do
+  assert(p1 == p2).
+  assert(p1 /= p3).
+  assert(p2 /= p3).
+end.
+
+(* Struct can be used as dict keys. *)
+struct MyFancyKey
+  position: Number
+  name:     String
+end
+
+let d = (->) in 
+let k1 = MyFancyKey(0, "milk") in
+let k2 = MyFancyKey(1, "eggs") in
+do
+  dict.set(d, k1, 1).
+  dict.set(d, k2, 1).
+
+  assert(d == (k1 -> 1, k2 -> 1)).
+end.
+
+(* typeof structs. *)
+struct A x: Number end
+struct B y: Number end
+
+assert(typeof(A) == "A").
+assert(typeof(B) == "B").

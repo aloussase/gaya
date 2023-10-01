@@ -35,6 +35,7 @@ bool cmp(const object& o1, const object& o2, int* result) noexcept
     case object_type_builtin_function:
     case object_type_sequence:
     case object_type_foreign_function:
+    case object_type_struct:
     case object_type_invalid:
     {
         assert(0 && "The elements are not comparable!");

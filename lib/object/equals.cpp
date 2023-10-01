@@ -4,6 +4,23 @@
 namespace gaya::eval::object
 {
 
+bool struct_equals(StructObject& s1, StructObject& s2)
+{
+    if (s1.name != s2.name) return false;
+    if (s1.fields.size() != s2.fields.size()) return false;
+
+    for (size_t i = 0; i < s1.fields.size(); i++)
+    {
+        auto f1 = s1.fields[i];
+        auto f2 = s2.fields[i];
+
+        if (f1.identifier != f2.identifier) return false;
+        if (!equals(f1.value, f2.value)) return false;
+    }
+
+    return true;
+}
+
 bool array_equals(
     const std::vector<object>& xs,
     const std::vector<object>& ys) noexcept
@@ -68,6 +85,10 @@ bool equals(const object& o1, const object& o2) noexcept
     case object_type_dictionary:
     {
         return dict_equals(AS_DICT(o1), AS_DICT(o2));
+    }
+    case object_type_struct:
+    {
+        return struct_equals(AS_STRUCT(o1), AS_STRUCT(o2));
     }
     case object_type_function:
     case object_type_builtin_function:

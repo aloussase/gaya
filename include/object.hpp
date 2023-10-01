@@ -12,15 +12,16 @@
 #include <span.hpp>
 #include <types.hpp>
 
-#define IS_NUMBER(o) ((o).type == gaya::eval::object::object_type_number)
-#define IS_STRING(o) ((o).type == gaya::eval::object::object_type_string)
-#define IS_ARRAY(o)  ((o).type == gaya::eval::object::object_type_array)
-#define IS_UNIT(o)   ((o).type == gaya::eval::object::object_type_unit)
-#define IS_DICTIONARY(o) \
-    ((o).type == gaya::eval::object::object_type_dictionary)
+#define IS_NUMBER(o)      ((o).type == gaya::eval::object::object_type_number)
+#define IS_STRING(o)      ((o).type == gaya::eval::object::object_type_string)
+#define IS_ARRAY(o)       ((o).type == gaya::eval::object::object_type_array)
+#define IS_UNIT(o)        ((o).type == gaya::eval::object::object_type_unit)
 #define IS_SEQUENCE(o)    ((o).type == gaya::eval::object::object_type_sequence)
 #define IS_FUNCTION(o)    ((o).type == gaya::eval::object::object_type_function)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
+#define IS_STRUCT(o)      ((o).type == gaya::eval::object::object_type_struct)
+#define IS_DICTIONARY(o) \
+    ((o).type == gaya::eval::object::object_type_dictionary)
 #define IS_BUILTIN_FUNCION(o) \
     ((o).type == gaya::eval::object::object_type_builtin_function)
 #define IS_FOREIGN_FUNCTION(o) \
@@ -35,6 +36,7 @@
 #define AS_FUNCTION(o)         AS_HEAP_OBJECT(o)->as_function
 #define AS_BUILTIN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_builtin_function
 #define AS_FOREIGN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_foreign_function
+#define AS_STRUCT(o)           AS_HEAP_OBJECT(o)->as_struct_object
 #define AS_SEQUENCE(o)         AS_HEAP_OBJECT(o)->as_sequence
 
 namespace gaya::ast
@@ -64,6 +66,7 @@ enum object_type {
     object_type_builtin_function,
     object_type_sequence,
     object_type_foreign_function,
+    object_type_struct,
 };
 
 struct object
@@ -164,6 +167,25 @@ struct ForeignFunction final
     std::vector<types::ForeignType> argument_types;
 };
 
+struct StructObject final
+{
+    struct Field
+    {
+        std::string identifier;
+        types::Type type;
+        object value = invalid;
+    };
+
+    StructObject(const std::string& n, std::vector<Field> f)
+        : name { n }
+        , fields { std::move(f) }
+    {
+    }
+
+    std::string name;
+    std::vector<Field> fields;
+};
+
 /* Sequences */
 
 struct string_sequence
@@ -236,6 +258,7 @@ struct heap_object
         builtin_function as_builtin_function;
         sequence as_sequence;
         ForeignFunction as_foreign_function;
+        StructObject as_struct_object;
     };
     unsigned char marked     = 0;
     struct heap_object* next = nullptr;
@@ -305,6 +328,15 @@ create_array(interpreter&, span, const std::vector<object>&) noexcept;
     std::string funcname,
     types::ForeignType return_type,
     std::vector<types::ForeignType> argument_types) noexcept;
+
+/**
+ * Create a struct object.
+ */
+[[nodiscard]] object create_struct_object(
+    interpreter&,
+    span,
+    const std::string& name,
+    std::vector<StructObject::Field> fields) noexcept;
 
 /**
  * Create an array sequence object.

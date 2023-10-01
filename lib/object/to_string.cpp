@@ -9,6 +9,30 @@
 namespace gaya::eval::object
 {
 
+std::string struct_to_string(interpreter& interp, StructObject& struct_object)
+{
+    std::stringstream ss;
+
+    ss << struct_object.name;
+    ss << "(";
+
+    for (size_t i = 0; i < struct_object.fields.size(); i++)
+    {
+        if (auto& field = struct_object.fields[i]; is_valid(field.value))
+        {
+            ss << to_string(interp, field.value);
+            if (i < struct_object.fields.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+    }
+
+    ss << ")";
+
+    return ss.str();
+}
+
 std::string number_to_string(double number)
 {
     double intval;
@@ -129,6 +153,10 @@ std::string to_string(interpreter& interp, object o) noexcept
     case object_type_sequence:
     {
         return sequence_to_string(interp, AS_SEQUENCE(o));
+    }
+    case object_type_struct:
+    {
+        return struct_to_string(interp, AS_STRUCT(o));
     }
     case object_type_invalid:
     {

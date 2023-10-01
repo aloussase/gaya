@@ -98,6 +98,17 @@ static void mark(heap_object* o)
         }
         break;
     }
+    case object_type_struct:
+    {
+        auto& struct_object = o->as_struct_object;
+        for (auto& field : struct_object.fields)
+        {
+            if (IS_HEAP_OBJECT(field.value))
+            {
+                mark(AS_HEAP_OBJECT(field.value));
+            }
+        }
+    }
     /* TODO: I might need to mark the closed over env. */
     case object_type_function:
     case object_type_builtin_function:
@@ -319,6 +330,26 @@ object create_foreign_function(
     span span = { nullptr, 0, nullptr, nullptr };
     auto o    = create_object(object_type_foreign_function, span);
     o.box     = nanbox_from_pointer(ptr);
+
+    return o;
+}
+
+object create_struct_object(
+    interpreter& interp,
+    span span,
+    const std::string& name,
+    std::vector<StructObject::Field> fields) noexcept
+{
+    StructObject struct_object = { name, std::move(fields) };
+
+    auto* ptr = create_heap_object(interp);
+    new (ptr) heap_object {
+        .type             = object_type_struct,
+        .as_struct_object = struct_object,
+    };
+
+    auto o = create_object(object_type_struct, span);
+    o.box  = nanbox_from_pointer(ptr);
 
     return o;
 }

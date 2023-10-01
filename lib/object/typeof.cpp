@@ -37,6 +37,10 @@ std::string typeof_(const object& o) noexcept
     {
         return "Sequence";
     }
+    case object_type_struct:
+    {
+        return AS_STRUCT(o).name;
+    }
     case object_type_invalid:
     {
         assert(0 && "typeof invalid object");

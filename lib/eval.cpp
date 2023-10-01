@@ -496,10 +496,31 @@ object::object interpreter::visit_foreign_declaration(
 object::object interpreter::visit_struct_declaration(
     ast::StructDeclaration& struct_declaration)
 {
-    auto span = struct_declaration.span_;
+    /* Declare the struct type */
+    auto struct_type = types::Type {
+        struct_declaration.name,
+        types::TypeKind::Struct,
+        types::TypeConstraint {},
+    };
+    _declared_types.insert({ struct_declaration.name, struct_type });
 
-    interp_error(span, "Structs are not implemented yet");
-    interp_hint(span, "Open an issue or PR to speed up the process");
+    auto fields = std::vector<object::StructObject::Field> {};
+    for (auto& field : struct_declaration.fields)
+    {
+        auto constraint_env = std::make_shared<env>(environment());
+        auto type_constraint
+            = field.type.constraint().with_closed_over_env(constraint_env);
+        auto field_type = field.type.with_constraint(type_constraint);
+        fields.emplace_back(field.identifier, field_type);
+    }
+
+    /* This is like the struct prototype. */
+    auto struct_object = object::create_struct_object(
+        *this,
+        struct_declaration.span_,
+        struct_declaration.name,
+        fields);
+    define(key::global(struct_declaration.name), struct_object);
 
     return object::invalid;
 }

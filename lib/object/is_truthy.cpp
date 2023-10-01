@@ -32,6 +32,7 @@ bool is_truthy(const object& o) noexcept
     case object_type_function:
     case object_type_builtin_function:
     case object_type_foreign_function:
+    case object_type_struct:
     {
         return true;
     }

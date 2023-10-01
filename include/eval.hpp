@@ -135,6 +135,7 @@ private:
 
     int _placeholders_in_use      = 0;
     bool _had_unused_placeholders = false;
+
     std::unordered_map<std::string, types::Type> _declared_types;
 };
 

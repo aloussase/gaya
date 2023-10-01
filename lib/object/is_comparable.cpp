@@ -20,6 +20,7 @@ bool is_comparable(const object& o) noexcept
     case object_type_builtin_function:
     case object_type_foreign_function:
     case object_type_sequence:
+    case object_type_struct:
     case object_type_invalid:
     {
         return false;
