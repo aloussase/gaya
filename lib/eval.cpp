@@ -296,12 +296,24 @@ object::object interpreter::assign_to_get_expression(
             get_expression.span_,
             get_expression.ident.value);
         dict.insert_or_assign(key, value);
-    }
-    else
-    {
-        interp_error(get_expression.span_, "Invalid assigment target");
+        return object::invalid;
     }
 
+    if (IS_STRUCT(target))
+    {
+        auto& struct_object = AS_STRUCT(target);
+        auto field_name     = get_expression.ident.value;
+        for (auto& field : struct_object.fields)
+        {
+            if (field.identifier == field_name)
+            {
+                field.value = value;
+                return object::invalid;
+            }
+        }
+    }
+
+    interp_error(get_expression.span_, "Invalid assigment target");
     return object::invalid;
 }
 

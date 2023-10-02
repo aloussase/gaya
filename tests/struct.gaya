@@ -50,3 +50,20 @@ p :: Point(1, 2)
 
 assert(p@x == 1).
 assert(p@y == 2).
+
+(* setters work on structs. *)
+p2 :: Point(0, 0)
+do
+  &p2@x <- 1
+  &p2@y <- 2
+
+  assert(p2@x == 1).
+  assert(p2@y == 2).
+  assert(p2 == p).
+
+  let f = { p => do &p@x <- 42 p end } in
+  do
+    &f(p2)@y <- 69
+    assert(p2 == Point(42, 69)).
+  end
+end.
