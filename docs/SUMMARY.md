@@ -23,6 +23,7 @@
 - [Assignment](reference/assignment.md)
 - [Closures](reference/closures.md)
 - [Include Statements](reference/include.md)
+- [Structs](reference/structs.md)
 
 # Types
 
