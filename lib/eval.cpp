@@ -305,11 +305,22 @@ object::object interpreter::assign_to_get_expression(
         auto field_name     = get_expression.ident.value;
         for (auto& field : struct_object.fields)
         {
-            if (field.identifier == field_name)
+            if (field.identifier != field_name) continue;
+            if (!field.type.check(*this, value))
             {
-                field.value = value;
+                interp_error(
+                    get_expression.span_,
+                    fmt::format(
+                        "Expected a {} in assignment to {}'s {}, but got {}",
+                        field.type.to_string(),
+                        struct_object.name,
+                        field.identifier,
+                        object::typeof_(value)));
                 return object::invalid;
             }
+
+            field.value = value;
+            return object::invalid;
         }
     }
 
