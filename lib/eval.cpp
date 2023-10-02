@@ -1007,8 +1007,24 @@ interpreter::visit_get_expression(ast::get_expression& get_expression)
         return object::create_unit(span);
     }
 
+    if (IS_STRUCT(receiver))
+    {
+        auto& struct_object = AS_STRUCT(receiver);
+        auto& field_name    = get_expression.ident.value;
+
+        /* TODO: This should probably be a hash table lookup. */
+        for (auto& field : struct_object.fields)
+        {
+            if (field.identifier == field_name)
+            {
+                return field.value;
+            }
+        }
+    }
+
     interp_error(span, "Invalid getter target");
-    interp_hint(span, "Only dictionaries are valid getter targets");
+    interp_hint(span, "Only dictionaries and structs are valid getter targets");
+
     return object::invalid;
 }
 

@@ -39,3 +39,14 @@ struct B y: Number end
 
 assert(typeof(A) == "A").
 assert(typeof(B) == "B").
+
+(* getters work on structs. *)
+struct Point
+  x: Number
+  y: Number
+end
+
+p :: Point(1, 2)
+
+assert(p@x == 1).
+assert(p@y == 2).
