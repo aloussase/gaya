@@ -1,4 +1,5 @@
-type ShortString of String with string.length(_) < 10
+type ShortString of String 
+  with string.length(_) < 10
 
 struct Person
   name: ShortString

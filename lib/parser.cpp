@@ -276,6 +276,10 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     {
         return struct_declaration(*token);
     }
+    case token_type::for_:
+    {
+        return for_in_stmt(*token);
+    }
     default:
     {
         return expression_stmt(token.value());
