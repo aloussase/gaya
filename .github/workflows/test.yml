@@ -12,6 +12,11 @@ jobs:
         with:
           submodules: true
 
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gdc
+
       - name: Build and test
         run: |
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
