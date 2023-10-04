@@ -103,6 +103,12 @@ interpreter::eval(const std::string& filename, const char* source) noexcept
     auto resolver = Resolver { _parser.scopes() };
     resolver.resolve(ast);
 
+    if (!resolver.diagnostics().empty())
+    {
+        _diagnostics = resolver.diagnostics();
+        return {};
+    }
+
     return eval(filename, ast);
 }
 
@@ -1216,13 +1222,6 @@ object::object interpreter::visit_identifier(ast::identifier& identifier)
          * statically in the parser.
          * One scenario where this happens is with corecursive functions. */
         o = _scopes.front().get(identifier.key);
-        if (!object::is_valid(o))
-        {
-            interp_error(
-                identifier._span,
-                fmt::format("Undefined identifier: '{}'", identifier.value));
-            return object::invalid;
-        }
     }
     return o;
 }

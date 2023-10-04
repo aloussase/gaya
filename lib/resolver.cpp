@@ -24,6 +24,11 @@ void Resolver::end_scope() noexcept
     _scopes.pop_back();
 }
 
+std::vector<diagnostic::diagnostic> Resolver::diagnostics() const noexcept
+{
+    return _diagnostics;
+}
+
 void Resolver::assign_scope(ast::identifier& ident) noexcept
 {
     assert(_scopes.size() > 0);
@@ -39,6 +44,11 @@ void Resolver::assign_scope(ast::identifier& ident) noexcept
             return;
         }
     }
+
+    _diagnostics.emplace_back(
+        ident._span,
+        fmt::format("Undefined identifier '{}'", ident.value),
+        diagnostic::severity::error);
 }
 
 void Resolver::resolve(ast::node_ptr ast)

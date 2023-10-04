@@ -18,6 +18,9 @@ public:
 
     void resolve(ast::node_ptr);
 
+    [[nodiscard]] std::vector<diagnostic::diagnostic>
+    diagnostics() const noexcept;
+
     ResultType visit_program(ast::program&) override;
     ResultType visit_declaration_stmt(ast::declaration_stmt&) override;
     ResultType visit_expression_stmt(ast::expression_stmt&) override;
@@ -53,6 +56,7 @@ private:
 
     void assign_scope(ast::identifier&) noexcept;
 
+    std::vector<diagnostic::diagnostic> _diagnostics;
     std::vector<scope> _scopes;
 };
 
