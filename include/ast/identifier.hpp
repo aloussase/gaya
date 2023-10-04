@@ -20,7 +20,8 @@ struct identifier final : public expression
     span _span;
     std::string value;
     gaya::eval::key key;
-    size_t depth = 0;
+    size_t depth          = 0;
+    bool did_assign_scope = false;
 };
 
 }

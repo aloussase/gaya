@@ -50,6 +50,9 @@ public:
      */
     bool had_error() const noexcept;
 
+    using scope = robin_hood::unordered_set<eval::key>;
+    [[nodiscard]] const std::vector<scope>& scopes() const noexcept;
+
 private:
     std::vector<ast::stmt_ptr> stmts() noexcept;
 
@@ -135,7 +138,6 @@ private:
     lexer _lexer;
     std::vector<diagnostic::diagnostic> _diagnostics;
 
-    using scope = robin_hood::unordered_set<eval::key>;
     std::vector<scope> _scopes;
 
     std::string _filename;

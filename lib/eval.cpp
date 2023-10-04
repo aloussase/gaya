@@ -13,6 +13,7 @@
 #include <eval.hpp>
 #include <file_reader.hpp>
 #include <parser.hpp>
+#include <resolver.hpp>
 #include <span.hpp>
 
 #define UNUSED(e) ((void)(e))
@@ -92,11 +93,15 @@ std::optional<object::object>
 interpreter::eval(const std::string& filename, const char* source) noexcept
 {
     auto ast = _parser.parse(filename, source);
+
     if (!ast || !_parser.diagnostics().empty())
     {
         _diagnostics = _parser.diagnostics();
         return {};
     }
+
+    auto resolver = Resolver { _parser.scopes() };
+    resolver.resolve(ast);
 
     return eval(filename, ast);
 }
@@ -1204,14 +1209,20 @@ object::object interpreter::visit_string(ast::string& s)
 
 object::object interpreter::visit_identifier(ast::identifier& identifier)
 {
-    /* The parser already checks for undefined identifiers. */
     auto o = environment().get_at(identifier.key, identifier.depth);
     if (!object::is_valid(o))
     {
-        interp_error(
-            identifier._span,
-            fmt::format("Unbound identifier: '{}'", identifier.value));
-        return object::invalid;
+        /* This should not happen very often as identifiers are resolved
+         * statically in the parser.
+         * One scenario where this happens is with corecursive functions. */
+        o = _scopes.front().get(identifier.key);
+        if (!object::is_valid(o))
+        {
+            interp_error(
+                identifier._span,
+                fmt::format("Undefined identifier: '{}'", identifier.value));
+            return object::invalid;
+        }
     }
     return o;
 }

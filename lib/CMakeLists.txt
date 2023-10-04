@@ -9,6 +9,7 @@ add_library(gaya_lib
     object.cpp
     file_reader.cpp
     types.cpp
+    resolver.cpp
     object/arity.cpp
     object/call.cpp
     object/cmp.cpp

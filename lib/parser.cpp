@@ -7,6 +7,8 @@
 #include <file_reader.hpp>
 #include <parser.hpp>
 
+#define IGNORE(e) ((void)(e));
+
 namespace gaya
 {
 
@@ -77,6 +79,11 @@ void parser::report_diagnostics() const noexcept
 bool parser::had_error() const noexcept
 {
     return !_diagnostics.empty();
+}
+
+const std::vector<parser::scope>& parser::scopes() const noexcept
+{
+    return _scopes;
 }
 
 void parser::clear_diagnostics() noexcept
@@ -167,7 +174,8 @@ bool parser::assign_scope(std::shared_ptr<ast::identifier>& ident) noexcept
     {
         if (_scopes[i].contains(ident->key))
         {
-            ident->depth = _scopes.size() - 1 - i;
+            ident->depth            = _scopes.size() - 1 - i;
+            ident->did_assign_scope = true;
             return true;
         }
     }
@@ -182,7 +190,8 @@ bool parser::assign_scope(std::unique_ptr<ast::identifier>& ident) noexcept
     {
         if (_scopes[i].contains(ident->key))
         {
-            ident->depth = _scopes.size() - 1 - i;
+            ident->depth            = _scopes.size() - 1 - i;
+            ident->did_assign_scope = true;
             return true;
         }
     }
@@ -353,16 +362,7 @@ ast::stmt_ptr parser::assignment_stmt(token ampersand) noexcept
             return nullptr;
         }
 
-        if (!assign_scope(identifier))
-        {
-            parser_error(
-                span,
-                fmt::format(
-                    "Undeclared identifier in assignment: {}",
-                    identifier->value));
-            return nullptr;
-        }
-
+        IGNORE(assign_scope(identifier));
         assignment_kind = ast::AssignmentKind::Identifier;
     }
 
@@ -2249,16 +2249,7 @@ ast::expression_ptr parser::primary_expression(token token)
             token.span,
             token.span.to_string());
 
-        if (!assign_scope(ident))
-        {
-            parser_error(
-                token.span,
-                fmt::format(
-                    "Undefined identifier '{}'",
-                    token.span.to_string()));
-            return nullptr;
-        }
-
+        IGNORE(assign_scope(ident));
         return ident;
     }
     case token_type::unit:

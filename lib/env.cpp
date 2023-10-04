@@ -100,6 +100,7 @@ const env& env::nth_parent(size_t n) const noexcept
         environment = environment->parent().get();
     }
 
+    assert(environment);
     return *environment;
 }
 
@@ -113,6 +114,7 @@ env& env::nth_parent(size_t n) noexcept
         environment = environment->parent().get();
     }
 
+    assert(environment);
     return *environment;
 }
 
