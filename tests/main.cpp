@@ -21,6 +21,7 @@ struct FreeOnExit
 
     ~FreeOnExit()
     {
+        assert(ptr != nullptr);
         std::free((void*)ptr);
     }
 
