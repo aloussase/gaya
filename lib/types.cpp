@@ -1,5 +1,6 @@
 #include <eval.hpp>
 #include <types.hpp>
+#include <iostream>
 
 namespace gaya::types
 {
@@ -82,14 +83,22 @@ bool Type::check(eval::interpreter& interp, const eval::object::object& o)
     {
         assert(_constraint.condition && _constraint.closed_over_env);
         using namespace gaya::eval;
-        interp.begin_scope(env { _constraint.closed_over_env });
+        std::cout << "Type::check - before env creation" << std::endl;
+        env e (_constraint.closed_over_env);
+        std::cout << "Type::check - after env creation" << std::endl;
+        interp.begin_scope(e);
+        std::cout << "Type::check - after begin scope" << std::endl;
         interp.define(key::global("_"), o);
+        std::cout << "Type::check - before accept" << std::endl;
         auto result = _constraint.condition->accept(interp);
+        std::cout << "Type::check - after accept" << std::endl;
         interp.end_scope();
-        if (!object::is_valid(result)) return false;
+        std::cout << "Type::check - after end scope" << std::endl;
+        if (!object::is_valid(result)) { std::cout << "Type::check - end with invalid object" << std::endl; return false; }
         constraint_ok = object::is_truthy(result);
     }
 
+    std::cout << "Type::check - end" << std::endl;
     return type_ok && constraint_ok;
 }
 

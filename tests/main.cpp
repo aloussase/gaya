@@ -21,7 +21,6 @@ struct FreeOnExit
 
     ~FreeOnExit()
     {
-        assert(ptr != nullptr);
         std::free((void*)ptr);
     }
 
@@ -87,7 +86,7 @@ auto main() -> int
     size_t successes = 0;
     size_t failures  = 0;
 
-    for (const auto& entry : fs::directory_iterator("tests"))
+    for (auto entry : fs::directory_iterator("tests"))
     {
         auto filename = entry.path().string();
         if (!filename.ends_with(".gaya")) continue;

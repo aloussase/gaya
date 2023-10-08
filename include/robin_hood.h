@@ -52,7 +52,7 @@
 #    include <string_view>
 #endif
 
-// #define ROBIN_HOOD_LOG_ENABLED
+#define ROBIN_HOOD_LOG_ENABLED
 #ifdef ROBIN_HOOD_LOG_ENABLED
 #    include <iostream>
 #    define ROBIN_HOOD_LOG(...) \
@@ -61,7 +61,7 @@
 #    define ROBIN_HOOD_LOG(x)
 #endif
 
-// #define ROBIN_HOOD_TRACE_ENABLED
+#define ROBIN_HOOD_TRACE_ENABLED
 #ifdef ROBIN_HOOD_TRACE_ENABLED
 #    include <iostream>
 #    define ROBIN_HOOD_TRACE(...) \
@@ -70,7 +70,7 @@
 #    define ROBIN_HOOD_TRACE(x)
 #endif
 
-// #define ROBIN_HOOD_COUNT_ENABLED
+#define ROBIN_HOOD_COUNT_ENABLED
 #ifdef ROBIN_HOOD_COUNT_ENABLED
 #    include <iostream>
 #    define ROBIN_HOOD_COUNT(x) ++counts().x;
@@ -366,16 +366,17 @@ inline T unaligned_load(void const* ptr) noexcept {
 template <typename T, size_t MinNumAllocs = 4, size_t MaxNumAllocs = 256>
 class BulkPoolAllocator {
 public:
-    BulkPoolAllocator() noexcept = default;
+    BulkPoolAllocator() noexcept { std::cout << "BulkPoolAllocator - constructor 1" << std::endl; }
 
     // does not copy anything, just creates a new allocator.
     BulkPoolAllocator(const BulkPoolAllocator& ROBIN_HOOD_UNUSED(o) /*unused*/) noexcept
         : mHead(nullptr)
-        , mListForFree(nullptr) {}
+        , mListForFree(nullptr) { std::cout << "BulkPoolAllocator - constructor 2" << std::endl; }
 
     BulkPoolAllocator(BulkPoolAllocator&& o) noexcept
         : mHead(o.mHead)
         , mListForFree(o.mListForFree) {
+        std::cout << "BulkPoolAllocator - constructor 3" << std::endl;
         o.mListForFree = nullptr;
         o.mHead = nullptr;
     }
@@ -1497,6 +1498,7 @@ public:
     Table() noexcept(noexcept(Hash()) && noexcept(KeyEqual()))
         : WHash()
         , WKeyEqual() {
+        std::cout << "Table constructor" << std::endl;
         ROBIN_HOOD_TRACE(this)
     }
 

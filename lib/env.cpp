@@ -2,6 +2,7 @@
 
 #include "env.hpp"
 #include <object.hpp>
+#include <iostream>
 
 namespace gaya::eval
 {
@@ -42,8 +43,9 @@ const env::parent_ptr env::parent() const noexcept
 }
 
 env::env(parent_ptr p)
-    : _parent { p }
 {
+    std::cout << "env constructor" << std::endl;
+    _parent = p;
 }
 
 env env::deep_copy(interpreter& interp, span span) const noexcept

@@ -132,7 +132,7 @@ static object invalid = object {
 struct function final
 {
     size_t arity;
-    std::shared_ptr<env> closed_over_env;
+    std::shared_ptr<env> closed_over_env = nullptr;
     std::vector<ast::function_param> params;
     std::shared_ptr<ast::expression> body;
 };
