@@ -29,7 +29,6 @@ public:
     ResultType visit_for_in_stmt(ast::for_in_stmt&) override;
     ResultType visit_include_stmt(ast::include_stmt&) override;
     ResultType visit_type_declaration(ast::TypeDeclaration&) override;
-    ResultType visit_foreign_declaration(ast::ForeignDeclaration&) override;
     ResultType visit_struct_declaration(ast::StructDeclaration&) override;
     ResultType visit_do_expression(ast::do_expression&) override;
     ResultType visit_case_expression(ast::case_expression&) override;

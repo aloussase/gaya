@@ -149,12 +149,6 @@ Resolver::visit_type_declaration(ast::TypeDeclaration& type_decl)
     return eval::object::invalid;
 }
 
-eval::object::object
-Resolver::visit_foreign_declaration(ast::ForeignDeclaration&)
-{
-    return eval::object::invalid;
-}
-
 eval::object::object Resolver::visit_struct_declaration(ast::StructDeclaration&)
 {
     return eval::object::invalid;

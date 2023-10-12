@@ -4,14 +4,6 @@
 namespace gaya::types
 {
 
-std::optional<ForeignType> foreign_type_from_string(const std::string& s)
-{
-    if (s == "c.Int") return ForeignType::c_Int;
-    if (s == "c.Void") return ForeignType::c_Void;
-    if (s == "c.Pointer") return ForeignType::c_Pointer;
-    return {};
-}
-
 TypeConstraint TypeConstraint::with_closed_over_env(
     std::shared_ptr<eval::env> env) const noexcept
 {

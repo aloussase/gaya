@@ -15,15 +15,14 @@ public:
     virtual ResultType visit_program(program&) = 0;
 
     /* Statements */
-    virtual ResultType visit_declaration_stmt(declaration_stmt&)      = 0;
-    virtual ResultType visit_expression_stmt(expression_stmt&)        = 0;
-    virtual ResultType visit_assignment_stmt(assignment_stmt&)        = 0;
-    virtual ResultType visit_while_stmt(while_stmt&)                  = 0;
-    virtual ResultType visit_for_in_stmt(for_in_stmt&)                = 0;
-    virtual ResultType visit_include_stmt(include_stmt&)              = 0;
-    virtual ResultType visit_type_declaration(TypeDeclaration&)       = 0;
-    virtual ResultType visit_foreign_declaration(ForeignDeclaration&) = 0;
-    virtual ResultType visit_struct_declaration(StructDeclaration&)   = 0;
+    virtual ResultType visit_declaration_stmt(declaration_stmt&)    = 0;
+    virtual ResultType visit_expression_stmt(expression_stmt&)      = 0;
+    virtual ResultType visit_assignment_stmt(assignment_stmt&)      = 0;
+    virtual ResultType visit_while_stmt(while_stmt&)                = 0;
+    virtual ResultType visit_for_in_stmt(for_in_stmt&)              = 0;
+    virtual ResultType visit_include_stmt(include_stmt&)            = 0;
+    virtual ResultType visit_type_declaration(TypeDeclaration&)     = 0;
+    virtual ResultType visit_struct_declaration(StructDeclaration&) = 0;
 
     /* Expressions */
     virtual ResultType visit_do_expression(do_expression&)             = 0;

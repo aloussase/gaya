@@ -45,7 +45,7 @@ static bool run_repl_flag   = false;
 [[noreturn]] static void usage()
 {
     printf("gaya -- version 1.0\n"
-           "usage: gaya [--help] [--print-ast] [filename]\n"
+           "usage: gaya [--help] [filename]\n"
            "arguments:\n"
            "    filename     a file to evaluate\n"
            "options:\n"

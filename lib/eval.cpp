@@ -514,19 +514,6 @@ interpreter::visit_type_declaration(ast::TypeDeclaration& type_declaration)
     return object::invalid;
 }
 
-object::object interpreter::visit_foreign_declaration(
-    ast::ForeignDeclaration& foreign_declaration)
-{
-    auto foreign_function = object::create_foreign_function(
-        *this,
-        foreign_declaration.libname,
-        foreign_declaration.funcname,
-        foreign_declaration.return_type,
-        foreign_declaration.argument_types);
-    define(foreign_declaration.funcname, foreign_function);
-    return object::invalid;
-}
-
 object::object interpreter::visit_struct_declaration(
     ast::StructDeclaration& struct_declaration)
 {

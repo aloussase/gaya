@@ -53,11 +53,6 @@ object TypeDeclaration::accept(ast_visitor& v)
     return v.visit_type_declaration(*this);
 }
 
-object ForeignDeclaration::accept(ast_visitor& v)
-{
-    return v.visit_foreign_declaration(*this);
-}
-
 object StructDeclaration::accept(ast_visitor& v)
 {
     return v.visit_struct_declaration(*this);

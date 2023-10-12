@@ -22,7 +22,6 @@ std::unordered_map<std::string, token_type> lexer::_keywords = {
     { "of", token_type::of },
     { "type", token_type::type },
     { "with", token_type::with },
-    { "foreign", token_type::foreign },
     { "struct", token_type::struct_ },
 };
 

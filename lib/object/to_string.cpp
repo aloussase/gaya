@@ -145,11 +145,6 @@ std::string to_string(interpreter& interp, object o) noexcept
         auto func_name = AS_BUILTIN_FUNCTION(o).name;
         return fmt::format("<builtin-function: {}>", func_name);
     }
-    case object_type_foreign_function:
-    {
-        auto func_name = AS_FOREIGN_FUNCTION(o).funcname;
-        return fmt::format("<foreign-function: {}>", func_name);
-    }
     case object_type_sequence:
     {
         return sequence_to_string(interp, AS_SEQUENCE(o));

@@ -93,7 +93,6 @@ bool equals(const object& o1, const object& o2) noexcept
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:
-    case object_type_foreign_function:
     case object_type_invalid:
     {
         return false;

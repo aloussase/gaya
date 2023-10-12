@@ -23,7 +23,6 @@ enum class token_type {
     of,
     type,
     with,
-    foreign,
     /* End Types */
     cases,
     colon,

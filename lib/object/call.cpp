@@ -11,116 +11,6 @@
 namespace gaya::eval::object
 {
 
-static ffi_type* foreign_type_to_ffi_type(types::ForeignType ft)
-{
-    switch (ft)
-    {
-    case types::ForeignType::c_Void: return &ffi_type_void;
-    case types::ForeignType::c_Pointer: return &ffi_type_pointer;
-    case types::ForeignType::c_Int: return &ffi_type_sint;
-    }
-}
-
-object call_foreign_function(
-    ForeignFunction& func,
-    span span,
-    interpreter& interp,
-    const std::vector<object>& args)
-{
-    const char* filename = func.libname == "c" ? LIBC_SO : func.libname.c_str();
-    auto* handle         = dlopen(filename, RTLD_LAZY);
-    if (!handle)
-    {
-        interp.interp_error(
-            span,
-            fmt::format("Failed to load dynamic library {}", func.libname));
-        return invalid;
-    }
-
-    auto* func_ptr = dlsym(handle, func.funcname.c_str());
-    if (!func_ptr)
-    {
-        interp.interp_error(
-            span,
-            fmt::format(
-                "Failed to load symbol {} from dynamic library {}",
-                func.funcname,
-                func.libname));
-        return invalid;
-    }
-
-    auto nargs = func.argument_types.size();
-
-    auto** ffi_args   = (ffi_type**)calloc(nargs, sizeof(ffi_type*));
-    auto** ffi_values = (void**)calloc(nargs, sizeof(void*));
-
-    for (size_t i = 0; i < nargs; i++)
-    {
-        auto arg_type = func.argument_types[i];
-        auto arg      = args[i];
-
-        ffi_args[i] = foreign_type_to_ffi_type(arg_type);
-
-        switch (arg.type)
-        {
-        case object_type_string:
-        {
-            char* s       = (char*)calloc(1, sizeof(char*));
-            ffi_values[i] = &s;
-            s             = const_cast<char*>(AS_STRING(arg).c_str());
-            break;
-        }
-        default:
-        {
-            interp.interp_error(span, "ffi is not supported for other types");
-            return invalid;
-        }
-        }
-    }
-
-    auto* return_type = foreign_type_to_ffi_type(func.return_type);
-
-    ffi_cif ffi;
-    if (ffi_prep_cif(&ffi, FFI_DEFAULT_ABI, nargs, return_type, ffi_args)
-        != FFI_OK)
-    {
-        interp.interp_error(
-            span,
-            fmt::format("Failed to prepare FFI call {}", func.funcname));
-        return invalid;
-    }
-
-    object result = invalid;
-
-    switch (func.return_type)
-    {
-    case types::ForeignType::c_Int:
-    {
-        int rc;
-        ffi_call(&ffi, (void (*)())(func_ptr), &rc, ffi_values);
-        result = create_number(span, rc);
-        break;
-    }
-    case types::ForeignType::c_Pointer:
-    {
-        /* TODO */
-    }
-    case types::ForeignType::c_Void:
-    {
-        ffi_arg rc;
-        ffi_call(&ffi, (void (*)())(func_ptr), &rc, ffi_values);
-        result = create_unit(span);
-        break;
-    }
-    }
-
-    dlclose(handle);
-    free(ffi_args);
-    free(ffi_values);
-
-    return result;
-}
-
 object call_function(
     function& func,
     interpreter& interp,
@@ -301,14 +191,6 @@ object call(
     case object_type_builtin_function:
     {
         return AS_BUILTIN_FUNCTION(o).invoke(interp, span, args);
-    }
-    case object_type_foreign_function:
-    {
-        return call_foreign_function(
-            AS_FOREIGN_FUNCTION(o),
-            span,
-            interp,
-            args);
     }
     case object_type_struct:
     {

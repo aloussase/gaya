@@ -66,7 +66,6 @@ private:
     [[nodiscard]] ast::stmt_ptr expression_stmt(token discard);
     [[nodiscard]] ast::stmt_ptr include_stmt(token include) noexcept;
     [[nodiscard]] ast::stmt_ptr type_declaration(token type) noexcept;
-    [[nodiscard]] ast::stmt_ptr foreign_declaration(token foreign) noexcept;
 
     [[nodiscard]] std::optional<types::Type> type_id() noexcept;
 
