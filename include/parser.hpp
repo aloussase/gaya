@@ -134,6 +134,10 @@ private:
 
     [[nodiscard]] bool is_valid_assignment_target(ast::identifier&) noexcept;
 
+    [[nodiscard]] bool is_local_stmt(token) noexcept;
+    [[nodiscard]] ast::expression_ptr
+        try_parse_statement_as_expression(token) noexcept;
+
     lexer _lexer;
     std::vector<diagnostic::diagnostic> _diagnostics;
 

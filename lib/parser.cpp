@@ -212,6 +212,27 @@ bool parser::is_valid_assignment_target(ast::identifier& ident) noexcept
     return false;
 }
 
+bool parser::is_local_stmt(token t) noexcept
+{
+    switch (t.type)
+    {
+    case token_type::ampersand:
+    case token_type::for_:
+    case token_type::while_: return true;
+    default: return false;
+    }
+}
+
+ast::expression_ptr parser::try_parse_statement_as_expression(token t) noexcept
+{
+    if (!is_local_stmt(t)) return nullptr;
+
+    auto stmt = local_stmt(t);
+    if (!stmt) return nullptr;
+
+    return ast::make_node<ast::perform_expression>(t, stmt);
+}
+
 ast::node_ptr
 parser::parse(const std::string& filename, const char* source) noexcept
 {
@@ -872,17 +893,17 @@ ast::stmt_ptr parser::struct_declaration(token struct_) noexcept
 
 ast::expression_ptr parser::expression(token token)
 {
-    /*
-     * NOTE:
-     *
-     * We might want to move these to primary expression or allow them in
-     * grouping expressions.
-     */
     switch (token.type)
     {
     case token_type::do_: return do_expression(token);
     case token_type::cases: return case_expression(token);
-    default: return logical_expression(token);
+    default:
+    {
+        auto stmt_expr = try_parse_statement_as_expression(token);
+        if (stmt_expr) return stmt_expr;
+
+        return logical_expression(token);
+    }
     }
 }
 

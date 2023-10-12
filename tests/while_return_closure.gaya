@@ -2,7 +2,7 @@ test :: { =>
   let f = unit in
   let finished = 0 in do
     while not finished
-      let i = "i" in perform &f <- { => i }.
+      let i = "i" in &f <- { => i }.
       &finished <- 1
     end
 

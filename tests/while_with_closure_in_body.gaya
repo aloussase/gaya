@@ -6,9 +6,9 @@ let i = 1 in do
     let j = i in do
       let f = { => j } in
       cases
-        given j == 1 => perform &f1 <- f
-        given j == 2 => perform &f2 <- f
-        otherwise    => perform &f3 <- f
+        given j == 1 => &f1 <- f
+        given j == 2 => &f2 <- f
+        otherwise    => &f3 <- f
       end
     end.
     &i <- i + 1

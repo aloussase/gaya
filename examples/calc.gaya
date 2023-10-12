@@ -24,7 +24,7 @@ parse :: { tokens: Array =>
     let lhs = parse_primary() in do
       while peek() == "*" or peek() == "/"
         let op = advance() in
-        let rhs = parse_primary() in perform
+        let rhs = parse_primary() in
         &lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
       end
 
@@ -35,7 +35,7 @@ parse :: { tokens: Array =>
     let lhs = parse_factor() in do
       while peek() == "+" or peek() == "-" 
         let op = advance() in
-        let rhs = parse_factor() in perform
+        let rhs = parse_factor() in
         &lhs <- ("op" -> op, "lhs" -> lhs, "rhs" -> rhs).
       end
 
@@ -63,7 +63,7 @@ let line = "", done = false in do
     io.print("> ").
     &line <- io.readline()
     cases line
-      given ".quit" => perform &done <- true
+      given ".quit" => &done <- true
       given line when not string.isempty(line) => do
         let tokens = tokenize(line) in
         let ast = parse(tokens) in
