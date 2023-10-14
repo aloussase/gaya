@@ -200,7 +200,13 @@ struct case_expression final : public expression
 
 struct match_pattern final
 {
-    enum class kind { wildcard, capture, expr, array_pattern };
+    enum class kind { wildcard, capture, expr, array_pattern, struct_pattern };
+
+    struct struct_pattern
+    {
+        std::string name;
+        std::vector<match_pattern> patterns;
+    };
 
     match_pattern(
         kind k,
@@ -222,8 +228,19 @@ struct match_pattern final
     {
     }
 
+    match_pattern(
+        kind k,
+        struct_pattern sp,
+        std::shared_ptr<identifier> a_p = nullptr)
+        : kind { k }
+        , value { sp }
+        , as_pattern { a_p }
+    {
+    }
+
     kind kind;
-    std::variant<expression_ptr, std::vector<match_pattern>> value;
+    std::variant<expression_ptr, std::vector<match_pattern>, struct_pattern>
+        value;
     std::shared_ptr<identifier> as_pattern = nullptr;
 };
 

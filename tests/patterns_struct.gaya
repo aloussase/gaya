@@ -1,0 +1,26 @@
+struct Point
+  x: Number
+  y: Number
+end
+
+p :: Point(1, 2)
+
+do
+  let Point(1, 2) = p in unit.
+  let Point(x, y) = p in do
+    assert(x == 1).
+    assert(y == 2).
+  end.
+
+  cases p
+    given Point(x, y) => do
+      assert(x == 1).
+      assert(y == 2).
+    end
+  end.
+
+  let pointToString = { Point(x, y): Point =>
+    "("  <> x <> ", " <> y <> ")"
+  } in
+  assert(pointToString(p) == "(1, 2)").
+end.

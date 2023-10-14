@@ -75,6 +75,9 @@ private:
     [[nodiscard]] ast::expression_ptr expression(token);
     [[nodiscard]] ast::expression_ptr let_expression(token let);
     [[nodiscard]] ast::expression_ptr case_expression(token cases);
+
+    [[nodiscard]] std::vector<ast::match_pattern>
+        match_patterns(token) noexcept;
     [[nodiscard]] std::optional<ast::match_pattern> match_pattern(
         const token&,
         bool define_matched_identifier                      = true,

@@ -645,6 +645,31 @@ bool interpreter::match_pattern(
         DEFINE_AS_PATTERN;
         return true;
     }
+    case ast::match_pattern::kind::struct_pattern:
+    {
+        if (!IS_STRUCT(target)) return false;
+
+        auto s             = AS_STRUCT(target);
+        using pattern_kind = ast::match_pattern::struct_pattern;
+        auto sp            = std::get<pattern_kind>(pattern.value);
+
+        if (s.name != sp.name) return false;
+        if (s.fields.size() != sp.patterns.size()) return false;
+
+        for (size_t i = 0; i < s.fields.size(); i++)
+        {
+            auto field   = s.fields[i];
+            auto pattern = sp.patterns[i];
+
+            if (!match_pattern(field.value, pattern, to_key))
+            {
+                return false;
+            }
+        }
+
+        DEFINE_AS_PATTERN;
+        return true;
+    }
     }
 
     assert(0 && "Unhandled case in match_pattern");

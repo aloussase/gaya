@@ -1735,6 +1735,50 @@ ast::expression_ptr parser::case_expression(token cases)
         otherwise);
 }
 
+std::vector<ast::match_pattern>
+parser::match_patterns(token pattern_token) noexcept
+{
+    std::vector<ast::match_pattern> patterns;
+
+    for (;;)
+    {
+        auto t = _lexer.next_token();
+        if (!t)
+        {
+            parser_error(
+                pattern_token.span,
+                "Expected a pattern after '(' in match branch");
+            return {};
+        }
+
+        if (match(t, token_type::rparen))
+        {
+            _lexer.push_back(t.value());
+            break;
+        }
+
+        auto pattern = match_pattern(t.value());
+        if (!pattern) return {};
+
+        patterns.push_back(pattern.value());
+
+        if (!match(token_type::comma))
+        {
+            break;
+        }
+    }
+
+    if (!match(token_type::rparen))
+    {
+        parser_error(
+            pattern_token.span,
+            "Expected a ')' after array pattern in case branch");
+        return {};
+    }
+
+    return patterns;
+}
+
 std::optional<ast::match_pattern> parser::match_pattern(
     const token& pattern_token,
     bool define_matched_identifier,
@@ -1760,16 +1804,39 @@ std::optional<ast::match_pattern> parser::match_pattern(
     {
         if (auto t = _lexer.peek_token(); match(t, token_type::lparen))
         {
-            /* Not an identifier, a function call. */
-            auto e = expression(pattern_token);
-            if (!e) return {};
+            auto name = pattern_token.span.to_string();
+            if (isupper(name[0]))
+            {
+                IGNORE(_lexer.next_token());
 
-            DEFINE_AS_PATTERN;
-            return ast::match_pattern {
-                ast::match_pattern::kind::expr,
-                e,
-                as_pattern,
-            };
+                auto patterns = match_patterns(pattern_token);
+                if (patterns.empty()) return {};
+
+                auto struct_pattern = ast::match_pattern::struct_pattern {
+                    name,
+                    patterns,
+                };
+
+                DEFINE_AS_PATTERN;
+                return ast::match_pattern {
+                    ast::match_pattern::kind::struct_pattern,
+                    struct_pattern,
+                    as_pattern,
+                };
+            }
+            else
+            {
+                /* Not an identifier, a function call. */
+                auto e = expression(pattern_token);
+                if (!e) return {};
+
+                DEFINE_AS_PATTERN;
+                return ast::match_pattern {
+                    ast::match_pattern::kind::expr,
+                    e,
+                    as_pattern,
+                };
+            }
         }
         else
         {
@@ -1829,43 +1896,8 @@ std::optional<ast::match_pattern> parser::match_pattern(
          * This means we cannot match on dictionaries. I'll change this
          * according to how useful it proves to match on dictionaries.
          */
-        std::vector<ast::match_pattern> patterns;
-
-        for (;;)
-        {
-            auto t = _lexer.next_token();
-            if (!t)
-            {
-                parser_error(
-                    pattern_token.span,
-                    "Expected a pattern after '(' in match branch");
-                return {};
-            }
-
-            if (match(t, token_type::rparen))
-            {
-                _lexer.push_back(t.value());
-                break;
-            }
-
-            auto pattern = match_pattern(t.value());
-            if (!pattern) return {};
-
-            patterns.push_back(pattern.value());
-
-            if (!match(token_type::comma))
-            {
-                break;
-            }
-        }
-
-        if (!match(token_type::rparen))
-        {
-            parser_error(
-                pattern_token.span,
-                "Expected a ')' after array pattern in case branch");
-            return {};
-        }
+        auto patterns = match_patterns(pattern_token);
+        if (patterns.empty()) return {};
 
         DEFINE_AS_PATTERN;
 
