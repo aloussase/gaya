@@ -6,16 +6,15 @@ end
 p :: Point(1, 2)
 
 do
-  let Point(1, 2) = p in unit.
+  let Point(_, 2) = p in unit.
   let Point(x, y) = p in do
     assert(x == 1).
     assert(y == 2).
   end.
 
   cases p
-    given Point(x, y) => do
+    given Point(x, _) => do
       assert(x == 1).
-      assert(y == 2).
     end
   end.
 

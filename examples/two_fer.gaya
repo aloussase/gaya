@@ -1,0 +1,9 @@
+twoFer :: { name: String =>
+  cases
+    given name => "One for " <> name <> ", one for me."
+    otherwise  => "One for you, one for me."
+  end
+}
+
+io.println(twoFer("Alice")).
+io.println(twoFer(unit)).

@@ -1,0 +1,5 @@
+let i = 0 in
+for arg in system.args
+  io.println("i = " <> i <> ", arg = " <> arg).
+  &i <- i + 1
+end.

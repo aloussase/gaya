@@ -61,6 +61,8 @@ parser::parser()
 
     define("math.ceil"s);
     define("math.floor"s);
+
+    define("system.args"s);
 }
 
 std::vector<diagnostic::diagnostic>& parser::diagnostics() noexcept

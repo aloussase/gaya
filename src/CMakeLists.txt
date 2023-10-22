@@ -1,7 +1,5 @@
-add_subdirectory(repl)
-
 add_executable(gaya main.cpp)
-target_link_libraries(gaya fmt::fmt gaya_lib gaya_repl)
+target_link_libraries(gaya fmt::fmt gaya_lib)
 
 install(
     TARGETS gaya

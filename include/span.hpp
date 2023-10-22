@@ -6,6 +6,8 @@
 class span
 {
 public:
+    static span invalid;
+
     constexpr span(
         const char* source,
         size_t lineno,

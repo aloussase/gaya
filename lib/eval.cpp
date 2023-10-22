@@ -33,7 +33,11 @@ To bit_cast(const From& src) noexcept
     return dst;
 }
 
-interpreter::interpreter()
+interpreter::interpreter(
+    char** command_line_arguments,
+    uint32_t command_line_argument_count) noexcept
+    : _command_line_arguments { command_line_arguments }
+    , _command_line_argument_count { command_line_argument_count }
 {
 #define BUILTIN(name, arity, func) \
     define(name, create_builtin_function(*this, name, arity, func))
@@ -81,6 +85,20 @@ interpreter::interpreter()
 
     BUILTIN("math.floor"s, 1, math::floor);
     BUILTIN("math.ceil"s, 1, math::ceil);
+
+    /* Set up command line arguments. */
+
+    std::vector cmdline_args(command_line_argument_count, object::invalid);
+    for (uint32_t i = 0; i < command_line_argument_count; i++)
+    {
+        std::string arg = command_line_arguments[i];
+        cmdline_args[i] = object::create_string(*this, span::invalid, arg);
+    }
+
+    define(
+        "system.args"s,
+        object::create_array(*this, span::invalid, cmdline_args));
+
 #undef BUILTIN
 }
 

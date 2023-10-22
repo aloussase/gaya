@@ -44,7 +44,7 @@ bool expect(const std::string& filename, const char* source) noexcept
 template <>
 bool expect<Success>(const std::string& filename, const char* source) noexcept
 {
-    gaya::eval::interpreter interp;
+    gaya::eval::interpreter interp { nullptr, 0 };
     IGNORE(interp.eval(filename, source));
     return !interp.had_error();
 }
@@ -52,7 +52,7 @@ bool expect<Success>(const std::string& filename, const char* source) noexcept
 template <>
 bool expect<Error>(const std::string& filename, const char* source) noexcept
 {
-    gaya::eval::interpreter interp;
+    gaya::eval::interpreter interp { nullptr, 0 };
     IGNORE(interp.eval(filename, source));
     return interp.had_error();
 }

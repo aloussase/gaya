@@ -18,7 +18,9 @@ namespace fs = std::filesystem;
 class interpreter final : public ast::ast_visitor
 {
 public:
-    interpreter();
+    interpreter(
+        char** command_line_arguments,
+        const uint32_t command_line_argument_count) noexcept;
 
     [[nodiscard]] std::optional<ResultType>
     eval(const std::string& filename, const char* source) noexcept;
@@ -136,6 +138,9 @@ private:
     bool _had_unused_placeholders = false;
 
     std::unordered_map<std::string, types::Type> _declared_types;
+
+    char** _command_line_arguments;
+    const uint32_t _command_line_argument_count;
 };
 
 }

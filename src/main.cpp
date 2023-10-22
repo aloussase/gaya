@@ -9,13 +9,11 @@
 #include <parser.hpp>
 
 static bool show_usage_flag = false;
-static bool run_repl_flag   = false;
 
-[[noreturn]] void repl();
-
-[[nodiscard]] static bool run_file(const char* filename, const char* source)
+[[nodiscard]] static bool
+run_file(const char* filename, const char* source, char** argv, int argc)
 {
-    gaya::eval::interpreter interp;
+    gaya::eval::interpreter interp { argv, static_cast<uint32_t>(argc) };
     (void)interp.eval(filename, source);
 
     if (interp.had_error())
@@ -27,7 +25,7 @@ static bool run_repl_flag   = false;
     return true;
 }
 
-[[noreturn]] static void process_file(char* filename)
+[[noreturn]] static void process_file(char* filename, char** argv, int argc)
 {
     auto fr = gaya::file_reader { filename };
     if (!fr)
@@ -37,7 +35,7 @@ static bool run_repl_flag   = false;
     }
 
     auto* source = fr.slurp();
-    auto ok      = run_file(filename, source);
+    auto ok      = run_file(filename, source, argv, argc);
     free(source);
     exit(ok ? EXIT_SUCCESS : EXIT_FAILURE);
 }
@@ -49,8 +47,7 @@ static bool run_repl_flag   = false;
            "arguments:\n"
            "    filename     a file to evaluate\n"
            "options:\n"
-           "    --help       show this help\n"
-           "    --repl       run the REPL\n");
+           "    --help       show this help\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -63,10 +60,6 @@ auto main(int argc, char** argv) -> int
         if (strcmp(arg, "--help") == 0)
         {
             show_usage_flag = true;
-        }
-        else if (strcmp(arg, "--repl") == 0)
-        {
-            run_repl_flag = true;
         }
         else if (strncmp(arg, "-", 1) == 0 || strncmp(arg, "--", 2) == 0)
         {
@@ -85,22 +78,10 @@ auto main(int argc, char** argv) -> int
     }
 
     auto remaining_args = argc - i;
-    if (remaining_args > 1)
+    if (remaining_args >= 1)
     {
-        usage();
+        process_file(argv[i], argv, argc);
     }
-
-    if (run_repl_flag)
-    {
-        repl();
-    }
-
-    if (remaining_args == 1)
-    {
-        process_file(argv[i]);
-    }
-
-    usage();
 
     return 0;
 }
