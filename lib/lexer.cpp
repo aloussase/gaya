@@ -23,6 +23,7 @@ std::unordered_map<std::string, token_type> lexer::_keywords = {
     { "type", token_type::type },
     { "with", token_type::with },
     { "struct", token_type::struct_ },
+    { "enum", token_type::enum_ },
 };
 
 lexer::lexer(const char* source)

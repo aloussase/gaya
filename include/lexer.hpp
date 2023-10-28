@@ -14,6 +14,8 @@ enum class token_type {
     at,
     /* Structs */
     struct_,
+    /* Enums */
+    enum_,
     /* End Structs */
     /* Assignment */
     ampersand,
