@@ -21,7 +21,6 @@ namespace gaya::ast
 {
 struct expression;
 using expression_ptr = std::shared_ptr<expression>;
-struct StructDeclaration;
 }
 
 namespace gaya::types
@@ -40,6 +39,7 @@ enum class TypeKind {
     Any,
     Array,
     Dictionary,
+    Enum,
     Function,
     Number,
     Sequence,

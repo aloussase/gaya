@@ -68,6 +68,11 @@ bool Type::check(eval::interpreter& interp, const eval::object::object& o)
         type_ok = IS_STRUCT(o) && AS_STRUCT(o).name == _declared_type_name;
         break;
     }
+    case TypeKind::Enum:
+    {
+        type_ok = IS_ENUM(o) && AS_ENUM(o).name == _declared_type_name;
+        break;
+    }
     }
 
     if (_constraint.condition != nullptr)
@@ -97,6 +102,7 @@ std::string Type::to_string() const noexcept
     case TypeKind::Any: return "Any";
     case TypeKind::Array: return "Array";
     case TypeKind::Dictionary: return "Dictionary";
+    case TypeKind::Enum: return "Enum";
     case TypeKind::Function: return "Function";
     case TypeKind::Number: return "Number";
     case TypeKind::Sequence: return "Sequence";
