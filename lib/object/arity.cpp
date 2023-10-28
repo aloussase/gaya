@@ -32,6 +32,7 @@ size_t arity(const object& o) noexcept
     case object_type_unit:
     case object_type_sequence:
     case object_type_invalid:
+    case object_type_enum:
     {
         assert(0 && "Should not happen");
     }

@@ -90,6 +90,10 @@ bool equals(const object& o1, const object& o2) noexcept
     {
         return struct_equals(AS_STRUCT(o1), AS_STRUCT(o2));
     }
+    case object_type_enum:
+    {
+        return AS_ENUM(o1).variant == AS_ENUM(o2).variant;
+    }
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:

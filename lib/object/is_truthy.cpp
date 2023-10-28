@@ -31,6 +31,7 @@ bool is_truthy(const object& o) noexcept
     }
     case object_type_function:
     case object_type_builtin_function:
+    case object_type_enum:
     case object_type_struct:
     {
         return true;
@@ -39,7 +40,6 @@ bool is_truthy(const object& o) noexcept
     {
         return false;
     }
-
     case object_type_invalid:
     {
         assert(0 && "is_truthy of invalid object");

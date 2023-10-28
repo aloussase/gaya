@@ -11,6 +11,7 @@ bool is_callable(const object& o) noexcept
     case object_type_number:
     case object_type_unit:
     case object_type_sequence:
+    case object_type_enum:
     {
         return false;
     }

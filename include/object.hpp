@@ -20,6 +20,7 @@
 #define IS_FUNCTION(o)    ((o).type == gaya::eval::object::object_type_function)
 #define IS_HEAP_OBJECT(o) (nanbox_is_pointer((o).box))
 #define IS_STRUCT(o)      ((o).type == gaya::eval::object::object_type_struct)
+#define IS_ENUM(o)        ((o).type == gaya::eval::object::object_type_enum)
 #define IS_DICTIONARY(o) \
     ((o).type == gaya::eval::object::object_type_dictionary)
 #define IS_BUILTIN_FUNCION(o) \
@@ -34,6 +35,7 @@
 #define AS_FUNCTION(o)         AS_HEAP_OBJECT(o)->as_function
 #define AS_BUILTIN_FUNCTION(o) AS_HEAP_OBJECT(o)->as_builtin_function
 #define AS_STRUCT(o)           AS_HEAP_OBJECT(o)->as_struct_object
+#define AS_ENUM(o)             AS_HEAP_OBJECT(o)->as_enum_object
 #define AS_SEQUENCE(o)         AS_HEAP_OBJECT(o)->as_sequence
 
 namespace gaya::ast
@@ -63,6 +65,7 @@ enum object_type {
     object_type_builtin_function,
     object_type_sequence,
     object_type_struct,
+    object_type_enum,
 };
 
 struct object
@@ -162,6 +165,28 @@ struct StructObject final
     std::vector<Field> fields;
 };
 
+struct EnumObject final
+{
+    EnumObject(
+        const std::string& n,
+        robin_hood::unordered_map<std::string, int> vs,
+        const std::string& v)
+        : name { n }
+        , variants { vs }
+        , variant { v }
+    {
+        for (const auto& [k, v] : variants)
+        {
+            inv_variants[v] = k;
+        }
+    }
+
+    std::string name;
+    robin_hood::unordered_map<std::string, int> variants;
+    robin_hood::unordered_map<int, std::string> inv_variants;
+    std::string variant;
+};
+
 /* Sequences */
 
 struct string_sequence
@@ -234,6 +259,7 @@ struct heap_object
         builtin_function as_builtin_function;
         sequence as_sequence;
         StructObject as_struct_object;
+        EnumObject as_enum_object;
     };
     unsigned char marked     = 0;
     struct heap_object* next = nullptr;
@@ -302,6 +328,14 @@ create_array(interpreter&, span, const std::vector<object>&) noexcept;
     span,
     const std::string& name,
     std::vector<StructObject::Field> fields) noexcept;
+
+/// Create an enum object.
+[[nodiscard]] object create_enum_object(
+    interpreter&,
+    span,
+    const std::string&,
+    const robin_hood::unordered_map<std::string, int>,
+    const std::string&);
 
 /**
  * Create an array sequence object.

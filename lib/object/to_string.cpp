@@ -153,6 +153,11 @@ std::string to_string(interpreter& interp, object o) noexcept
     {
         return struct_to_string(interp, AS_STRUCT(o));
     }
+    case object_type_enum:
+    {
+        auto e = AS_ENUM(o);
+        return e.name + "@" + e.variant;
+    }
     case object_type_invalid:
     {
         assert(0 && "to_string of invalid object");

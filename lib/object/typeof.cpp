@@ -40,6 +40,10 @@ std::string typeof_(const object& o) noexcept
     {
         return AS_STRUCT(o).name;
     }
+    case object_type_enum:
+    {
+        return AS_ENUM(o).name;
+    }
     case object_type_invalid:
     {
         assert(0 && "typeof invalid object");

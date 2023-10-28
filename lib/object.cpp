@@ -115,6 +115,7 @@ static void mark(heap_object* o)
     case object_type_string:
     case object_type_unit:
     case object_type_number:
+    case object_type_enum:
     case object_type_invalid:
     {
         break;
@@ -320,6 +321,27 @@ object create_struct_object(
     };
 
     auto o = create_object(object_type_struct, span);
+    o.box  = nanbox_from_pointer(ptr);
+
+    return o;
+}
+
+object create_enum_object(
+    interpreter& interp,
+    span span,
+    const std::string& name,
+    const robin_hood::unordered_map<std::string, int> variants,
+    const std::string& variant)
+{
+    EnumObject enum_object = { name, variants, variant };
+
+    auto* ptr = create_heap_object(interp);
+    new (ptr) heap_object {
+        .type           = object_type_enum,
+        .as_enum_object = enum_object,
+    };
+
+    auto o = create_object(object_type_enum, span);
     o.box  = nanbox_from_pointer(ptr);
 
     return o;

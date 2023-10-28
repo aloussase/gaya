@@ -58,6 +58,12 @@ size_t hash(const object& o) noexcept
         }
         return seed;
     }
+    case object_type_enum:
+    {
+        return robin_hood::hash_bytes(
+            AS_ENUM(o).variant.c_str(),
+            sizeof(char) * AS_ENUM(o).variant.size());
+    }
     case object_type_function:
     case object_type_builtin_function:
     case object_type_sequence:
