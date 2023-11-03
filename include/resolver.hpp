@@ -38,6 +38,8 @@ public:
     ResultType visit_not_expression(ast::not_expression&) override;
     ResultType visit_perform_expression(ast::perform_expression&) override;
     ResultType visit_binary_expression(ast::binary_expression&) override;
+    ResultType visit_add_numbers(ast::AddNumbers&) override;
+    ResultType visit_less_than_numbers(ast::LessThanNumbers&) override;
     ResultType visit_get_expression(ast::get_expression&) override;
     ResultType visit_call_expression(ast::call_expression&) override;
     ResultType visit_function_expression(ast::function_expression&) override;

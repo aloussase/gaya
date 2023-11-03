@@ -234,6 +234,21 @@ Resolver::visit_perform_expression(ast::perform_expression& perform)
 }
 
 eval::object::object
+Resolver::visit_less_than_numbers(ast::LessThanNumbers& less_than_nums)
+{
+    less_than_nums.lhs->accept(*this);
+    less_than_nums.rhs->accept(*this);
+    return eval::object::invalid;
+}
+
+eval::object::object Resolver::visit_add_numbers(ast::AddNumbers& add_numbers)
+{
+    add_numbers.lhs->accept(*this);
+    add_numbers.rhs->accept(*this);
+    return eval::object::invalid;
+}
+
+eval::object::object
 Resolver::visit_binary_expression(ast::binary_expression& binop)
 {
     binop.lhs->accept(*this);

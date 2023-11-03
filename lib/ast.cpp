@@ -33,9 +33,49 @@ object assignment_stmt::accept(ast_visitor& v)
     return v.visit_assignment_stmt(*this);
 }
 
+void assignment_stmt::replace_child(
+    ast_node* child,
+    std::shared_ptr<ast_node> with) noexcept
+{
+    expression_ptr new_node = std::dynamic_pointer_cast<ast::expression>(with);
+    if (!new_node) return;
+
+    if (child == target.get())
+    {
+        target = new_node;
+    }
+
+    if (child == expression.get())
+    {
+        expression = new_node;
+    }
+}
+
 object while_stmt::accept(ast_visitor& v)
 {
     return v.visit_while_stmt(*this);
+}
+
+void while_stmt::replace_child(
+    ast_node* child,
+    std::shared_ptr<ast_node> new_node) noexcept
+{
+    if (child == condition.get())
+    {
+        if (auto new_condition
+            = std::dynamic_pointer_cast<expression>(new_node))
+        {
+            condition = new_condition;
+        }
+    }
+
+    if (continuation && child == continuation.get())
+    {
+        if (auto new_continuation = std::dynamic_pointer_cast<stmt>(new_node))
+        {
+            continuation = new_continuation;
+        }
+    }
 }
 
 object for_in_stmt::accept(ast_visitor& v)
@@ -98,6 +138,16 @@ object function_expression::accept(ast_visitor& v)
 object let_expression::accept(ast_visitor& v)
 {
     return v.visit_let_expression(*this);
+}
+
+object AddNumbers::accept(ast_visitor& v)
+{
+    return v.visit_add_numbers(*this);
+}
+
+object LessThanNumbers::accept(ast_visitor& v)
+{
+    return v.visit_less_than_numbers(*this);
 }
 
 object binary_expression::accept(ast_visitor& v)

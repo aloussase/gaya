@@ -406,10 +406,15 @@ ast::stmt_ptr parser::assignment_stmt(token ampersand) noexcept
         return nullptr;
     }
 
-    return ast::make_node<ast::assignment_stmt>(
+    auto assignment_stmt = ast::make_node<ast::assignment_stmt>(
         *assignment_kind,
         std::move(t),
         e);
+
+    assignment_stmt->target->set_parent(assignment_stmt);
+    assignment_stmt->expression->set_parent(assignment_stmt);
+
+    return assignment_stmt;
 }
 
 ast::stmt_ptr parser::while_stmt(token while_) noexcept
@@ -550,12 +555,23 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
         return nullptr;
     }
 
-    return ast::make_node<ast::while_stmt>(
+    auto while_stmt = ast::make_node<ast::while_stmt>(
         span,
         condition,
         std::move(body),
         continuation,
         initializer);
+
+    while_stmt->condition->set_parent(while_stmt);
+
+    if (while_stmt->continuation)
+    {
+        while_stmt->continuation->set_parent(while_stmt);
+    }
+
+    // TODO: Set parent for body nodes as well.
+
+    return while_stmt;
 }
 
 ast::stmt_ptr parser::for_in_stmt(token for_) noexcept
@@ -1353,7 +1369,12 @@ ast::expression_ptr parser::term_expression(token token) noexcept
             auto rhs = factor_expression(t.value());
             if (!rhs) return nullptr;
 
-            lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
+            auto new_lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
+
+            lhs->set_parent(new_lhs);
+            rhs->set_parent(new_lhs);
+
+            lhs = new_lhs;
 
             break;
         }

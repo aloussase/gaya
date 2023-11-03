@@ -34,6 +34,8 @@ public:
     virtual ResultType visit_function_expression(function_expression&) = 0;
     virtual ResultType visit_let_expression(let_expression&)           = 0;
     virtual ResultType visit_binary_expression(binary_expression&)     = 0;
+    virtual ResultType visit_add_numbers(AddNumbers&)                  = 0;
+    virtual ResultType visit_less_than_numbers(LessThanNumbers&)       = 0;
     virtual ResultType visit_lnot_expression(lnot_expression&)         = 0;
     virtual ResultType visit_not_expression(not_expression&)           = 0;
     virtual ResultType visit_perform_expression(perform_expression&)   = 0;

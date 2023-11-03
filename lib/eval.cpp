@@ -20,6 +20,13 @@
 #define RETURN_IF_INVALID(o) \
     if (!object::is_valid(o)) return o;
 
+#define TRY(o)                                \
+    ({                                        \
+        auto&& tmp = o;                       \
+        if (!object::is_valid(tmp)) return o; \
+        tmp;                                  \
+    })
+
 namespace gaya::eval
 {
 
@@ -247,7 +254,8 @@ interpreter::visit_expression_stmt(ast::expression_stmt& expression_stmt)
     /*
      * NOTE:
      *
-     * For statements I may want to return object::none or something like that.
+     * For statements I may want to return object::none or something like
+     * that.
      */
     return object::invalid;
 }
@@ -307,7 +315,8 @@ object::object interpreter::assign_to_call_expression(
     interp_error(span, "Invalid assignment target");
     interp_hint(
         span,
-        "Only arrays and dictionaries may be assigned to using call syntax");
+        "Only arrays and dictionaries may be assigned to using call "
+        "syntax");
     return object::invalid;
 }
 
@@ -341,7 +350,8 @@ object::object interpreter::assign_to_get_expression(
                 interp_error(
                     get_expression.span_,
                     fmt::format(
-                        "Expected a {} in assignment to {}'s {}, but got {}",
+                        "Expected a {} in assignment to {}'s {}, but got "
+                        "{}",
                         field.type.to_string(),
                         struct_object.name,
                         field.identifier,
@@ -776,6 +786,14 @@ object::object interpreter::visit_match_expression(ast::match_expression& expr)
     return object::create_unit(expr.span_);
 }
 
+object::object interpreter::visit_add_numbers(ast::AddNumbers& add_numbers)
+{
+    auto l        = TRY(add_numbers.lhs->accept(*this));
+    auto r        = TRY(add_numbers.rhs->accept(*this));
+    double result = AS_NUMBER(l) + AS_NUMBER(r);
+    return object::create_number(add_numbers.span_, result);
+}
+
 static inline object::object interpret_arithmetic_expression(
     interpreter& interp,
     ast::binary_expression& expr) noexcept
@@ -805,7 +823,13 @@ static inline object::object interpret_arithmetic_expression(
 
     switch (expr.op.type)
     {
-    case token_type::plus: result = fst + snd; break;
+    case token_type::plus:
+    {
+        expr.replace_self_with(
+            ast::make_node<ast::AddNumbers>(expr.op.span, expr.lhs, expr.rhs));
+        result = fst + snd;
+        break;
+    }
     case token_type::dash: result = fst - snd; break;
     case token_type::star: result = fst * snd; break;
     case token_type::slash:
@@ -821,6 +845,15 @@ static inline object::object interpret_arithmetic_expression(
     }
 
     return object::create_number(expr.op.span, result);
+}
+
+object::object
+interpreter::visit_less_than_numbers(ast::LessThanNumbers& less_than_nums)
+{
+    auto l      = TRY(less_than_nums.lhs->accept(*this));
+    auto r      = TRY(less_than_nums.rhs->accept(*this));
+    auto result = AS_NUMBER(l) - AS_NUMBER(r) < 0 ? 1 : 0;
+    return object::create_number(less_than_nums.span_, result);
 }
 
 static inline object::object interpret_comparison_expression(
@@ -874,7 +907,18 @@ static inline object::object interpret_comparison_expression(
 
         switch (expr.op.type)
         {
-        case token_type::less_than: result = cmp < 0 ? 1 : 0; break;
+        case token_type::less_than:
+        {
+            if (IS_NUMBER(l) && IS_NUMBER(r))
+            {
+                expr.replace_self_with(ast::make_node<ast::LessThanNumbers>(
+                    expr.op.span,
+                    expr.lhs,
+                    expr.rhs));
+            }
+            result = cmp < 0 ? 1 : 0;
+            break;
+        }
         case token_type::less_than_eq: result = cmp <= 0 ? 1 : 0; break;
         case token_type::greater_than: result = cmp > 0 ? 1 : 0; break;
         case token_type::greater_than_eq: result = cmp >= 0 ? 1 : 0; break;

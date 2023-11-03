@@ -22,6 +22,9 @@ struct assignment_stmt final : public stmt
 
     object accept(ast_visitor&) override;
 
+    void replace_child(ast_node* child, std::shared_ptr<ast_node> with) noexcept
+        override;
+
     AssignmentKind kind;
     expression_ptr target;
     expression_ptr expression;

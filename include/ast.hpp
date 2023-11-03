@@ -4,10 +4,12 @@
 #include <memory>
 #include <vector>
 
+#include <ast/add_numbers.hpp>
 #include <ast/assignment.hpp>
 #include <ast/enum.hpp>
 #include <ast/forward.hpp>
 #include <ast/identifier.hpp>
+#include <ast/less_than_numbers.hpp>
 #include <ast/struct.hpp>
 #include <env.hpp>
 #include <lexer.hpp>
@@ -82,6 +84,8 @@ struct while_stmt final : public stmt
     }
 
     object accept(ast_visitor&) override;
+
+    void replace_child(ast_node*, std::shared_ptr<ast_node>) noexcept override;
 
     span span_;
     std::optional<initializer> init;
