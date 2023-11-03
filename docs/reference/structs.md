@@ -40,7 +40,7 @@ Struct fields may be assigned new values using the assignment operator, similar
 to how it works with dictionaries.
 
 ```
-p@name <- "Jane"
+&p@name <- "Jane"
 ```
 
 Again, the type of the new value is checked at runtime.

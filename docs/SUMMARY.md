@@ -24,6 +24,7 @@
 - [Closures](reference/closures.md)
 - [Include Statements](reference/include.md)
 - [Structs](reference/structs.md)
+- [Enums](reference/enums.md)
 
 # Types
 
