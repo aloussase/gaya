@@ -154,6 +154,11 @@ eval::object::object Resolver::visit_struct_declaration(ast::StructDeclaration&)
     return eval::object::invalid;
 }
 
+eval::object::object Resolver::visit_enum_declaration(ast::EnumDeclaration&)
+{
+    return eval::object::invalid;
+}
+
 eval::object::object Resolver::visit_do_expression(ast::do_expression& do_)
 {
     begin_scope();

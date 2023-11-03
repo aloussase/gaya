@@ -1,4 +1,5 @@
 #include <fmt/core.h>
+#include <openssl/md5.h>
 
 #include <builtins/core.hpp>
 #include <eval.hpp>
@@ -81,6 +82,34 @@ gaya::eval::object::object tosequence(
     auto sequence = to_sequence(interp, o);
 
     return sequence;
+}
+
+gaya::eval::object::object
+md5(interpreter& interp, span span, const std::vector<object>& args) noexcept
+{
+    if (!IS_STRING(args[0]))
+    {
+        auto type = typeof_(args[0]);
+        auto msg  = fmt::format(
+            "Expected the first argument to be a string, but got {}",
+            type);
+        interp.interp_error(span, msg);
+    }
+
+    auto s = AS_STRING(args[0]);
+    unsigned char digest[MD5_DIGEST_LENGTH];
+    MD5((const unsigned char*)s.c_str(), s.size(), digest);
+
+    std::string result;
+    result.reserve(32);
+
+    for (std::size_t i = 0; i != 16; ++i)
+    {
+        result += "0123456789abcdef"[digest[i] / 16];
+        result += "0123456789abcdef"[digest[i] % 16];
+    }
+
+    return create_string(interp, span, result);
 }
 
 }

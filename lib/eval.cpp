@@ -51,6 +51,7 @@ interpreter::interpreter(
     BUILTIN("tostring"s, 1, core::tostring);
     BUILTIN("tosequence"s, 1, core::tosequence);
     BUILTIN("issequence"s, 1, core::issequence);
+    BUILTIN("md5"s, 1, core::md5);
 
     BUILTIN("io.println"s, 1, io::println);
     BUILTIN("io.print"s, 1, io::print);
@@ -560,6 +561,33 @@ object::object interpreter::visit_struct_declaration(
         struct_declaration.name,
         fields);
     define(key::global(struct_declaration.name), struct_object);
+
+    return object::invalid;
+}
+
+object::object
+interpreter::visit_enum_declaration(ast::EnumDeclaration& enum_decl)
+{
+    auto enum_type = types::Type {
+        enum_decl.name,
+        types::TypeKind::Struct,
+        types::TypeConstraint {},
+    };
+    _declared_types.insert({ enum_decl.name, enum_type });
+
+    robin_hood::unordered_map<std::string, int> variants;
+    for (size_t i = 0; i < enum_decl.variants.size(); i++)
+    {
+        variants[enum_decl.variants[i]] = i;
+    }
+
+    auto enum_object = object::create_enum_object(
+        *this,
+        enum_decl.span_,
+        enum_decl.name,
+        variants,
+        enum_decl.variants[0]);
+    define(key::global(enum_decl.name), enum_object);
 
     return object::invalid;
 }
@@ -1084,6 +1112,20 @@ interpreter::visit_get_expression(ast::get_expression& get_expression)
                 return field.value;
             }
         }
+    }
+
+    if (IS_ENUM(receiver))
+    {
+        // FIXME: Might be able to optimize this.
+        auto& enum_object  = AS_ENUM(receiver);
+        auto& variant_name = get_expression.ident.value;
+        auto new_enum      = object::create_enum_object(
+            *this,
+            span,
+            enum_object.name,
+            enum_object.variants,
+            variant_name);
+        return new_enum;
     }
 
     interp_error(span, "Invalid getter target");

@@ -46,5 +46,9 @@ target_compile_definitions(gaya_lib PRIVATE
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>)
 
 target_link_libraries(gaya_lib PRIVATE
-    fmt::fmt ffi dl)
+    fmt::fmt
+    ffi
+    dl
+    ssl
+    crypto)
 

@@ -69,8 +69,11 @@ private:
 
     [[nodiscard]] std::optional<types::Type> type_id() noexcept;
 
+    void define_type(span, const std::string&, types::TypeKind) noexcept;
+
     [[nodiscard]] std::vector<ast::StructField> struct_fields() noexcept;
     [[nodiscard]] ast::stmt_ptr struct_declaration(token struct_) noexcept;
+    [[nodiscard]] ast::stmt_ptr enum_declaration(token enum_) noexcept;
 
     [[nodiscard]] ast::expression_ptr expression(token);
     [[nodiscard]] ast::expression_ptr let_expression(token let);

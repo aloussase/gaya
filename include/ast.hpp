@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <ast/assignment.hpp>
+#include <ast/enum.hpp>
 #include <ast/forward.hpp>
 #include <ast/identifier.hpp>
 #include <ast/struct.hpp>

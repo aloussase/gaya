@@ -155,8 +155,7 @@ std::string to_string(interpreter& interp, object o) noexcept
     }
     case object_type_enum:
     {
-        auto e = AS_ENUM(o);
-        return e.name + "@" + e.variant;
+        return AS_ENUM(o).variant;
     }
     case object_type_invalid:
     {

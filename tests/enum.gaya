@@ -1,0 +1,29 @@
+enum Color
+  red
+  green
+  blue
+end
+
+c1 :: Color@red
+c2 :: Color@blue
+c3 :: Color@green
+
+(* equality *)
+assert(c1 == Color@red).
+assert(c2 == Color@blue).
+assert(c3 == Color@green).
+
+(* typeof & tostring *)
+assert(typeof(c1)   == "Color").
+assert(tostring(c1) == "red").
+
+(* comparison *)
+assert(Color@red < Color@green).
+assert(Color@green < Color@blue).
+
+(* can be used in dicts *)
+d :: (->)
+dict.set(d, Color@red, "red").
+dict.set(d, Color@green, "green").
+assert(d(Color@red) == "red").
+assert(d(Color@green) == "green").

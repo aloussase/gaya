@@ -42,4 +42,11 @@ issequence(interpreter&, span, const std::vector<object>&) noexcept;
 gaya::eval::object::object
 tosequence(interpreter&, span, const std::vector<object>&) noexcept;
 
+/**
+ * Calculate the md5 hash of the provided string.
+ * @param s <String> The string for which to compute the md5 hash.
+ */
+gaya::eval::object::object
+md5(interpreter&, span, const std::vector<object>&) noexcept;
+
 }

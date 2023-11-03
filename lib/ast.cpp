@@ -58,6 +58,11 @@ object StructDeclaration::accept(ast_visitor& v)
     return v.visit_struct_declaration(*this);
 }
 
+object EnumDeclaration::accept(ast_visitor& v)
+{
+    return v.visit_enum_declaration(*this);
+}
+
 /* Expressions */
 
 object do_expression::accept(ast_visitor& v)

@@ -23,6 +23,7 @@ public:
     virtual ResultType visit_include_stmt(include_stmt&)            = 0;
     virtual ResultType visit_type_declaration(TypeDeclaration&)     = 0;
     virtual ResultType visit_struct_declaration(StructDeclaration&) = 0;
+    virtual ResultType visit_enum_declaration(EnumDeclaration&)     = 0;
 
     /* Expressions */
     virtual ResultType visit_do_expression(do_expression&)             = 0;

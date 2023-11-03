@@ -27,6 +27,7 @@ parser::parser()
     define("tostring"s);
     define("tosequence"s);
     define("issequence"s);
+    define("md5"s);
 
     define("io.println"s);
     define("io.print"s);
@@ -303,6 +304,10 @@ ast::stmt_ptr parser::toplevel_stmt() noexcept
     case token_type::struct_:
     {
         return struct_declaration(*token);
+    }
+    case token_type::enum_:
+    {
+        return enum_declaration(*token);
     }
     case token_type::for_:
     {
@@ -765,6 +770,20 @@ ast::stmt_ptr parser::include_stmt(token include) noexcept
         ast);
 }
 
+void parser::define_type(
+    span span,
+    const std::string& identifier,
+    types::TypeKind kind) noexcept
+{
+    auto type_declaration = ast::make_node<ast::TypeDeclaration>(
+        span,
+        identifier,
+        types::Type { identifier, kind },
+        nullptr);
+    _type_declarations.insert({ identifier, type_declaration });
+    define(identifier);
+}
+
 ast::stmt_ptr parser::type_declaration(token type) noexcept
 {
     assert(type.type == token_type::type);
@@ -875,22 +894,60 @@ ast::stmt_ptr parser::struct_declaration(token struct_) noexcept
         return nullptr;
     }
 
-    auto struct_type      = types::Type { identifier, types::TypeKind::Struct };
-    auto type_declaration = ast::make_node<ast::TypeDeclaration>(
-        span,
-        identifier,
-        struct_type,
-        nullptr);
-    _type_declarations.insert({ identifier, type_declaration });
-    define(identifier);
-
     if (!match(token_type::end))
     {
         parser_error(span, "Expected 'end' after struct declaration");
         return nullptr;
     }
 
+    define_type(span, identifier, types::TypeKind::Struct);
+
     return ast::make_node<ast::StructDeclaration>(span, identifier, fields);
+}
+
+ast::stmt_ptr parser::enum_declaration(token enum_) noexcept
+{
+    assert(enum_.type == token_type::enum_);
+
+    auto span       = enum_.span;
+    auto i_t        = _lexer.next_token();
+    auto identifier = i_t ? i_t->span.to_string() : "";
+    if (!match(i_t, token_type::identifier))
+    {
+        parser_error(enum_.span, "Expected an identifier after 'enum'");
+        return nullptr;
+    }
+
+    std::vector<std::string> variants;
+    for (;;)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        if (match(t, token_type::end))
+        {
+            _lexer.push_back(*t);
+            break;
+        }
+
+        if (!match(t, token_type::identifier))
+        {
+            parser_error(t->span, "Expected an identifier in enum body");
+            return nullptr;
+        }
+
+        variants.emplace_back(t->span.to_string());
+    }
+
+    if (!match(token_type::end))
+    {
+        parser_error(span, "Expected 'end' after enum declaration");
+        return nullptr;
+    }
+
+    define_type(span, identifier, types::TypeKind::Enum);
+
+    return ast::make_node<ast::EnumDeclaration>(span, identifier, variants);
 }
 
 ast::expression_ptr parser::expression(token token)
