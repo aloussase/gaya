@@ -1,9 +1,0 @@
-[book]
-authors = ["Alexander Goussas"]
-language = "en"
-multilingual = false
-src = "."
-title = "The Gaya Language Book"
-
-[output.html]
-git-repository-url = "https://github.com/aloussase/gaya"

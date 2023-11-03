@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Arrays - The Gaya Language Book</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Getting Started</li><li class="chapter-item expanded "><a href="../getting-started/installing.html"><strong aria-hidden="true">1.</strong> Installing Gaya</a></li><li class="chapter-item expanded "><a href="../getting-started/tooling.html"><strong aria-hidden="true">2.</strong> Tooling</a></li><li class="chapter-item expanded "><a href="../getting-started/hello-gaya.html"><strong aria-hidden="true">3.</strong> Hello, Gaya!</a></li><li class="chapter-item expanded affix "><li class="part-title">Language Reference</li><li class="chapter-item expanded "><a href="../reference/basic-syntax.html"><strong aria-hidden="true">4.</strong> Basic Syntax</a></li><li class="chapter-item expanded "><a href="../reference/perform.html"><strong aria-hidden="true">5.</strong> Discarding values and performing statements</a></li><li class="chapter-item expanded "><a href="../reference/truthiness.html"><strong aria-hidden="true">6.</strong> Truthiness</a></li><li class="chapter-item expanded "><a href="../reference/operators.html"><strong aria-hidden="true">7.</strong> Operators</a></li><li class="chapter-item expanded "><a href="../reference/function.html"><strong aria-hidden="true">8.</strong> Functions</a></li><li class="chapter-item expanded "><a href="../reference/let-expression.html"><strong aria-hidden="true">9.</strong> Let Expression</a></li><li class="chapter-item expanded "><a href="../reference/cases-expression.html"><strong aria-hidden="true">10.</strong> Cases Expression</a></li><li class="chapter-item expanded "><a href="../reference/match-expression.html"><strong aria-hidden="true">11.</strong> Match Expression</a></li><li class="chapter-item expanded "><a href="../reference/do-expression.html"><strong aria-hidden="true">12.</strong> Do Expression</a></li><li class="chapter-item expanded "><a href="../reference/control-flow.html"><strong aria-hidden="true">13.</strong> Control Flow</a></li><li class="chapter-item expanded "><a href="../reference/assignment.html"><strong aria-hidden="true">14.</strong> Assignment</a></li><li class="chapter-item expanded "><a href="../reference/closures.html"><strong aria-hidden="true">15.</strong> Closures</a></li><li class="chapter-item expanded "><a href="../reference/include.html"><strong aria-hidden="true">16.</strong> Include Statements</a></li><li class="chapter-item expanded "><a href="../reference/structs.html"><strong aria-hidden="true">17.</strong> Structs</a></li><li class="chapter-item expanded "><a href="../reference/enums.html"><strong aria-hidden="true">18.</strong> Enums</a></li><li class="chapter-item expanded affix "><li class="part-title">Types</li><li class="chapter-item expanded "><a href="../types/strings.html"><strong aria-hidden="true">19.</strong> Strings</a></li><li class="chapter-item expanded "><a href="../types/arrays.html"><strong aria-hidden="true">20.</strong> Arrays</a></li><li class="chapter-item expanded "><a href="../types/dictionaries.html"><strong aria-hidden="true">21.</strong> Dictionaries</a></li><li class="chapter-item expanded "><a href="../types/sequences.html"><strong aria-hidden="true">22.</strong> Sequences</a></li><li class="chapter-item expanded affix "><li class="part-title">Standard Library</li><li class="chapter-item expanded "><a href="../std/core.html"><strong aria-hidden="true">23.</strong> Core</a></li><li class="chapter-item expanded "><a href="../std/io.html"><strong aria-hidden="true">24.</strong> IO</a></li><li class="chapter-item expanded "><a href="../std/strings.html"><strong aria-hidden="true">25.</strong> Strings</a></li><li class="chapter-item expanded "><a href="../std/arrays.html" class="active"><strong aria-hidden="true">26.</strong> Arrays</a></li><li class="chapter-item expanded "><a href="../std/dictionaries.html"><strong aria-hidden="true">27.</strong> Dictionaries</a></li><li class="chapter-item expanded "><a href="../std/sequences.html"><strong aria-hidden="true">28.</strong> Sequences</a></li><li class="chapter-item expanded "><a href="../std/functions.html"><strong aria-hidden="true">29.</strong> Functions</a></li><li class="chapter-item expanded "><a href="../std/math.html"><strong aria-hidden="true">30.</strong> Math</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Gaya Language Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/aloussase/gaya" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="arrays"><a class="header" href="#arrays">Arrays</a></h1>
+<pre><code>include &quot;arrays&quot;
+</code></pre>
+<h3 id="arraylength"><a class="header" href="#arraylength"><code>array.length</code></a></h3>
+<p>Return the length of an array.</p>
+<pre><code>@param a &lt;array&gt; The array.
+</code></pre>
+<h3 id="arrayisempty"><a class="header" href="#arrayisempty"><code>array.isempty</code></a></h3>
+<p>Return whether the given array is empty.</p>
+<pre><code>@param a &lt;array&gt; The array.
+</code></pre>
+<h3 id="arrayconcat"><a class="header" href="#arrayconcat"><code>array.concat</code></a></h3>
+<p>Append the elements of the second array to the end first one.</p>
+<p>This mutates the first array.</p>
+<pre><code>@param a1 &lt;array&gt; The array onto which to append elements.
+@param a2 &lt;array&gt; The array from which to extract elements.
+</code></pre>
+<h3 id="arraypush"><a class="header" href="#arraypush"><code>array.push</code></a></h3>
+<p>Append an element to the end of the array.</p>
+<p>This mutates the original array.</p>
+<pre><code>@param a &lt;array&gt; The array onto which to push the element.
+@param o &lt;object&gt; The element to append.
+</code></pre>
+<h3 id="arraypop"><a class="header" href="#arraypop"><code>array.pop</code></a></h3>
+<p>Remove and return the last element of the array.</p>
+<p>This mutates the original array.</p>
+<pre><code>@param a &lt;array&gt; The array from which to remove the last element.
+</code></pre>
+<h3 id="arraysort"><a class="header" href="#arraysort"><code>array.sort</code></a></h3>
+<p>Sort the provided array in place.</p>
+<p>The sorting is performed according to the provided comparison function.</p>
+<pre><code>@param a &lt;array&gt; The array to sort.
+@param cmp &lt;function&gt; A comparison function.
+</code></pre>
+<h3 id="arrayrange"><a class="header" href="#arrayrange"><code>array.range</code></a></h3>
+<p>Return an array with the numbers from start to finish exclusive.</p>
+<pre><code>@param start &lt;number&gt; The start of the range.
+@param finish &lt;number&gt; The non-inclusive end of the range. *)
+</code></pre>
+<h3 id="arrayjoin"><a class="header" href="#arrayjoin"><code>array.join</code></a></h3>
+<p>Return a string that is the result of joining the elements of the provided
+array by the given separator.</p>
+<pre><code>@param a &lt;array&gt; The array to join.
+@param sep &lt;string&gt; The separator to use
+</code></pre>
+<h3 id="arrayset"><a class="header" href="#arrayset"><code>array.set</code></a></h3>
+<p>Replace the element at the specified position with the provided object.</p>
+<pre><code>@param a &lt;array&gt; The array.
+@param index &lt;number&gt; The index at which to replace the element.
+@param o &lt;object&gt; The object to replace the element with.
+@return The provided array.
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../std/strings.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../std/dictionaries.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../std/strings.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../std/dictionaries.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
