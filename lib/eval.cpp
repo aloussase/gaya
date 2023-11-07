@@ -3,6 +3,7 @@
 
 #include <fmt/core.h>
 
+#include <builtins/aoc.hpp>
 #include <builtins/array.hpp>
 #include <builtins/core.hpp>
 #include <builtins/dict.hpp>
@@ -93,6 +94,8 @@ interpreter::interpreter(
 
     BUILTIN("math.floor"s, 1, math::floor);
     BUILTIN("math.ceil"s, 1, math::ceil);
+
+    BUILTIN("aoc.getInput"s, 3, aoc::get_input);
 
     /* Set up command line arguments. */
 

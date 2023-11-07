@@ -64,6 +64,7 @@ parser::parser()
     define("math.floor"s);
 
     define("system.args"s);
+    define("aoc.getInput"s);
 }
 
 std::vector<diagnostic::diagnostic>& parser::diagnostics() noexcept

@@ -1,0 +1,11 @@
+year   :: 2020
+day    :: 5
+
+cases
+  given array.length(system.args) < 3 =>
+    io.println("Missing session cookie!")
+  otherwise =>
+    let cookie = system.args(2) in
+    let input = aoc.getInput(day, year, cookie) in
+    io.println(input)
+end.

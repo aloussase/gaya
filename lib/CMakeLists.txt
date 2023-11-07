@@ -29,7 +29,8 @@ add_library(gaya_lib
     builtins/array.cpp
     builtins/sequence.cpp
     builtins/dict.cpp
-    builtins/math.cpp)
+    builtins/math.cpp
+    builtins/aoc.cpp)
 
 target_compile_options(gaya_lib PRIVATE -Wall -Wextra
     $<$<CONFIG:Release>:-O2 -Wno-return-type>
@@ -50,5 +51,6 @@ target_link_libraries(gaya_lib PRIVATE
     ffi
     dl
     ssl
-    crypto)
+    crypto
+    httplib)
 

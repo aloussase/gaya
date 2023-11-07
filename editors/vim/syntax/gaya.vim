@@ -13,15 +13,16 @@ highlight link gayaConstant Constant
 syntax keyword gayaKeyword let in do unit cases end given otherwise while perform and or not include when for type of with struct enum
 highlight link gayaKeyword Keyword
 
-syntax match gayaType /\v[A-Z]+[a-z]*/
-highlight link gayaType Type
-
 " Literals
 syntax region gayaString start=/"/ end=/"/ skip=/\\"/
 highlight link gayaString String
 
-syntax match gayaIdentifier /\v[a-z0-9_.]+/
+syntax match gayaIdentifier /\v[a-z0-9_.]+/ contains=gayaType
 highlight link gayaIdentifier Identifier
+
+" Types
+syntax match gayaType /\v<[A-Z][a-z]*>/ contained containedin=gayaIdentifier
+highlight link gayaType Type
 
 " Operators
 syntax match gayaOperator /::/
