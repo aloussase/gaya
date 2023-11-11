@@ -36,6 +36,7 @@ problems, surely I can write such a language myself". And here we are now.
   - Uses an efficient hash table for the environment
   - Hash keys are precomputed in AST nodes
   - Resolving identifiers statically
+  - Self-optimizing AST
 
 - **Sequences:** You can build data processing or algorithmic pipelines using
   the functions and data structures from the sequence protocol. The first
@@ -66,7 +67,7 @@ You need to have a C++ and D compiler (GDC specifically) and CMake. You can
 install them on Debian with the following command:
 
 ```
-sudo apt-get install build-essential cmake gdc
+sudo apt-get install build-essential cmake
 ```
 
 Then, you can clone this repository and build the interpreter:

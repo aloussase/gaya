@@ -2,11 +2,11 @@
 
 ## Dependencies
 
-You need to have a C++ and D compiler (GDC specifically). You can install them
-on Debian by running the following command:
+You need to have a C++ compiler and CMake. You can install them on Debian by
+running the following command:
 
 ```
-sudo apt-get install build-essential cmake gdc
+sudo apt-get install build-essential cmake
 ```
 
 ## Building Gaya
