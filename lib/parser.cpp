@@ -9,6 +9,13 @@
 
 #define IGNORE(e) ((void)(e));
 
+#define TRY(e)                              \
+    ({                                      \
+        auto&& tmp = e;                     \
+        if (tmp == nullptr) return nullptr; \
+        tmp;                                \
+    })
+
 namespace gaya
 {
 
@@ -1245,7 +1252,7 @@ ast::expression_ptr parser::comparison_expression(token token) noexcept
 
 ast::expression_ptr parser::pipe_expression(token token) noexcept
 {
-    auto lhs = bitwise_expression(token);
+    auto lhs = range_expression(token);
     if (!lhs) return nullptr;
 
     for (;;)
@@ -1270,7 +1277,7 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
         }
 
         begin_scope();
-        auto rhs = bitwise_expression(expr_token.value());
+        auto rhs = range_expression(expr_token.value());
         end_scope();
 
         if (!rhs) return nullptr;
@@ -1281,6 +1288,51 @@ ast::expression_ptr parser::pipe_expression(token token) noexcept
             lhs,
             pipe_token.value(),
             rhs);
+    }
+
+    return lhs;
+}
+
+ast::expression_ptr parser::range_expression(token token) noexcept
+{
+    auto lhs = TRY(bitwise_expression(token));
+
+    auto done = false;
+    while (!done)
+    {
+        auto t = _lexer.next_token();
+        if (!t) break;
+
+        switch (t->type)
+        {
+        case token_type::upto:
+        {
+            auto op = t.value();
+
+            t = _lexer.next_token();
+            if (!t)
+            {
+                parser_error(
+                    op.span,
+                    fmt::format(
+                        "Expected an expression after {}",
+                        op.span.to_string()));
+                return nullptr;
+            }
+
+            auto rhs = TRY(bitwise_expression(t.value()));
+
+            lhs = ast::make_node<ast::Upto>(op.span, lhs, rhs);
+
+            break;
+        }
+        default:
+        {
+            _lexer.push_back(t.value());
+            done = true;
+            break;
+        }
+        }
     }
 
     return lhs;
@@ -1393,9 +1445,7 @@ ast::expression_ptr parser::term_expression(token token) noexcept
 
 ast::expression_ptr parser::factor_expression(token token) noexcept
 {
-    auto lhs = unary_expression(token);
-    if (!lhs) return nullptr;
-
+    auto lhs  = TRY(unary_expression(token));
     auto done = false;
     while (!done)
     {
@@ -1420,10 +1470,8 @@ ast::expression_ptr parser::factor_expression(token token) noexcept
                 return nullptr;
             }
 
-            auto rhs = unary_expression(t.value());
-            if (!rhs) return nullptr;
-
-            lhs = ast::make_node<ast::binary_expression>(lhs, op, rhs);
+            auto rhs = TRY(unary_expression(t.value()));
+            lhs      = ast::make_node<ast::binary_expression>(lhs, op, rhs);
 
             break;
         }

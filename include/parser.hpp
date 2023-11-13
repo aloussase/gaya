@@ -95,6 +95,7 @@ private:
     [[nodiscard]] ast::expression_ptr bitwise_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr term_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr factor_expression(token) noexcept;
+    [[nodiscard]] ast::expression_ptr range_expression(token) noexcept;
 
     [[nodiscard]] ast::expression_ptr unary_expression(token) noexcept;
     [[nodiscard]] ast::expression_ptr lnot_expression(token) noexcept;

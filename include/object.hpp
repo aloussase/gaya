@@ -353,7 +353,7 @@ create_string_sequence(interpreter&, span, const std::string&) noexcept;
  * Create a number sequence object.
  */
 [[nodiscard]] object
-create_number_sequence(interpreter&, span, double) noexcept;
+create_number_sequence(interpreter&, span, double, double start = 0) noexcept;
 
 /**
  * Create a user defined sequence object.

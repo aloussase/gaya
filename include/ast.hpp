@@ -11,6 +11,7 @@
 #include <ast/identifier.hpp>
 #include <ast/less_than_numbers.hpp>
 #include <ast/struct.hpp>
+#include <ast/upto.hpp>
 #include <env.hpp>
 #include <lexer.hpp>
 #include <object.hpp>

@@ -1089,6 +1089,29 @@ interpreter::visit_binary_expression(ast::binary_expression& binop)
     assert(0 && "unhandled case in visit_binary_expression");
 }
 
+object::object interpreter::visit_upto(ast::Upto& upto)
+{
+    auto start = TRY(upto.start->accept(*this));
+    if (!IS_NUMBER(start))
+    {
+        interp_error(upto.span_, "upto expected start to be a number");
+        return object::invalid;
+    }
+
+    auto end = TRY(upto.end->accept(*this));
+    if (!IS_NUMBER(start))
+    {
+        interp_error(upto.span_, "upto expected end to be a number");
+        return object::invalid;
+    }
+
+    return object::create_number_sequence(
+        *this,
+        upto.span_,
+        AS_NUMBER(end),
+        AS_NUMBER(start));
+}
+
 object::object interpreter::visit_lnot_expression(ast::lnot_expression& e)
 {
     auto n = e.operand->accept(*this);

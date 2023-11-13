@@ -1,0 +1,11 @@
+include "sequences"
+
+let sum = 0 in
+do
+  for i in 0 upto 10
+    &sum <- sum + i
+  end
+  assert(sum == 45).
+end.
+
+2 upto 8 |> seq.toarray(_) |> assert(_ == (2, 3, 4, 5, 6, 7)).

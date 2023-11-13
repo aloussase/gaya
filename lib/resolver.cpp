@@ -268,6 +268,13 @@ Resolver::visit_binary_expression(ast::binary_expression& binop)
     return eval::object::invalid;
 }
 
+eval::object::object Resolver::visit_upto(ast::Upto& upto)
+{
+    upto.start->accept(*this);
+    upto.end->accept(*this);
+    return eval::object::invalid;
+}
+
 eval::object::object
 Resolver::visit_get_expression(ast::get_expression& get_expression)
 {

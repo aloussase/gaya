@@ -155,6 +155,11 @@ object binary_expression::accept(ast_visitor& v)
     return v.visit_binary_expression(*this);
 }
 
+object Upto::accept(ast_visitor& v)
+{
+    return v.visit_upto(*this);
+}
+
 object lnot_expression::accept(ast_visitor& v)
 {
     return v.visit_lnot_expression(*this);

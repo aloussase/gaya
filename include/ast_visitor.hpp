@@ -46,6 +46,7 @@ public:
     virtual ResultType visit_identifier(identifier&)                   = 0;
     virtual ResultType visit_unit(unit&)                               = 0;
     virtual ResultType visit_placeholder(placeholder&)                 = 0;
+    virtual ResultType visit_upto(Upto&)                               = 0;
 };
 
 }

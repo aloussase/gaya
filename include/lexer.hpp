@@ -73,6 +73,7 @@ enum class token_type {
     when,
     while_,
     xor_,
+    upto,
 };
 
 struct token

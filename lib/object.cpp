@@ -401,12 +401,15 @@ object create_string_sequence(
     return o;
 }
 
-object
-create_number_sequence(interpreter& interp, span span, double number) noexcept
+object create_number_sequence(
+    interpreter& interp,
+    span span,
+    double number,
+    double start) noexcept
 {
     auto* ptr = create_heap_object(interp);
 
-    number_sequence number_seq = { number };
+    number_sequence number_seq = { number, start };
     sequence seq               = { span, sequence_type_number, number_seq };
     new (ptr) heap_object { .type = object_type_sequence, .as_sequence = seq };
 

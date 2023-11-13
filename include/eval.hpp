@@ -130,6 +130,7 @@ public:
     ResultType visit_identifier(ast::identifier&) override;
     ResultType visit_unit(ast::unit&) override;
     ResultType visit_placeholder(ast::placeholder&) override;
+    ResultType visit_upto(ast::Upto&) override;
 
 private:
     std::string _filename;

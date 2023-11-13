@@ -1,7 +1,7 @@
 include "sequences"
 include "arrays"
 
-upto :: { n => 
+to :: { n => 
   let i = 0 in
   seq.make({ =>
     cases
@@ -14,7 +14,7 @@ upto :: { n =>
   })
 }
 
-upto(10)
+to(10)
   |> seq.map(_, { x => (x + 1) })
   |> seq.reduce(_, (), array.concat)
   |> assert(_ == array.range(1, 11)).
