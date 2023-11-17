@@ -1,5 +1,5 @@
-add_executable(gaya main.cpp)
-target_link_libraries(gaya fmt::fmt gaya_lib)
+add_executable(gaya main.cpp repl.cpp)
+target_link_libraries(gaya fmt::fmt gaya_lib readline)
 
 install(
     TARGETS gaya

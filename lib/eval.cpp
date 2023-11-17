@@ -145,6 +145,16 @@ interpreter::eval(const std::string& filename, const char* source) noexcept
 interpreter::eval(const std::string& filename, ast::node_ptr ast) noexcept
 {
     _filename = filename;
+
+    auto resolver = Resolver { _parser.scopes() };
+    resolver.resolve(ast);
+
+    if (!resolver.diagnostics().empty())
+    {
+        _diagnostics = resolver.diagnostics();
+        return {};
+    }
+
     if (auto result = ast->accept(*this); object::is_valid(result))
     {
         return result;

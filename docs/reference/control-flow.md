@@ -66,3 +66,12 @@ seq.foreach(42) { x =>
 
 The only difference is that the for-loop is a statement and the function call
 is an expression, so they are used differently in different contexts.
+
+For iterating over a range of numbers in increasing order, you can use the `upto`
+operator:
+
+```ocaml
+for i in 5 upto 10
+  io.println(i).
+end
+```

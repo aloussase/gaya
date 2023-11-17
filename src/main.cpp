@@ -8,7 +8,62 @@
 #include <file_reader.hpp>
 #include <parser.hpp>
 
+#include "repl.hpp"
+
 static bool show_usage_flag = false;
+static bool run_repl_flag   = false;
+
+[[noreturn]] static void run_repl(char** argv, int argc)
+{
+    LineEditor editor;
+
+    gaya::eval::interpreter interp { argv, static_cast<uint32_t>(argc) };
+    gaya::parser& parser = interp.get_parser();
+
+    for (;;)
+    {
+        auto line = editor.read_line();
+        if (line.kind() == LineResultKind::Eof
+            || line.kind() == LineResultKind::Error)
+        {
+            fmt::println("Bye-bye!");
+            exit(EXIT_SUCCESS);
+        }
+
+        if (line.line().empty())
+        {
+            continue;
+        }
+
+        auto source = line.line().c_str();
+        auto ast    = parser.parse_expression("<interactive>", source);
+
+        if (parser.had_error())
+        {
+            parser.clear_diagnostics();
+            ast = parser.parse_statement("<interactive>", source);
+        }
+
+        if (parser.had_error())
+        {
+            parser.report_diagnostics();
+            parser.clear_diagnostics();
+            continue;
+        }
+
+        auto object = interp.eval("<interactive>", ast);
+        if (interp.had_error())
+        {
+            interp.report_diagnostics();
+            interp.clear_diagnostics();
+            continue;
+        }
+
+        auto result = object.value();
+        auto show   = gaya::eval::object::to_string(interp, result);
+        fmt::println("= {}", show);
+    }
+}
 
 [[nodiscard]] static bool
 run_file(const char* filename, const char* source, char** argv, int argc)
@@ -61,6 +116,10 @@ auto main(int argc, char** argv) -> int
         {
             show_usage_flag = true;
         }
+        else if (strcmp(arg, "--repl") == 0)
+        {
+            run_repl_flag = true;
+        }
         else if (strncmp(arg, "-", 1) == 0 || strncmp(arg, "--", 2) == 0)
         {
             fprintf(stderr, "Invalid option: '%s'\n\n", arg);
@@ -75,6 +134,11 @@ auto main(int argc, char** argv) -> int
     if (show_usage_flag)
     {
         usage();
+    }
+
+    if (run_repl_flag)
+    {
+        run_repl(argv, argc);
     }
 
     auto remaining_args = argc - i;
