@@ -14,15 +14,16 @@ syntax keyword gayaKeyword let in do unit cases end given otherwise while perfor
 highlight link gayaKeyword Keyword
 
 " Literals
-syntax region gayaString start=/"/ end=/"/ skip=/\\"/
+syntax region gayaString start=+"+ skip=+\\\\\|\\"+ end=+"+
 highlight link gayaString String
 
-syntax match gayaIdentifier /\v[a-z0-9_.]+/ contains=gayaType
-highlight link gayaIdentifier Identifier
-
 " Types
-syntax match gayaType /\v<[A-Z][a-z]*>/ contained containedin=gayaIdentifier
-highlight link gayaType Type
+" syntax match gayaType /\v<[A-Z][a-z]*>/ contained containedin=gayaIdentifier
+" highlight link gayaType Type
+
+" Identifiers
+syntax match gayaIdentifier /\v[A-Za-z0-9_.]+/
+highlight link gayaIdentifier Identifier
 
 " Operators
 syntax match gayaOperator /::/

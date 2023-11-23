@@ -1,5 +1,7 @@
 #include <cstring>
 
+#include <fmt/core.h>
+
 #include <lexer.hpp>
 
 std::unordered_map<std::string, token_type> lexer::_keywords = {
@@ -174,7 +176,8 @@ std::optional<token> lexer::next_token() noexcept
         }
         else
         {
-            lexer_error("Invalid token");
+            lexer_error(
+                fmt::format("Invalid character in input: '{}'", c.value()));
             return std::nullopt;
         }
     }
@@ -425,6 +428,15 @@ std::optional<token> lexer::string() noexcept
         {
             previous = c.value();
             advance();
+
+            if (c.value() == '\\')
+            {
+                if (c = peek(); c && c.value() == '\\')
+                {
+                    previous = '\0';
+                    advance();
+                }
+            }
         }
         else if (c && c.value() == '"')
         {
