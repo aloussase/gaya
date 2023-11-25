@@ -462,9 +462,9 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
             return nullptr;
         }
 
-        define(eval::key::local(i_t->span.to_string()));
         auto e_t = _lexer.next_token();
         auto e   = e_t ? expression(*e_t) : nullptr;
+
         if (!e)
         {
             parser_error(
@@ -475,10 +475,8 @@ ast::stmt_ptr parser::while_stmt(token while_) noexcept
             return nullptr;
         }
 
-        initializer = ast::while_stmt::initializer {
-            i_t->span.to_string(),
-            e,
-        };
+        initializer = ast::while_stmt::initializer { i_t->span.to_string(), e };
+        define(eval::key::local(initializer->ident));
 
         if (!match(token_type::colon))
         {

@@ -384,8 +384,7 @@ object::object interpreter::assign_to_get_expression(
 object::object
 interpreter::visit_assignment_stmt(ast::assignment_stmt& assignment)
 {
-    auto value = assignment.expression->accept(*this);
-    RETURN_IF_INVALID(value);
+    auto value = TRY(assignment.expression->accept(*this));
 
     switch (assignment.kind)
     {
@@ -419,9 +418,7 @@ object::object interpreter::visit_while_stmt(ast::while_stmt& while_stmt)
     if (while_stmt.init)
     {
         auto ident = while_stmt.init->ident;
-        auto value = while_stmt.init->value->accept(*this);
-        RETURN_IF_INVALID(value);
-
+        auto value = TRY(while_stmt.init->value->accept(*this));
         define(ident, value);
     }
 
@@ -752,24 +749,19 @@ bool interpreter::match_pattern(
     object::object* out) noexcept
 {
     auto pattern_matches = interp.match_pattern(target, branch.pattern);
-    auto condition_holds = true;
+    if (!pattern_matches) return false;
 
     if (branch.condition != nullptr)
     {
-        auto c          = branch.condition->accept(interp);
-        condition_holds = object::is_truthy(c);
+        auto c = branch.condition->accept(interp);
+        if (!object::is_truthy(c)) return false;
     }
 
-    if (pattern_matches && condition_holds)
-    {
-        auto result = branch.body->accept(interp);
-        if (!object::is_valid(result)) return false;
+    auto result = branch.body->accept(interp);
+    if (!object::is_valid(result)) return false;
 
-        *out = result;
-        return true;
-    }
-
-    return false;
+    *out = result;
+    return true;
 }
 
 object::object interpreter::visit_match_expression(ast::match_expression& expr)
