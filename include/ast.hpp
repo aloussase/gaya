@@ -338,7 +338,7 @@ struct function_param final
     }
 
     match_pattern pattern;
-    types::Type type;
+    types::Type type = types::Type{ types::TypeKind::Any };
     expression_ptr default_value = nullptr;
 };
 

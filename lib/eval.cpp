@@ -296,8 +296,7 @@ object::object interpreter::assign_to_call_expression(
     const ast::call_expression& call_expression,
     object::object value) noexcept
 {
-    auto target = call_expression.target->accept(*this);
-    RETURN_IF_INVALID(target);
+    auto target = TRY(call_expression.target->accept(*this));
 
     auto span = call_expression.span_;
 
@@ -307,8 +306,7 @@ object::object interpreter::assign_to_call_expression(
         return object::invalid;
     }
 
-    auto index = call_expression.args[0]->accept(*this);
-    RETURN_IF_INVALID(index);
+    auto index = TRY(call_expression.args[0]->accept(*this));
 
     if (IS_DICTIONARY(target))
     {
@@ -1208,8 +1206,7 @@ interpreter::visit_get_expression(ast::get_expression& get_expression)
 
 object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
 {
-    auto o = cexpr.target->accept(*this);
-    RETURN_IF_INVALID(o);
+    auto o = TRY(cexpr.target->accept(*this));
 
     if (!object::is_callable(o))
     {
@@ -1230,9 +1227,7 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
 
     for (; bound_params < nargs; bound_params++)
     {
-        auto result = cexpr.args[bound_params]->accept(*this);
-        RETURN_IF_INVALID(result);
-
+        auto result = TRY(cexpr.args[bound_params]->accept(*this));
         cexpr.oargs[bound_params] = std::move(result);
     }
 
@@ -1246,9 +1241,7 @@ object::object interpreter::visit_call_expression(ast::call_expression& cexpr)
             auto param = function.params[bound_params];
             if (param.default_value == nullptr) break;
 
-            auto arg = param.default_value->accept(*this);
-            RETURN_IF_INVALID(arg);
-
+            auto arg = TRY(param.default_value->accept(*this));
             cexpr.oargs[bound_params] = std::move(arg);
         }
     }

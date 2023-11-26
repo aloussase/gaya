@@ -1,3 +1,5 @@
+#include <fmt/core.h>
+
 #include <eval.hpp>
 #include <types.hpp>
 
@@ -19,7 +21,6 @@ bool Type::check(eval::interpreter& interp, const eval::object::object& o)
     const noexcept
 {
     bool type_ok       = false;
-    bool constraint_ok = true;
 
     switch (_kind)
     {
@@ -73,21 +74,23 @@ bool Type::check(eval::interpreter& interp, const eval::object::object& o)
         type_ok = IS_ENUM(o) && AS_ENUM(o).name == _declared_type_name;
         break;
     }
-    }
-
-    if (_constraint.condition != nullptr)
+    default:
     {
-        assert(_constraint.condition && _constraint.closed_over_env);
-        using namespace gaya::eval;
-        interp.begin_scope(env { _constraint.closed_over_env });
-        interp.define(key::global("_"), o);
-        auto result = _constraint.condition->accept(interp);
-        interp.end_scope();
-        if (!object::is_valid(result)) return false;
-        constraint_ok = object::is_truthy(result);
+        assert(0 && "Invalid type kind");
+    }
     }
 
-    return type_ok && constraint_ok;
+    if (!type_ok) return false;
+    if (_constraint.condition == nullptr) return true;
+    assert(_constraint.condition && _constraint.closed_over_env);
+
+    // Evaluate the condition.
+    interp.begin_scope(eval::env { _constraint.closed_over_env });
+    interp.define(eval::key::global("_"), o);
+    auto result = _constraint.condition->accept(interp);
+    interp.end_scope();
+
+    return eval::object::is_valid(result) && eval::object::is_truthy(result);
 }
 
 std::string Type::to_string() const noexcept

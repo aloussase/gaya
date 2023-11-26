@@ -52,8 +52,9 @@ class Type final
 {
 public:
     explicit Type(TypeKind kind)
-        : Type { "", kind }
     {
+        _kind = kind;
+        _declared_type_name = to_string();
     }
 
     Type(
@@ -98,8 +99,8 @@ public:
     [[nodiscard]] Type with_constraint(TypeConstraint) const noexcept;
 
 private:
-    std::string _declared_type_name;
-    TypeKind _kind;
+    std::string _declared_type_name = "";
+    TypeKind _kind = TypeKind::Any;
     TypeConstraint _constraint;
 };
 

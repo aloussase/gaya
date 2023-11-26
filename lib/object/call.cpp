@@ -24,14 +24,13 @@ object call_function(
         auto param = func.params[i];
 
         /*
-         * NOTE: The parser already checks that the type was previously
-         * declared.
-         *
-         * NOTE: We don't use the param.type directly because it doesn't have
-         * the closed over environment.
+         * NOTE: Previously we only used interp.get_type with no fallback but
+         * that was causing segfaults for some reason. Using value_or fixes it
+         * but I haven't looked into why.
          */
-        if (auto type = interp.get_type(param.type.to_string());
-            !type->check(interp, arg))
+        auto type
+            = interp.get_type(param.type.to_string()).value_or(param.type);
+        if (!type.check(interp, arg))
         {
             interp.interp_error(
                 arg.span,
